@@ -49,6 +49,8 @@ class Service:
         self.store.execute("UPDATE jobs SET state='interrupted',stage='Interrompida antes de confirmar envio',finished=? WHERE state IN ('loading','submitted','generating') AND remote_id IS NULL", (time.time(),))
 
     def invoke(self, method: str, args: dict | None = None):
+        if self.stopping.is_set():
+            raise ValueError("Atualização em andamento. Aguarde o reinício do aplicativo.")
         args = args or {}
         if method not in METHODS:
             raise ValueError("Operação não suportada")
@@ -58,7 +60,36 @@ class Service:
         if method in {"snapshot", "job_get", "projects_list", "references_list", "results_list", "queue_list", "environment_status", "setup_plan"}:
             return fn(**args)
         with self.mutation_lock:
+            if self.stopping.is_set():
+                raise ValueError("Atualização em andamento. Aguarde o reinício do aplicativo.")
             return fn(**args)
+
+    def update_clients_running(self) -> bool:
+        current = Path(sys.executable).resolve()
+        for process in psutil.process_iter(["pid", "name", "exe", "cmdline"]):
+            if process.pid == os.getpid():
+                continue
+            info = process.info
+            if info.get("exe") and Path(info["exe"]).resolve() == current:
+                command = info.get("cmdline") or []
+                if "mcp" in command and (getattr(sys, "frozen", False) or "sonariel" in command):
+                    return True
+        return False
+
+    def prepare_update(self):
+        """Private desktop lifecycle operation, deliberately absent from MCP tools."""
+        with self.mutation_lock:
+            if self.active or self.store.rows("SELECT id FROM jobs WHERE state IN ('queued','loading','submitted','generating') OR (state='interrupted' AND remote_id IS NOT NULL)"):
+                raise ValueError("Conclua a fila e resolva tarefas interrompidas antes de atualizar.")
+            if self.setup_thread and self.setup_thread.is_alive():
+                raise ValueError("Aguarde a instalação do ambiente antes de atualizar.")
+            if self.update_clients_running():
+                raise ValueError("Feche as conexões MCP do Sonariel (por exemplo, o cliente Codex) antes de atualizar.")
+            if self.engine.owned_process():
+                self.engine.stop()
+            self.stopping.set()
+            self.store.event("update", "Núcleo ocioso encerrando para atualização autorizada no desktop")
+            return {"ready": True}
 
     def rpc_snapshot(self):
         projects = self.rpc_projects_list()
@@ -310,6 +341,8 @@ class Service:
                 metrics["minimum_available_gib"] = min(metrics["minimum_available_gib"], psutil.virtual_memory().available / 2**30)
                 self.store.execute("UPDATE jobs SET metrics=? WHERE id=?", (json.dumps(metrics), job["id"]))
             with self.mutation_lock:
+                if self.stopping.is_set():
+                    continue
                 current = self.store.job(job["id"])
                 if current["state"] != "queued":
                     continue

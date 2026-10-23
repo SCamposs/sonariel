@@ -41,6 +41,40 @@ def test_no_torch_imported():
     assert "torch" not in sys.modules
 
 
+def test_update_preparation_is_private_and_freezes_mutations(service, monkeypatch):
+    monkeypatch.setattr(service, "update_clients_running", lambda: False)
+    monkeypatch.setattr(service.engine, "owned_process", lambda: None)
+    assert "__desktop_prepare_update" not in METHODS
+    assert service.prepare_update() == {"ready": True}
+    with pytest.raises(ValueError, match="Atualização em andamento"):
+        service.invoke("project_create", {"name": "Should not be created"})
+    assert not service.store.rows("SELECT * FROM projects")
+
+
+def test_update_refuses_queued_work(service, project):
+    service.invoke("generate", params(project))
+    with pytest.raises(ValueError, match="Conclua a fila"):
+        service.prepare_update()
+    assert not service.stopping.is_set()
+
+
+def test_update_refuses_an_open_mcp_client(service, monkeypatch):
+    monkeypatch.setattr(service, "update_clients_running", lambda: True)
+    with pytest.raises(ValueError, match="Feche as conexões MCP"):
+        service.prepare_update()
+    assert not service.stopping.is_set()
+
+
+def test_update_refuses_running_setup(service):
+    class Running:
+        def is_alive(self):
+            return True
+    service.setup_thread = Running()
+    with pytest.raises(ValueError, match="Aguarde a instalação"):
+        service.prepare_update()
+    assert not service.stopping.is_set()
+
+
 def test_context_and_sessions_persist(service, project):
     session = service.invoke("session_create", {"project_id": project, "name": "First listening"})
     other = Service(Store(service.store.home), start_worker=False)

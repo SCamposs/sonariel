@@ -2,6 +2,17 @@
 
 This file records real execution separately from implementation coverage. No musical references, audio, private logs or machine-specific paths belong in this repository.
 
+## v0.2 release checks
+
+- Python: 42 tests passed, including update preparation refusing queued/active work, setup and open MCP clients; the private desktop lifecycle operation is not a public MCP tool.
+- Frontend: 13 tests passed, including first-use tutorial dismissal/replay/completion, hourly optional checks, remembered manual mode, retained available-version signal on network failure and no automatic installation. Typecheck and Rust `cargo check` passed; npm audit reported zero vulnerabilities.
+- A real Edge layout regression reproduced the original transient horizontal scrollbar using the old rules. The corrected guide had no horizontal overflow across 2,142 sampled animation frames at 1440×940, 1000×700 and 1000×520. Vertical scrolling and reachable footer remained available on the short viewport, progress interpolated between steps and reduced motion disabled the transition.
+- The updated installed desktop replayed the tutorial from the sidebar, navigated by keyboard and displayed the dismissal reminder. Existing projects and the selected production candidate remained intact. A packaged core handshake returned version 0.2.0 and 25 tools, with the existing compatible engine linked and unloaded.
+- The official 0.2.0 NSIS artifact and version-bound updater signature were generated; the custom Sonariel license was verified in the bundled notices. The private signing key is outside Git and encrypted for the current Windows user with DPAPI.
+- Publication hygiene reviewed tracked/untracked source and all 98 reachable historical blobs. No known-token patterns, private-key blocks, personal Windows paths or audio/database/model assets were found. This is a bounded secret/privacy review, not a complete vulnerability audit or a guarantee that every possible secret was detected. Historical author metadata was retained at the owner's request; subsequent commits use GitHub no-reply.
+- A source-available license and user-oriented README were added. The license permits commercial music production but restricts selling the application/derivatives or paid access to operate it. Third-party licenses remain separate; no legal review or ownership guarantee for generated audio is claimed.
+- Live public-endpoint download/install/relaunch validation is pending publication of the first signed release. Automated transport tests are not counted as that integration test.
+
 ## Verified during implementation
 
 - Existing CPU baseline discovered and linked through package/commit/model/patch inspection, without reinstalling or rewriting it.
@@ -46,7 +57,7 @@ This file records real execution separately from implementation coverage. No mus
 ## Remaining user action and limitations
 
 - Reload/restart the Codex client to load the registered tools in a new client session. This already-running conversation did not expose the new tools during validation; it must not be described as a proven live Codex tool call.
-- The installer is unsigned. WebView2 bootstrap behavior on a computer without WebView2 was not exercised here.
+- The installer does not have a Windows publisher/Authenticode signature. Version 0.2 updater packages have a separate cryptographic signature. WebView2 bootstrap behavior on a computer without WebView2 was not exercised here.
 - GPU inference, other upstream task types and active inference cancellation are not implemented. Automated mocks are not counted as live integration evidence.
 
 The source repository contains no audio, model weights, engine environments, installer binaries, private logs or personal configuration. Distribution artifacts remain outside Git.

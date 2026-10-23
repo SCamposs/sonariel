@@ -15,6 +15,7 @@ from urllib.parse import parse_qs, urlparse
 import requests
 
 from .environment import HIDDEN
+from . import __version__
 from .service import METHODS, Service
 from .store import Store, data_home
 
@@ -100,7 +101,7 @@ def serve():
                 return self.json({"error": "Unauthorized"}, 401)
             parsed = urlparse(self.path)
             if parsed.path == "/health":
-                return self.json({"service": "Sonariel", "version": "0.1.0"})
+                return self.json({"service": "Sonariel", "version": __version__})
             if parsed.path.startswith("/audio/"):
                 try:
                     asset = store.asset(parsed.path.split("/")[-1])
@@ -149,8 +150,11 @@ def serve():
                 return self.json({"error": "Invalid payload size"}, 400)
             try:
                 request = json.loads(self.rfile.read(size))
-                result = service.invoke(request["method"], request.get("args"))
+                prepare_update = request["method"] == "__desktop_prepare_update"
+                result = service.prepare_update() if prepare_update else service.invoke(request["method"], request.get("args"))
                 self.json({"result": result})
+                if prepare_update:
+                    threading.Thread(target=server.shutdown, daemon=True).start()
             except Exception as error:
                 self.json({"error": str(error)}, 400)
 
@@ -164,6 +168,7 @@ def serve():
     try:
         server.serve_forever()
     finally:
+        server.server_close()
         lock.close()
 
 
@@ -183,7 +188,7 @@ def mcp():
                 protocol = params.get("protocolVersion", protocol)
                 if protocol not in supported:
                     protocol = "2025-11-25"
-                result = {"protocolVersion": protocol, "capabilities": {"tools": {"listChanged": False}}, "serverInfo": {"name": "sonariel", "version": "0.1.0"}, "instructions": "Local CPU audio workflow. Query environment and project context before generating. generate returns a persistent job_id. Poll job_get; never resubmit with a different request_key after uncertainty."}
+                result = {"protocolVersion": protocol, "capabilities": {"tools": {"listChanged": False}}, "serverInfo": {"name": "sonariel", "version": __version__}, "instructions": "Local CPU audio workflow. Query environment and project context before generating. generate returns a persistent job_id. Poll job_get; never resubmit with a different request_key after uncertainty."}
                 rpc("mcp_heartbeat", {"client": params.get("clientInfo", {}).get("name", "MCP client"), "protocol": protocol})
             elif method == "ping":
                 result = {}

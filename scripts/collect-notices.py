@@ -21,6 +21,7 @@ for distribution in importlib.metadata.distributions():
                 destination.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(source, destination)
 shutil.copyfile(root / "THIRD_PARTY_NOTICES.md", output / "THIRD_PARTY_NOTICES.md")
+shutil.copyfile(root / "LICENSE", output / "SONARIEL-LICENSE.txt")
 for font in ("barlow", "urbanist", "jetbrains-mono"):
     for file in (root / "node_modules/@fontsource" / font).glob("*LICENSE*"):
         shutil.copyfile(file, output / (font + "-" + file.name))

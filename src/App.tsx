@@ -2,6 +2,8 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { AudioSlider } from "./ui/audio-slider";
 import { SelectControl } from "./ui/select-control";
 import { SidePanel } from "./ui/side-panel";
+import { WorkflowGuide } from "./ui/workflow-guide";
+import { UpdateControl } from "./ui/update-control";
 import {
   Activity,
   ArrowDownToLine,
@@ -9,7 +11,6 @@ import {
   AudioLines,
   Check,
   ChevronRight,
-  CircleHelp,
   Clock3,
   Cpu,
   Disc3,
@@ -325,7 +326,16 @@ export function App() {
           </span>
         </div>
         <div className="product-meta">
-          LOCAL AUDIO WORKSPACE <span>0.1</span>
+          LOCAL AUDIO WORKSPACE{" "}
+          <UpdateControl
+            workflowBusy={Boolean(
+              data?.jobs.some((job) =>
+                ["queued", "loading", "submitted", "generating"].includes(
+                  job.state,
+                ),
+              ) || data?.setup?.state === "running",
+            )}
+          />
         </div>
         <div className="rail-label">ESPAÇO DE TRABALHO</div>
         <nav>
@@ -371,9 +381,7 @@ export function App() {
             <br />
             Produção sob seu controle.
           </p>
-          <button className="text-button" onClick={() => setPage("bridges")}>
-            <CircleHelp size={15} /> Instruções do workflow
-          </button>
+          <WorkflowGuide ready={Boolean(data)} />
         </div>
       </aside>
 
