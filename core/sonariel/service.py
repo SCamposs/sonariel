@@ -235,6 +235,7 @@ class Service:
             try:
                 self.setup.install(destination, authorized, model_cache, audacity_path)
             except Exception as error:
+                self.store.set("setup_status", {"state": "error", "stage": str(error), "destination": destination, "retryable": True})
                 self.store.event("setup_error", str(error))
         self.setup_thread = threading.Thread(target=task, daemon=True)
         self.setup_thread.start()

@@ -203,6 +203,52 @@ def test_verified_download_cache_avoids_network(tmp_path, monkeypatch):
     assert download("https://example.invalid", path, sha256(path)) == path
 
 
+def test_download_resumes_verified_partial(tmp_path, monkeypatch):
+    import hashlib
+    path = tmp_path / "model.bin"
+    partial = path.with_suffix(".bin.part")
+    partial.write_bytes(b"first-")
+    class Response:
+        status_code = 206
+        def __enter__(self): return self
+        def __exit__(self, *_): pass
+        def raise_for_status(self): pass
+        def iter_content(self, _): yield b"second"
+    def get(_url, **kwargs):
+        assert kwargs["headers"]["Range"] == "bytes=6-"
+        return Response()
+    monkeypatch.setattr("requests.get", get)
+    download("https://example.invalid/model", path, hashlib.sha256(b"first-second").hexdigest())
+    assert path.read_bytes() == b"first-second"
+    assert not partial.exists()
+
+
+def test_corrupt_download_is_never_published(tmp_path, monkeypatch):
+    import hashlib
+    path = tmp_path / "model.bin"
+    class Response:
+        status_code = 200
+        def __enter__(self): return self
+        def __exit__(self, *_): pass
+        def raise_for_status(self): pass
+        def iter_content(self, _): yield b"corrupt"
+    monkeypatch.setattr("requests.get", lambda *_a, **_k: Response())
+    with pytest.raises(RuntimeError, match="Integridade"):
+        download("https://example.invalid/model", path, hashlib.sha256(b"expected").hexdigest())
+    assert not path.exists()
+
+
+def test_early_setup_failure_is_retryable_and_visible(service, tmp_path, monkeypatch):
+    monkeypatch.setattr(service.setup, "plan", lambda _: {})
+    def fail(*_args): raise ValueError("Unowned destination preserved")
+    monkeypatch.setattr(service.setup, "install", fail)
+    service.invoke("setup_install", {"destination": str(tmp_path / "engine"), "authorized": True})
+    service.setup_thread.join(timeout=2)
+    status = service.store.setting("setup_status")
+    assert status["state"] == "error" and status["retryable"] is True
+    assert "Unowned" in status["stage"]
+
+
 def test_audacity_guard_refuses_wrong_project(service, monkeypatch):
     monkeypatch.setattr("sonariel.audacity.tracks", lambda: [{"name": "Existing unrelated project"}])
     with pytest.raises(RuntimeError, match="projeto ativo"):
