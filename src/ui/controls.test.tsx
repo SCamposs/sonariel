@@ -6,6 +6,7 @@ import userEvent from "@testing-library/user-event";
 import { AudioSlider } from "./audio-slider";
 import { SelectControl } from "./select-control";
 import { SidePanel } from "./side-panel";
+import { GUIDE_STORAGE_KEY, WorkflowGuide } from "./workflow-guide";
 
 beforeAll(() => {
   // jsdom has no layout/media engine. These are test platform adapters, not app mocks.
@@ -171,5 +172,89 @@ describe("Sonariel interaction contracts", () => {
         }) as HTMLInputElement
       ).disabled,
     ).toBe(true);
+  });
+});
+
+describe("Workflow introduction", () => {
+  it("waits for the workspace, then introduces first-time users", async () => {
+    localStorage.clear();
+    const { rerender } = render(<WorkflowGuide ready={false} />);
+    expect(screen.queryByRole("dialog")).toBeNull();
+    rerender(<WorkflowGuide ready />);
+    expect(
+      await screen.findByRole("dialog", { name: "Conheça o Sonariel" }),
+    ).toBeTruthy();
+    expect(screen.getByRole("progressbar").getAttribute("aria-valuenow")).toBe(
+      "1",
+    );
+    expect(
+      (
+        screen.getByRole("button", {
+          name: "Passo anterior",
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+  });
+
+  it("remembers dismissal and reopens from the sidebar at the first step", async () => {
+    localStorage.clear();
+    const user = userEvent.setup();
+    const first = render(<WorkflowGuide ready />);
+    await user.click(
+      await screen.findByRole("button", { name: "Fechar tutorial" }),
+    );
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(localStorage.getItem(GUIDE_STORAGE_KEY)).toBe("dismissed");
+    expect(screen.getByRole("status").textContent).toContain(
+      "Instruções do workflow",
+    );
+    first.unmount();
+    render(<WorkflowGuide ready />);
+    expect(screen.queryByRole("dialog")).toBeNull();
+    const trigger = screen.getByRole("button", {
+      name: "Instruções do workflow",
+    });
+    await user.click(trigger);
+    expect(
+      await screen.findByRole("heading", {
+        name: "Da ideia à escuta, tudo no seu ritmo",
+      }),
+    ).toBeTruthy();
+    await user.keyboard("{Escape}");
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    await waitFor(() => expect(document.activeElement).toBe(trigger));
+  });
+
+  it("keeps one progress track while navigating, completes and remains replayable", async () => {
+    localStorage.clear();
+    const user = userEvent.setup();
+    const { unmount } = render(<WorkflowGuide ready />);
+    await screen.findByRole("dialog");
+    const progress = screen.getByRole("progressbar");
+    const fill = progress.firstElementChild;
+    await user.click(screen.getByRole("button", { name: "Próximo passo" }));
+    expect(screen.getByRole("progressbar")).toBe(progress);
+    expect(progress.firstElementChild).toBe(fill);
+    expect(progress.getAttribute("aria-valuenow")).toBe("2");
+    await user.keyboard("{ArrowLeft}");
+    expect(progress.getAttribute("aria-valuenow")).toBe("1");
+    for (let i = 0; i < 5; i++)
+      await user.click(screen.getByRole("button", { name: "Próximo passo" }));
+    expect(progress.getAttribute("aria-valuenow")).toBe("6");
+    expect((fill as HTMLElement).style.transform).toBe("scaleX(1)");
+    expect(screen.getByText(/Este tutorial continua disponível/)).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "Concluir tutorial" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(localStorage.getItem(GUIDE_STORAGE_KEY)).toBe("completed");
+    unmount();
+    render(<WorkflowGuide ready />);
+    expect(screen.queryByRole("dialog")).toBeNull();
+    await user.click(
+      screen.getByRole("button", { name: "Instruções do workflow" }),
+    );
+    expect(await screen.findByRole("dialog")).toBeTruthy();
+    expect(screen.getByRole("progressbar").getAttribute("aria-valuenow")).toBe(
+      "1",
+    );
   });
 });
