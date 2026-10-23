@@ -255,6 +255,19 @@ def test_setup_completion_keeps_required_manual_action_visible():
     assert completion_stage({"configured": True}) == "Ambiente instalado e verificado"
 
 
+@pytest.mark.parametrize("has_existing", [False, True])
+def test_setup_links_first_environment_but_preserves_existing(service, tmp_path, monkeypatch, has_existing):
+    previous = {"root": "existing-production", "compatible": True}
+    installed = {"root": "new-isolated", "compatible": True}
+    if has_existing:
+        service.store.set("environment", previous)
+    monkeypatch.setattr(service.setup, "plan", lambda _: {})
+    monkeypatch.setattr(service.setup, "install", lambda *_args: installed)
+    service.invoke("setup_install", {"destination": str(tmp_path / "engine"), "authorized": True})
+    service.setup_thread.join(timeout=2)
+    assert service.store.setting("environment") == (previous if has_existing else installed)
+
+
 def test_audacity_guard_refuses_wrong_project(service, monkeypatch):
     monkeypatch.setattr("sonariel.audacity.tracks", lambda: [{"name": "Existing unrelated project"}])
     with pytest.raises(RuntimeError, match="projeto ativo"):

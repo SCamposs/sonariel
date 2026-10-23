@@ -12,6 +12,7 @@ import time
 from pathlib import Path
 
 import psutil
+from .store import data_home
 
 
 HIDDEN = {"creationflags": subprocess.CREATE_NO_WINDOW} if os.name == "nt" else {}
@@ -68,6 +69,7 @@ def inspect_environment(root: str, audacity: str = "") -> dict:
 def discover() -> list[dict]:
     candidates = [p for p in Path.home().iterdir() if p.is_dir() and (p / "ACE-Step-1.5").is_dir()]
     candidates.append(Path(os.environ.get("LOCALAPPDATA", Path.home())) / "Sonariel" / "engine")
+    candidates.append(data_home() / "engine")
     return [{"root": str(p), "recognized": True} for p in candidates if (p / ".venv/Scripts/python.exe").is_file()]
 
 

@@ -233,7 +233,12 @@ class Service:
         self.store.set("setup_status", {"state": "running", "stage": "Preparar instalação"})
         def task():
             try:
-                self.setup.install(destination, authorized, model_cache, audacity_path)
+                result = self.setup.install(destination, authorized, model_cache, audacity_path)
+                # First-run setup must produce a usable app. Never silently
+                # replace an existing linked production environment.
+                if not self.store.setting("environment"):
+                    self.store.set("environment", result)
+                    self.store.event("environment", "Primeiro ambiente instalado e vinculado")
             except Exception as error:
                 self.store.set("setup_status", {"state": "error", "stage": str(error), "destination": destination, "retryable": True})
                 self.store.event("setup_error", str(error))
