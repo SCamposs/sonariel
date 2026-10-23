@@ -1,0 +1,29 @@
+{
+  "id": "windows-x64-cpu-1",
+  "validated_at": "2026-10-23",
+  "python": "3.12.10",
+  "ace_commit": "ca1e85fe9430179831e6bc6be790c332190a3866",
+  "ace_archive": "https://codeload.github.com/ace-step/ACE-Step-1.5/zip/ca1e85fe9430179831e6bc6be790c332190a3866",
+  "ace_archive_sha256": "108e45dffc7eb62af98d781c4159aa63a2b7a241186734e3e065279da7fc198d",
+  "torch": "2.7.1+cpu",
+  "torchaudio": "2.7.1+cpu",
+  "model": "acestep-v15-turbo",
+  "device": "cpu",
+  "batch_size": 1,
+  "init_llm": false,
+  "flash_attention": false,
+  "minimum_total_ram_gib": 23,
+  "minimum_available_ram_gib": 16,
+  "minimum_disk_gib": 16,
+  "uv": {
+    "version": "0.13.5",
+    "url": "https://github.com/astral-sh/uv/releases/download/0.13.5/uv-x86_64-pc-windows-msvc.zip",
+    "sha256": "a38b8d1902b7cfbc76b423ba1bb456f623f42064cdc72628b6075b89afd1019a"
+  },
+  "audacity": {
+    "version": "3.7.9",
+    "url": "https://github.com/audacity/audacity/releases/download/Audacity-3.7.9/audacity-win-3.7.9-64bit.zip",
+    "sha256": "6ace99628c02ae345690183950bf76ee7aeacdaa1a3693e98a6f971642cd2da7"
+  },
+  "latest_available": {"policy": "not automatically queried; validated versions above are not claims of latest"}
+}
