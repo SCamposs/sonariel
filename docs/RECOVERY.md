@@ -1,7 +1,7 @@
 # Recovery and limits
 
 - **Not enough RAM:** the task remains queued with measured available memory and the start threshold. Do not close unrelated applications automatically or lower the limit silently.
-- **CPU headroom:** cold startup now requires 16 GiB available, after the acceptance run reached approximately 14 GiB engine working set and briefly exhausted free physical memory at the previous 10 GiB gate. This conservative gate is not a guarantee for longer audio; duration and other applications affect memory. The model loads only on demand.
+- **CPU headroom:** cold startup now requires 16 GiB available, after the acceptance run reached approximately 14 GiB engine working set and briefly exhausted free physical memory at the previous 10 GiB gate. A subsequent job with the model already resident requires 4 GiB available. These conservative gates are not guarantees for longer audio; duration and other applications affect memory. The model loads only on demand.
 - **Core restart:** queued tasks persist. Confirmed remote IDs are queried again. A send without a confirmed response becomes interrupted, requiring inspection rather than a blind retry with a new request key.
 - **Remote query uncertainty:** an interrupted job with a remote ID blocks additional generation and engine unloading, because inference might still be active. Inspect the engine log and recover deliberately.
 - **External ACE-Step on port 8001:** the adapter refuses ownership. Stop it using the original environment command when safe, then retry through Sonariel.

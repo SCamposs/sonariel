@@ -308,7 +308,7 @@ class Service:
                 if current["state"] != "queued":
                     continue
                 available = psutil.virtual_memory().available / 2**30
-                threshold = 1.0 if self.engine.owned_process() else recipe()["minimum_available_ram_gib"]
+                threshold = 4.0 if self.engine.owned_process() else recipe()["minimum_available_ram_gib"]
                 if available < threshold:
                     self.store.execute("UPDATE jobs SET stage=? WHERE id=?", (f"Aguardando memória: {available:.1f} / {threshold:.0f} GiB livres", job["id"]))
                     continue

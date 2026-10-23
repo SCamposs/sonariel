@@ -26,3 +26,4 @@ build/
 *.tsbuildinfo
 src-tauri/icons/android/
 src-tauri/icons/ios/
+src-tauri/gen/

@@ -11,7 +11,7 @@ export async function rpc<T = unknown>(method: string, args: Record<string, unkn
 export type Project = { id: string; name: string; context: string; created: number; result_count: number };
 export type Session = { id: string; project_id: string; name: string; created: number };
 export type Asset = { id: string; project_id: string; session_id: string | null; job_id: string | null; path: string; name: string; kind: string; parent_id: string | null; favorite: number; selected: number; notes: string; created: number; metadata: { duration: number; sample_rate: number; channels: number; waveform: number[]; peak: number; rms: number; subtype: string; parameters?: Record<string, unknown>; sha256: string } };
-export type Job = { id: string; project_id: string; state: string; stage: string; created: number; started: number | null; finished: number | null; error: string | null; params: Record<string, unknown>; metrics: { peak_rss_gib?: number; minimum_available_gib?: number; load_seconds?: number; inference_seconds?: number } };
+export type Job = { id: string; project_id: string; remote_id: string | null; state: string; stage: string; created: number; started: number | null; finished: number | null; error: string | null; params: Record<string, unknown>; metrics: { peak_rss_gib?: number; minimum_available_gib?: number; load_seconds?: number; inference_seconds?: number } };
 export type Snapshot = {
   projects: Project[]; sessions: Session[]; assets: Asset[]; jobs: Job[]; selected_project: string | null;
   events: { id: number; time: number; kind: string; message: string; job_id: string | null }[];
