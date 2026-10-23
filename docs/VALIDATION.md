@@ -8,8 +8,8 @@ This file records real execution separately from implementation coverage. No mus
 - A separate engine root installed with managed Python, a new venv, pinned CPU dependencies and fixed ACE-Step source. All required model files were verified against the official pinned manifest before cache reuse.
 - The isolated installation was repeated and remained compatible without creating another environment.
 - Official portable Audacity archive downloaded and verified. Existing open Audacity prevented configuration changes as designed.
-- Core tests: 32 passed, covering persistence, input contracts, idempotency (including changed-request rejection), reference/source roles, cancellation, uncertain-submit recovery, file integrity, installer ownership, ZIP traversal, Codex configuration preservation and wrong-project refusal.
-- Frontend tests: 2 passed. Typecheck and production frontend build passed.
+- Core tests: 35 passed, covering persistence, input contracts, idempotency (including changed-request rejection), reference/source roles, cancellation, uncertain-submit recovery, file integrity, partial download resumption, corrupt-download rejection, retryable early setup failure, installer ownership, ZIP traversal, Codex configuration preservation and wrong-project refusal.
+- Frontend tests: 6 passed, including Base UI wrapper keyboard selection, modal focus containment/restoration, Escape dismissal, slider value semantics and disabled controls. Typecheck and production frontend build passed. jsdom platform adapters are test-only and do not prove native layout.
 - MCP initialization, tool discovery (25 tools) and project/environment operations passed through stdio.
 - Windows x64 release build and NSIS installer succeeded. Installer executed successfully into a separate user application folder. Native desktop loaded the real shared database.
 - Browser visual inspection confirmed the requested dark industrial visual language with locally packaged fonts.
@@ -24,6 +24,9 @@ This file records real execution separately from implementation coverage. No mus
 - The lightweight distributed core used approximately 60 MiB RSS while the model was unloaded. Opening it did not start a second inference process.
 - Dependency audit reported zero npm vulnerabilities; automated tests, typecheck, production frontend build, optimized Windows build and NSIS packaging passed.
 - The final desktop was returned to the preserved existing engine adapter, not left pointing at the isolated validation engine.
+- Base UI 1.9.0 is isolated behind three application-owned components. Only those implementations import its subpaths. The desktop's selector popup was inspected with the original Sonariel appearance preserved; native scrollbar styling remains separate from its scrolling behavior.
+- Final installed desktop checks confirmed modal Tab/Shift+Tab containment, Escape dismissal with focus restored to the originating details button, wheel scrolling with the custom scrollbar, playback and pointer seeking to approximately five seconds. Slider keyboard semantics additionally passed the DOM contract tests; no automated native screen-reader certification is claimed.
+- A subsequent real client initialization identified itself as `codex-mcp-client`. This confirms a Codex protocol handshake, not a tool call from this conversation's model context.
 
 ## Resolved integration gates
 
@@ -34,7 +37,7 @@ This file records real execution separately from implementation coverage. No mus
 ## Implemented but not fully validated in this environment
 
 - The isolated setup used verified model cache reuse. This is a real new runtime/venv installation and generation, not a zero-cache machine test. Download resumption and failure guards have automated coverage; no destructive mid-install fault was injected into the working baseline.
-- The portable Audacity archive was downloaded and hash-verified. Preparing its configuration was safely deferred while an existing Audacity session was open. The real handoff was validated against the user's compatible installed Audacity instead.
+- The portable Audacity archive was downloaded and hash-verified. Preparing its configuration was initially deferred with Audacity open, then completed safely when no Audacity process was running. A later launch resolved to the globally installed Audacity and a recovered session, which was not edited. A portable-only process/pipe handshake is therefore not claimed; the real handoff passed against the user's compatible installed Audacity.
 - The new 16 GiB cold / 4 GiB warm gates are conservative safeguards informed by the measured run, not newly benchmarked memory guarantees for longer tasks. No extra generation was launched.
 
 ## Remaining user action and limitations
