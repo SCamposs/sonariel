@@ -10,7 +10,7 @@ import soundfile as sf
 from sonariel.engine import inspect_wav
 from sonariel.environment import sha256
 from sonariel.service import METHODS, Service, local_audio
-from sonariel.setup import Setup, download, extract
+from sonariel.setup import Setup, completion_stage, download, extract
 from sonariel.store import Store
 
 
@@ -247,6 +247,12 @@ def test_early_setup_failure_is_retryable_and_visible(service, tmp_path, monkeyp
     status = service.store.setting("setup_status")
     assert status["state"] == "error" and status["retryable"] is True
     assert "Unowned" in status["stage"]
+
+
+def test_setup_completion_keeps_required_manual_action_visible():
+    action = "Feche o Audacity após salvar seus projetos."
+    assert action in completion_stage({"configured": False, "manual_action": action})
+    assert completion_stage({"configured": True}) == "Ambiente instalado e verificado"
 
 
 def test_audacity_guard_refuses_wrong_project(service, monkeypatch):

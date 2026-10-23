@@ -80,6 +80,11 @@ def prepare_audacity(executable: Path) -> dict:
     return {"configured": True, "tested": False, "config": str(config)}
 
 
+def completion_stage(audacity_setup: dict | None) -> str:
+    action = (audacity_setup or {}).get("manual_action")
+    return "Motor instalado e verificado. " + action if action else "Ambiente instalado e verificado"
+
+
 class Setup:
     def __init__(self, store: Store):
         self.store = store
@@ -189,7 +194,7 @@ class Setup:
             state["complete"] = True
             state["environment"] = result
             marker.write_text(json.dumps(state, indent=2), encoding="utf-8")
-            self.store.set("setup_status", {"state": "completed", "stage": "Ambiente instalado e verificado", "destination": str(root)})
+            self.store.set("setup_status", {"state": "completed", "stage": completion_stage(state.get("audacity_setup")), "destination": str(root)})
             return result
         except Exception as error:
             self.store.set("setup_status", {"state": "error", "stage": str(error), "destination": str(root), "retryable": True})
