@@ -7,8 +7,9 @@ This file records real execution separately from implementation coverage. No mus
 - Existing CPU baseline discovered and linked through package/commit/model/patch inspection, without reinstalling or rewriting it.
 - A separate engine root installed with managed Python, a new venv, pinned CPU dependencies and fixed ACE-Step source. All required model files were verified against the official pinned manifest before cache reuse.
 - The isolated installation was repeated and remained compatible without creating another environment.
+- First-run setup also passed through the real asynchronous service with a separate fresh application state. The compatible CPU environment was automatically linked; an existing linked environment is preserved.
 - Official portable Audacity archive downloaded and verified. Existing open Audacity prevented configuration changes as designed.
-- Core tests: 36 passed, covering persistence, input contracts, idempotency (including changed-request rejection), reference/source roles, cancellation, uncertain-submit recovery, file integrity, partial download resumption, corrupt-download rejection, retryable early setup failure, visible manual setup actions, installer ownership, ZIP traversal, Codex configuration preservation and wrong-project refusal.
+- Core tests: 38 passed, covering persistence, input contracts, idempotency (including changed-request rejection), reference/source roles, cancellation, uncertain-submit recovery, file integrity, partial download resumption, corrupt-download rejection, retryable early setup failure, visible manual setup actions, first-install linking without replacing an existing environment, installer ownership, ZIP traversal, Codex configuration preservation and wrong-project refusal.
 - Frontend tests: 6 passed, including Base UI wrapper keyboard selection, modal focus containment/restoration, Escape dismissal, slider value semantics and disabled controls. Typecheck and production frontend build passed. jsdom platform adapters are test-only and do not prove native layout.
 - MCP initialization, tool discovery (25 tools) and project/environment operations passed through stdio.
 - Windows x64 release build and NSIS installer succeeded. Installer executed successfully into a separate user application folder. Native desktop loaded the real shared database.
@@ -29,6 +30,8 @@ This file records real execution separately from implementation coverage. No mus
 - A subsequent real client initialization identified itself as `codex-mcp-client`. This confirms a Codex protocol handshake, not a tool call from this conversation's model context.
 
 ## Resolved integration gates
+
+- Fixed the desktop grid's minimum-size overflow: the main workspace now scrolls within the height reserved above the fixed player, instead of extending behind it. Wheel scrolling in the updated installed desktop exposed the complete final selected-candidate panel and its action above the player. The navigation rail can also scroll independently on short windows.
 
 - The queue's memory gate was exercised: the technical job stayed queued below the cold-start threshold, then proceeded after memory was freed. The completed state and result are persisted.
 - An earlier read probe returned Windows error 231 (`ERROR_PIPE_BUSY`); it was not bypassed. After the user closed the original Audacity session and resolved a module prompt manually, the read probe and bounded editing flow passed in a new session.

@@ -209,11 +209,14 @@ pre {
 .app-shell {
   display: grid;
   grid-template-columns: 222px minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
   height: 100vh;
   overflow: hidden;
   padding-bottom: 88px;
 }
 .rail {
+  min-height: 0;
+  overflow-y: auto;
   background: var(--deep);
   border-right: 1px solid var(--line);
   display: flex;
@@ -360,9 +363,10 @@ pre {
 }
 .workspace {
   min-width: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  overflow: hidden;
 }
 .topbar {
   height: 58px;
@@ -401,6 +405,7 @@ pre {
   color: var(--muted);
 }
 main {
+  min-height: 0;
   overflow: auto;
   flex: 1;
   padding: 30px 30px 45px;
