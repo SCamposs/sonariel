@@ -2,6 +2,8 @@
 
 Sonariel does not relicense external code, models or fonts. Their original notices and licenses continue to apply.
 
+Original Sonariel code is covered by the Sonariel Source Available License 1.0 in `LICENSE`. Its restrictions do not replace or narrow licenses independently granted by the third-party components below. Dependency notices are bundled with the installer.
+
 | Component | License / upstream |
 | --- | --- |
 | Tauri | MIT or Apache-2.0 · https://github.com/tauri-apps/tauri |

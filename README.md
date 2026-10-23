@@ -1,47 +1,80 @@
 # Sonariel
 
-Desktop workspace for a local music workflow directed from Codex. Built with Tauri 2, React and TypeScript, with a lightweight Python orchestration core. Interface in Brazilian Portuguese.
+Um aplicativo desktop para organizar a criação de música com IA local: projetos, sessões, fila de geração, comparação de versões e edição no Audacity. A direção musical acontece na conversa com o Codex; o Sonariel acompanha a execução e preserva suas escolhas.
 
-Sonariel manages projects, sessions, a persistent generation queue, candidates, playback, comparisons, decisions, a reproducible Windows CPU engine setup and bounded Audacity handoffs. Musical prompts are read-only in the app; creative direction stays in Codex.
+## Baixar para Windows
 
-## Running
+[Baixe a versão mais recente nas Releases](https://github.com/SCamposs/sonariel/releases/latest).
 
-The Windows installer bundles the desktop app and lightweight Python core. End users do not need Node, Rust or a Python development installation. WebView2 is a Windows desktop prerequisite handled by the Tauri installer bootstrapper when needed.
+Escolha `Sonariel_<versão>_x64-setup.exe`. Não é necessário instalar Node, Rust ou Python para usar o aplicativo. Os modelos e o ambiente de geração são preparados separadamente pelo próprio Sonariel, após sua autorização.
 
-Open **Ambiente** and either link a compatible existing engine or review and authorize a new isolated installation. Linking does not reinstall packages or alter engine configuration. Setup uses the versioned recipe in `core/sonariel/recipes`, never an unqualified latest installation.
+- Windows x64 e WebView2 (o instalador oferece o componente quando necessário).
+- O perfil disponível usa **CPU, ACE-Step Turbo e DiT-only**. Não há geração acelerada por GPU nesta versão.
+- A fila exige **16 GiB de RAM livre para carregar o modelo**, ou 4 GiB quando o motor gerenciado já está carregado. Isso é memória disponível, não apenas RAM instalada. A geração é pesada e executa um pedido por vez.
+- Internet é necessária para downloads iniciais e atualizações. A geração é local; o Sonariel não envia áudio e prompts a serviços de geração na nuvem.
 
-Data defaults to `%USERPROFILE%\.sonariel`. `SONARIEL_HOME` may select a separate data directory. Audio, model caches and engine environments stay outside the source checkout. The app and MCP connect to one shared core and SQLite database. Opening the UI or MCP does not load ACE-Step.
+O instalador ainda não tem assinatura de editor Windows/Authenticode. A assinatura criptográfica dos pacotes de atualização é uma proteção diferente e não remove avisos do Windows sobre editor desconhecido.
 
-## Codex
+## Primeiro uso
 
-In **Audacity & Codex**, choose **Configurar conexão Codex**. The operation backs up the existing config, adds only the Sonariel MCP entry and installs the workflow skill. Reload the Codex client afterwards. A saved configuration is not proof of a client handshake; the interface reports these separately.
+1. Abra o Sonariel e percorra o tutorial opcional. Você pode reabri-lo em **Instruções do workflow**, no fim da sidebar.
+2. Em **Ambiente**, vincule uma instalação compatível existente ou revise e autorize uma instalação isolada. Vincular não reinstala nem modifica seu ambiente anterior.
+3. Em **Projetos & sessões**, crie um projeto e registre a intenção musical. Confira o projeto ativo antes de gerar.
+4. Em **Audacity & Codex**, escolha **Configurar conexão Codex**. O app faz backup da configuração e preserva as outras conexões. Recarregue o cliente Codex para carregar as ferramentas MCP.
+5. Na conversa com o Codex, peça uma geração pelo Sonariel com direção, duração, BPM, tonalidade e compasso explícitos. Acompanhe o pedido na **Fila de geração**.
+6. Escute e compare em **Biblioteca & versões**, registre suas preferências e só então leve a candidata escolhida para o Audacity.
 
-Tools include environment and project context inspection, reference registration, asynchronous generation, queue/result queries, favorites/selection/notes, and identified Audacity import/export. See [MCP integration](docs/CODEX.md).
+Para a ponte com o Audacity, habilite `mod-script-pipe` e reinicie o editor. O app usa projetos identificados do Sonariel, sem editar um projeto alheio aberto. O original de áudio é preservado ao criar versões editadas.
 
-## Development
+## Atualizações
 
-Requires Node 22.12+, Rust/MSVC build tools and Python 3.12. These are development dependencies, not user engine prerequisites.
+Clique no número da versão, abaixo do nome Sonariel na sidebar, para abrir **Versão & atualizações**. Uma bolinha âmbar nesse botão indica uma versão nova.
+
+Por padrão, o app consulta as releases oficiais ao abrir e a cada hora. Selecione **Somente quando eu solicitar** para desativar essas consultas e use **Verificar agora** quando quiser. Nenhuma instalação começa sem você escolher **Atualizar e reiniciar**.
+
+O pacote é baixado e sua assinatura é verificada antes da instalação. Aguarde a fila e o setup terminarem e feche conexões MCP do Sonariel antes de atualizar; esses processos podem manter arquivos do aplicativo em uso. No Windows, o instalador fecha e reabre o app. Projetos e áudios ficam fora da pasta do programa.
+
+Quem usa a versão 0.1 precisa instalar a 0.2 uma vez manualmente para receber o atualizador.
+
+## Dados e privacidade
+
+Dados locais ficam por padrão em `%USERPROFILE%\.sonariel`; `SONARIEL_HOME` pode selecionar outro diretório. Projetos, áudio, backups, ambientes, modelos e logs não fazem parte deste repositório. O tutorial e a preferência de atualizações ficam no perfil local do WebView.
+
+O núcleo escuta somente em loopback, com autenticação local. Abrir o aplicativo ou o MCP não carrega modelos. O Sonariel não contém telemetria de uso. As consultas opcionais de atualização acessam o GitHub, que recebe os dados normais de uma conexão HTTP; elas não enviam áudio, prompts ou o banco de projetos. Downloads de componentes usam suas fontes oficiais.
+
+## Licença
+
+O código próprio usa a [Sonariel Source Available License 1.0](LICENSE):
+
+- Você pode usar o app para criar músicas, vendê-las, licenciá-las e realizar trabalhos criativos pagos.
+- Pode estudar, modificar e redistribuir gratuitamente o código/app, mantendo a licença e os avisos.
+- Não pode vender o Sonariel, versões modificadas ou acesso a ele como serviço pago sem autorização separada.
+
+É **código disponível, não uma licença open source aprovada pela OSI**. A licença não transfere direitos sobre modelos ou referências e não garante que um áudio gerado esteja livre de direitos de terceiros. As [dependências têm suas próprias licenças](THIRD_PARTY_NOTICES.md).
+
+## Desenvolvimento
+
+Desktop Tauri 2 + React/TypeScript com núcleo Python leve. Requer Node 22.12+, Rust/MSVC e Python 3.12 para desenvolvimento, não para o usuário final.
 
 ```powershell
 uv venv --python 3.12 .venv
 uv pip install --python .venv/Scripts/python.exe -e '.[dev]'
 npm.cmd ci
 & .venv/Scripts/python.exe -m pytest -q
-npm.cmd run typecheck
 npm.cmd test
+npm.cmd run typecheck
 npm.cmd run dev
 ```
 
-`npm run dev` is a local verification surface with a development-only bridge. The delivered product is the Tauri desktop app. Build it with `scripts/build.ps1`; it packages the core before building the Windows NSIS installer. Outputs are ignored under `build/` and `src-tauri/target/release/bundle/nsis/`.
+`npm run dev` é uma superfície local de verificação. O produto distribuído é o desktop Tauri. `scripts/build.ps1` prepara um instalador de desenvolvimento sem assinatura de atualização; releases oficiais usam o fluxo assinado em [docs/RELEASING.md](docs/RELEASING.md).
 
-## Documentation
+## Documentação e limitações
 
-- [Architecture and process boundaries](docs/ARCHITECTURE.md)
-- [Application-owned interaction components](src/ui/README.md)
-- [Setup and integrity](docs/SETUP.md)
-- [Codex and MCP](docs/CODEX.md)
-- [Recovery and limitations](docs/RECOVERY.md)
-- [Validation receipt](docs/VALIDATION.md)
-- [Third-party licenses and sources](THIRD_PARTY_NOTICES.md)
+- [Arquitetura e limites entre processos](docs/ARCHITECTURE.md)
+- [Setup e integridade](docs/SETUP.md)
+- [Codex/MCP](docs/CODEX.md)
+- [Recuperação](docs/RECOVERY.md)
+- [Validação: o que foi realmente testado](docs/VALIDATION.md)
+- [Componentes de interação](src/ui/README.md)
 
-Only the Windows x64 CPU / DiT-only profile is implemented. GPU detection does not imply accelerated inference support. The first engine recipe is ACE-Step Turbo at a fixed commit, Python 3.12.10 and PyTorch 2.7.1 CPU. One generation runs at a time. See the validation receipt for actual measured coverage and outstanding limitations.
+Não há cancelamento de inferência ativa; só pedidos ainda não enviados ao motor podem ser cancelados. O teste em uma máquina não garante o mesmo desempenho ou consumo de RAM em outra. Consulte a validação antes de usar o app em uma produção importante.
