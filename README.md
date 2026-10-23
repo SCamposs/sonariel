@@ -37,6 +37,7 @@ npm.cmd run dev
 ## Documentation
 
 - [Architecture and process boundaries](docs/ARCHITECTURE.md)
+- [Application-owned interaction components](src/ui/README.md)
 - [Setup and integrity](docs/SETUP.md)
 - [Codex and MCP](docs/CODEX.md)
 - [Recovery and limitations](docs/RECOVERY.md)

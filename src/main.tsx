@@ -9,5 +9,6 @@ import '@fontsource/urbanist/800.css';
 import '@fontsource/jetbrains-mono/400.css';
 import { App } from './App';
 import './styles.css';
+import './ui/controls.css';
 
 createRoot(document.getElementById('root')!).render(<StrictMode><App /></StrictMode>);

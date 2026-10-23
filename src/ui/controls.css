@@ -1,0 +1,128 @@
+/* Product styling belongs here, never in the upstream interaction primitives. */
+.ui-select-trigger {
+  justify-content: space-between;
+  width: 100%;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  background: var(--deep);
+  color: var(--ink);
+  text-align: left;
+  font-weight: 400;
+}
+.ui-select-trigger > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ui-select-icon {
+  display: flex;
+  flex-shrink: 0;
+  color: var(--muted);
+}
+.ui-select-positioner {
+  z-index: var(--z-popup);
+  outline: none;
+}
+.ui-select-popup {
+  min-width: var(--anchor-width);
+  max-width: min(420px, var(--available-width));
+  max-height: min(320px, var(--available-height));
+  overflow: auto;
+  background: var(--deep);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  padding: 4px;
+  outline: none;
+  transform-origin: var(--transform-origin);
+  transition:
+    opacity 150ms ease-out,
+    transform 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ui-select-popup[data-starting-style],
+.ui-select-popup[data-ending-style] {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+.ui-select-list {
+  outline: none;
+}
+.ui-select-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 9px 10px;
+  font-size: 13px;
+  cursor: default;
+  outline: none;
+}
+.ui-select-item[data-highlighted] {
+  background: var(--hover);
+  color: var(--amber);
+}
+.ui-select-check {
+  display: inline-flex;
+  color: var(--amber);
+}
+.ui-audio-slider {
+  min-width: 0;
+}
+.ui-slider-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 20px;
+  width: 100%;
+  touch-action: none;
+  user-select: none;
+  cursor: pointer;
+}
+.ui-slider-track {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  background: var(--line);
+  border-radius: 2px;
+}
+.ui-slider-indicator {
+  position: absolute;
+  height: 100%;
+  background: var(--amber);
+  border-radius: inherit;
+}
+.ui-slider-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--amber);
+  outline: none;
+}
+.ui-slider-thumb[data-focus-visible] {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+.ui-audio-slider[data-disabled] {
+  opacity: 0.42;
+}
+.ui-audio-slider[data-disabled] .ui-slider-control {
+  cursor: not-allowed;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-panel-backdrop,
+  .detail-drawer,
+  .ui-select-popup {
+    transition: none;
+  }
+}
