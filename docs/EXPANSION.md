@@ -1,7 +1,8 @@
-# Audio engines expansion (0.3.0-beta.1, unreleased)
+# Audio engines expansion (0.3.0)
 
-This review build does not change the published 0.2 release. The owner authorized
-direct integration into main without a pull request; no stable release is published.
+The owner authorized direct integration into main without a pull request and then
+publication of the signed 0.3.0 release. The beta validation below predates release
+promotion; publishing does not install the update or change production data.
 No soundtrack, fictional language, production-specific preset or character data
 is included in the app. Private presets are local project data, not shipped defaults.
 
@@ -185,7 +186,8 @@ has loaded newly added tools.
   described above; no automatic voice continuation is implemented.
 - This review does not reinstall over stable or exercise another signed self-update.
   The existing signed-update acceptance evidence is historical; updater UI/lifecycle
-  regression checks pass. This local beta installer is not update-signed or published.
+  regression checks pass. The earlier beta installer was unsigned; 0.3.0 release
+  artifacts use the existing updater signing key. No new live self-update is claimed.
 - Custom titlebar uses Tauri window commands with explicit capabilities. Its HTML
   maximize button does not implement the Windows native Snap hover menu. Browser
   preview controls are disabled; native behavior is checked separately.
@@ -195,7 +197,14 @@ has loaded newly added tools.
 
 ### Delivery
 
-Build with `scripts/build.ps1`. The beta installer is generated under
+Release promotion reran all 60 Python, 21 frontend and 25 DSP workspace tests,
+typecheck and the signed Windows build. The newly packaged MCP reports 0.3.0
+and 43 tools in a separate empty profile, without generation. The updater public
+key/application identifier match v0.2.0. Independent public-key verification of
+the installer signature and signed version passed; a modified byte was rejected.
+These checks do not install the update on the maintainer's machine.
+
+Build with `scripts/build.ps1 -SignUpdates` for release or without signing for review. The installer is generated under
 `src-tauri/target/release/bundle/nsis/` (ignored by Git). Use
 `scripts/run-preview.ps1` for a separate executable/profile; it refuses the stable
 data profile and will not overwrite a running preview. No installer is launched

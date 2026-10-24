@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.3.0-beta.1 (review build, unreleased)
+## 0.3.0
 
 - Shared persistent queue for music, Chatterbox Multilingual V3 voice and native DSP.
 - Independent pinned CPU voice/LiteRT installation and read-only environment linking.
@@ -10,7 +10,8 @@
 - Voice Studio/FX workspace, engine inventory, category-aware job details and original/processed comparisons.
 - Expanded MCP contracts and known-version skill upgrade with backup; independent Audacity configuration.
 - Schema-2 additive migration preserving existing projects, assets, jobs and settings.
-- Portable isolated review launcher; stable installer, updater keys and production data remain unchanged.
+- Portable isolated review launcher; production data remains separate from application files.
+- Signed Windows release and updater manifest using the existing public-key trust chain.
 - Integrated graphite titlebar with real Tauri drag, minimize, maximize/restore and close controls.
 
 ACE-Step Turbo stays the baseline with its unchanged 16 GiB cold-start gate.

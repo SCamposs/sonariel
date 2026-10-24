@@ -1,5 +1,5 @@
 param(
-    [string]$ApplicationDirectory = (Join-Path $env:USERPROFILE 'SonarielPreview/0.3.0-beta.1'),
+    [string]$ApplicationDirectory = (Join-Path $env:USERPROFILE 'SonarielPreview/0.3.0'),
     [string]$DataHome = (Join-Path $env:USERPROFILE '.sonariel-preview')
 )
 $ErrorActionPreference = 'Stop'

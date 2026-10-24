@@ -2,7 +2,7 @@
 
 Um aplicativo desktop para criar músicas e vozes com IA local, processar WAVs com efeitos nativos e organizar projetos, sessões e versões. A direção criativa acontece na conversa com o Codex; o Sonariel acompanha a execução e preserva suas escolhas.
 
-> Esta branch prepara **0.3.0-beta.1**, ainda sem release pública. A versão estável nas Releases continua sendo 0.2.0. Consulte [a expansão e suas limitações](docs/EXPANSION.md) antes de testar o preview.
+> **0.3.0** acrescenta voz e processamento nativo, além de motores musicais experimentais. Consulte [a expansão e suas limitações](docs/EXPANSION.md) e [as notas da release](docs/releases/v0.3.0.md).
 
 ## Baixar para Windows
 
@@ -11,7 +11,7 @@ Um aplicativo desktop para criar músicas e vozes com IA local, processar WAVs c
 Escolha `Sonariel_<versão>_x64-setup.exe`. Não é necessário instalar Node, Rust ou Python para usar o aplicativo. Os modelos e o ambiente de geração são preparados separadamente pelo próprio Sonariel, após sua autorização.
 
 - Windows x64 e WebView2 (o instalador oferece o componente quando necessário).
-- O padrão musical permanece **CPU, ACE-Step Turbo e DiT-only**. O preview acrescenta Stable Audio 3 Small-Music/Medium via LiteRT CPU, Chatterbox Multilingual V3 e DSP nativo independente. SFT está pendente, não é anunciado como motor operacional. Não há aceleração por GPU neste perfil.
+- O padrão musical permanece **CPU, ACE-Step Turbo e DiT-only**. A versão 0.3 acrescenta Stable Audio 3 Small-Music/Medium via LiteRT CPU, Chatterbox Multilingual V3 e DSP nativo independente. SFT está pendente, não é anunciado como motor operacional. Não há aceleração por GPU neste perfil.
 - O **ACE-Step** exige 16 GiB livres para carregar, ou 4 GiB com o motor gerenciado já carregado. Essa proteção não é uma exigência do app inteiro: voz, LiteRT e FX têm limites próprios. A fila executa um pedido por vez, sem carregar modelos ao abrir a interface.
 - Internet é necessária para downloads iniciais e atualizações. A geração é local; o Sonariel não envia áudio e prompts a serviços de geração na nuvem.
 
@@ -28,7 +28,7 @@ O instalador ainda não tem assinatura de editor Windows/Authenticode. A assinat
 
 Para a ponte com o Audacity, habilite `mod-script-pipe` e reinicie o editor. O app usa projetos identificados do Sonariel, sem editar um projeto alheio aberto. O original de áudio é preservado ao criar versões editadas.
 
-No preview, **Voice Studio** organiza idiomas/perfis e interpretações solicitadas ao Codex. **FX & processamento** aceita qualquer WAV registrado: adicione/reordene efeitos, ajuste parâmetros, peça uma prévia curta e renderize uma versão completa somente quando desejar. Originais não são sobrescritos. A biblioteca permite comparar duas versões. O setup é independente por motor; Stable Audio exige aceite individual de seus termos, e seus pesos não acompanham o app.
+**Voice Studio** organiza idiomas/perfis e interpretações solicitadas ao Codex. **FX & processamento** aceita qualquer WAV registrado: adicione/reordene efeitos, ajuste parâmetros, peça uma prévia curta e renderize uma versão completa somente quando desejar. Originais não são sobrescritos. A biblioteca permite comparar duas versões. O setup é independente por motor; Stable Audio exige aceite individual de seus termos, e seus pesos não acompanham o app.
 
 ## Atualizações
 
@@ -72,7 +72,7 @@ npm.cmd run dev
 
 `npm run dev` é uma superfície local de verificação. O produto distribuído é o desktop Tauri. `scripts/build.ps1` prepara um instalador de desenvolvimento sem assinatura de atualização; releases oficiais usam o fluxo assinado em [docs/RELEASING.md](docs/RELEASING.md).
 
-Para testar esta branch sem substituir o app estável, execute `scripts/build.ps1` e depois `scripts/run-preview.ps1`. O segundo comando prepara uma cópia executável em `%USERPROFILE%\SonarielPreview\0.3.0-beta.1` e usa `%USERPROFILE%\.sonariel-preview`, separado do perfil estável. O instalador gerado é apenas um artefato de revisão; não é instalado automaticamente. Não conecte o Codex de produção ao preview por engano: ele tem banco e núcleo próprios.
+Para testar um build local sem substituir o app instalado, execute `scripts/build.ps1` e depois `scripts/run-preview.ps1`. O segundo comando prepara uma cópia executável em `%USERPROFILE%\SonarielPreview\0.3.0` e usa `%USERPROFILE%\.sonariel-preview`, separado do perfil estável. O instalador de desenvolvimento não é instalado automaticamente. Não conecte o Codex de produção ao preview por engano: ele tem banco e núcleo próprios.
 
 ## Documentação e limitações
 

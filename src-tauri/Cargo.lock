@@ -3180,7 +3180,7 @@ dependencies = [
 
 [[package]]
 name = "sonariel"
-version = "0.3.0-beta.1"
+version = "0.3.0"
 dependencies = [
  "reqwest 0.12.28",
  "serde",
