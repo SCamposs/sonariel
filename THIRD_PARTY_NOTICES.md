@@ -8,6 +8,7 @@ Original Sonariel code is covered by the Sonariel Source Available License 1.0 i
 | --- | --- |
 | Tauri | MIT or Apache-2.0 · https://github.com/tauri-apps/tauri |
 | React | MIT · https://github.com/facebook/react |
+| react-markdown | MIT · https://github.com/remarkjs/react-markdown; safe release-note rendering without raw HTML plugins |
 | Base UI / Floating UI | MIT · https://github.com/mui/base-ui and https://github.com/floating-ui/floating-ui; unstyled interaction primitives behind Sonariel-owned components |
 | Vite, Vitest | MIT · https://github.com/vitejs/vite and https://github.com/vitest-dev/vitest |
 | Lucide | ISC · https://github.com/lucide-icons/lucide |

@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Format updater release notes as safe Markdown inside the existing dialog, preserving its framing and 170px scroll area. Embedded HTML/media and non-HTTPS links are not rendered. The renderer loads only when notes are shown.
+
 ## 0.3.0
 
 - Shared persistent queue for music, Chatterbox Multilingual V3 voice and native DSP.

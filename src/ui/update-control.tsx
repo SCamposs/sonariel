@@ -1,9 +1,11 @@
-import { useRef, useState } from "react";
+import { lazy, Suspense, useRef, useState } from "react";
 import { Dialog } from "@base-ui/react/dialog";
 import { ArrowDownToLine, Loader2, RefreshCw, X } from "lucide-react";
 import { APP_VERSION, useUpdates } from "../updates";
 import { SelectControl } from "./select-control";
 import "./update-control.css";
+
+const ReleaseNotes = lazy(() => import("./release-notes").then((module) => ({ default: module.ReleaseNotes })));
 
 export function UpdateControl({ workflowBusy }: { workflowBusy: boolean }) {
   const update = useUpdates();
@@ -99,7 +101,9 @@ export function UpdateControl({ workflowBusy }: { workflowBusy: boolean }) {
                   {update.available?.notes && (
                     <div className="update-notes">
                       <h3>O que mudou</h3>
-                      <p>{update.available.notes}</p>
+                      <Suspense fallback={<p>Carregando notas…</p>}>
+                        <ReleaseNotes notes={update.available.notes} />
+                      </Suspense>
                     </div>
                   )}
                   {update.installing ? (
