@@ -186,6 +186,8 @@ export function App() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const refreshInFlight = useRef(0);
   const [query, setQuery] = useState("");
   const [favorites, setFavorites] = useState(false);
   const [activeId, setActiveId] = useState<string>();
@@ -219,11 +221,16 @@ export function App() {
   const audio = useRef<HTMLAudioElement>(null);
 
   const refresh = async () => {
+    refreshInFlight.current += 1;
+    setRefreshing(true);
     try {
       const state = await rpc<Snapshot>("snapshot");
       setData(state);
     } catch (e) {
       setError(String(e));
+    } finally {
+      refreshInFlight.current -= 1;
+      setRefreshing(refreshInFlight.current > 0);
     }
   };
   useEffect(() => {
@@ -446,9 +453,12 @@ export function App() {
               <button
                 className="icon-button"
                 title="Atualizar estado"
+                aria-label="Atualizar estado"
+                aria-busy={refreshing}
+                disabled={refreshing}
                 onClick={() => void refresh()}
               >
-                <RefreshCw size={17} />
+                <RefreshCw size={17} className={refreshing ? "spin" : undefined} />
               </button>
               {page === "projects" && (
                 <button

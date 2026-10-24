@@ -281,12 +281,19 @@ pre {
 .nav-item {
   position: relative;
   justify-content: flex-start;
+  text-align: left;
   background: none;
   border: 1px solid transparent;
   color: var(--muted);
   padding: 12px 10px;
   font-size: 14px;
   gap: 12px;
+}
+.nav-item > svg {
+  flex-shrink: 0;
+}
+.nav-item > span {
+  min-width: 0;
 }
 .nav-item.active {
   background: oklch(0.25 0.025 80);

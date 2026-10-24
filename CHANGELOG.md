@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Keep wrapped sidebar labels left-aligned with fixed-width navigation icons.
+- Animate the shared workspace refresh control while its request is pending, disable duplicate clicks and reset its state on success or failure. Existing reduced-motion preferences are preserved.
+
 ## 0.3.1
 
 - Format updater release notes as safe Markdown inside the existing dialog, preserving its framing and 170px scroll area. Embedded HTML/media and non-HTTPS links are not rendered. The renderer loads only when notes are shown.
