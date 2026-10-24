@@ -27,6 +27,8 @@ class Store:
             (self.home / name).mkdir(exist_ok=True)
         self.path = self.home / "sonariel.sqlite3"
         with self.connect() as db:
+            if db.execute("PRAGMA user_version").fetchone()[0] > 2:
+                raise ValueError("Banco criado por versão mais nova do Sonariel; não será alterado")
             db.executescript('''
                 PRAGMA journal_mode=WAL;
                 CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY, value TEXT NOT NULL);
@@ -36,7 +38,14 @@ class Store:
                 CREATE TABLE IF NOT EXISTS jobs(id TEXT PRIMARY KEY,request_key TEXT UNIQUE NOT NULL,project_id TEXT NOT NULL REFERENCES projects(id),session_id TEXT REFERENCES sessions(id),state TEXT NOT NULL,stage TEXT NOT NULL,params TEXT NOT NULL,remote_id TEXT,metrics TEXT NOT NULL DEFAULT '{}',error TEXT,created REAL NOT NULL,started REAL,finished REAL);
                 CREATE TABLE IF NOT EXISTS events(id INTEGER PRIMARY KEY AUTOINCREMENT,time REAL NOT NULL,kind TEXT NOT NULL,message TEXT NOT NULL,job_id TEXT);
                 CREATE TABLE IF NOT EXISTS edits(id TEXT PRIMARY KEY,asset_id TEXT NOT NULL REFERENCES assets(id),project_path TEXT NOT NULL,created REAL NOT NULL);
-                PRAGMA user_version=1;
+            ''')
+            version = db.execute("PRAGMA user_version").fetchone()[0]
+            if version > 2:
+                raise ValueError("Banco criado por versão mais nova do Sonariel; não será alterado")
+            db.executescript('''
+                CREATE TABLE IF NOT EXISTS fx_presets(id TEXT PRIMARY KEY,project_id TEXT REFERENCES projects(id),name TEXT NOT NULL,recipe TEXT NOT NULL,created REAL NOT NULL);
+                CREATE TABLE IF NOT EXISTS voice_profiles(id TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(id),name TEXT NOT NULL,language TEXT NOT NULL,reference_id TEXT REFERENCES assets(id),consent INTEGER NOT NULL,created REAL NOT NULL);
+                PRAGMA user_version=2;
             ''')
 
     def connect(self) -> sqlite3.Connection:
@@ -49,7 +58,7 @@ class Store:
         with self.connect() as db:
             rows = [dict(row) for row in db.execute(sql, args)]
         for row in rows:
-            for key in ("params", "metadata", "metrics"):
+            for key in ("params", "metadata", "metrics", "recipe"):
                 if key in row:
                     row[key] = json.loads(row[key])
         return rows

@@ -1,0 +1,3 @@
+# Preserve upstream vendored formatting; do not rewrite third-party source just
+# to remove whitespace present in the pinned revisions. App-owned code remains checked.
+native/fx/vendor/** whitespace=-blank-at-eol

@@ -28,3 +28,17 @@ Original Sonariel code is covered by the Sonariel Source Available License 1.0 i
 The Windows installer bundles the lightweight application core and libraries, not the ACE-Step models or Audacity. The setup downloads external components from their official sources after authorization. Their archives and notices are retained outside Git. Musical references and generated studies are user content and are never distributed with source or installer.
 
 Visual references guide composition and material tone only. No game logos, characters or proprietary fonts are packaged.
+## Native audio processing
+
+The optional native FX executable uses FunDSP 0.23.0 (MIT OR Apache-2.0),
+Hound 3.5.1 (Apache-2.0), ebur128 0.1.10 (MIT), Signalsmith Stretch 1.3.2
+and Signalsmith Linear (MIT), plus the dependencies pinned in
+`native/fx/Cargo.lock`. Original Signalsmith copyright/license texts accompany
+the vendored headers. Distribution builds collect the resolved crate notices,
+including Unicode license terms, into `licenses/native-fx`.
+
+Chatterbox and official PerTh run in a separately installed environment and
+are not bundled as Python modules or model weights in the desktop installer.
+Their source/model notices and the terms of their Python/native dependencies
+must remain with that environment. Installing an optional engine does not
+change the Sonariel license or grant rights over reference recordings.

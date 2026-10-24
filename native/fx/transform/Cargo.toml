@@ -1,0 +1,16 @@
+[package]
+name = "sonariel-transform"
+version = "0.2.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+sonariel-dsp-core = { path = "../dsp-core" }
+anyhow = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+hound = "=3.5.1"
+ebur128 = "=0.1.10"
+
+[build-dependencies]
+cc = "1"

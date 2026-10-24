@@ -47,4 +47,12 @@ for package in cargo["package"]:
         name = package["name"] + "-" + package["version"]
         for source in registry.glob("*/" + name):
             copy_notices(source, output / "cargo" / name)
+native_lock = tomllib.loads((root / "native/fx/Cargo.lock").read_text(encoding="utf-8"))
+for package in native_lock["package"]:
+    if package.get("source", "").startswith("registry+"):
+        name = package["name"] + "-" + package["version"]
+        for source in registry.glob("*/" + name):
+            copy_notices(source, output / "native-fx" / name)
+for component in ("signalsmith-stretch", "signalsmith-linear"):
+    copy_notices(root / "native/fx/vendor" / component, output / "native-fx" / component)
 print("License texts collected")

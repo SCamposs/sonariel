@@ -17,6 +17,8 @@ from .engine import Engine, inspect_wav
 from .environment import discover, graphics, inspect_environment, recipe, sha256, telemetry
 from .setup import Setup
 from .store import Store, identifier
+from .local_engine import LocalRunner, VOICE_ID, FX_ID
+from .studio import Studio, studio_methods
 
 
 def local_audio(value: str) -> Path:
@@ -28,12 +30,13 @@ def local_audio(value: str) -> Path:
     return path.resolve(strict=True)
 
 
-class Service:
+class Service(Studio):
     def __init__(self, store: Store | None = None, start_worker: bool = True):
         self.store = store or Store()
         self.engine = Engine(self.store)
         self.audacity = audacity.Audacity(self.store)
         self.setup = Setup(self.store)
+        self.local = LocalRunner(self.store)
         self.active = False
         self.stopping = threading.Event()
         self.setup_thread: threading.Thread | None = None
@@ -79,7 +82,7 @@ class Service:
     def prepare_update(self):
         """Private desktop lifecycle operation, deliberately absent from MCP tools."""
         with self.mutation_lock:
-            if self.active or self.store.rows("SELECT id FROM jobs WHERE state IN ('queued','loading','submitted','generating') OR (state='interrupted' AND remote_id IS NOT NULL)"):
+            if self.active or self.local.owned() or self.store.rows("SELECT id FROM jobs WHERE state IN ('queued','loading','submitted','generating') OR (state='interrupted' AND remote_id IS NOT NULL)"):
                 raise ValueError("Conclua a fila e resolva tarefas interrompidas antes de atualizar.")
             if self.setup_thread and self.setup_thread.is_alive():
                 raise ValueError("Aguarde a instalação do ambiente antes de atualizar.")
@@ -93,7 +96,7 @@ class Service:
 
     def rpc_snapshot(self):
         projects = self.rpc_projects_list()
-        return {"projects": projects, "sessions": self.store.rows("SELECT * FROM sessions ORDER BY created DESC"), "jobs": self.rpc_queue_list(), "assets": self.rpc_results_list(), "events": self.store.rows("SELECT * FROM events ORDER BY id DESC LIMIT 80"), "selected_project": self.store.setting("selected_project"), "environment": self.store.setting("environment"), "engine": {"state": self.engine.status, "managed": bool(self.engine.owned_process()), "rss_gib": round(self.engine.rss(), 3), "load_seconds": self.engine.last_load_seconds}, "telemetry": telemetry(), "audacity": audacity.status(), "setup": self.store.setting("setup_status"), "codex": self.store.setting("codex", {"configured": False, "tested": False}), "preferences": self.store.setting("preferences", {"idle_minutes": 5}), "data_home": str(self.store.home), "edits": self.store.rows("SELECT * FROM edits ORDER BY created DESC")}
+        return {"projects": projects, "sessions": self.store.rows("SELECT * FROM sessions ORDER BY created DESC"), "jobs": self.rpc_queue_list(), "assets": self.rpc_results_list(), "events": self.store.rows("SELECT * FROM events ORDER BY id DESC LIMIT 80"), "selected_project": self.store.setting("selected_project"), "environment": self.store.setting("environment"), "engine": {"state": self.engine.status, "managed": bool(self.engine.owned_process()), "rss_gib": round(self.engine.rss(), 3), "load_seconds": self.engine.last_load_seconds}, "telemetry": telemetry(), "audacity": audacity.status(), "setup": self.store.setting("setup_status"), "codex": self.store.setting("codex", {"configured": False, "tested": False}), "preferences": self.store.setting("preferences", {"idle_minutes": 5}), "data_home": str(self.store.home), "edits": self.store.rows("SELECT * FROM edits ORDER BY created DESC"), "engines": self.rpc_engines_list(), "voice_environment": self.store.setting("voice_environment")}
 
     def rpc_environment_status(self):
         return {"environment": self.store.setting("environment"), "hardware": {**telemetry(), "graphics": graphics()}, "detected": discover(), "recipe": recipe(), "supported_modes": ["text2music", "cover"], "other_modes": "Not enabled by this adapter; never substituted", "active_inference_cancel_supported": False, "gpu_acceleration_supported": False}
@@ -114,7 +117,7 @@ class Service:
         return result
 
     def rpc_projects_list(self):
-        return self.store.rows("SELECT p.*,(SELECT count(*) FROM assets a WHERE a.project_id=p.id AND a.kind!='reference') AS result_count FROM projects p ORDER BY created DESC")
+        return self.store.rows("SELECT p.*,(SELECT count(*) FROM assets a WHERE a.project_id=p.id AND a.kind NOT IN ('reference','preview')) AS result_count FROM projects p ORDER BY created DESC")
 
     def rpc_project_create(self, name: str, context: str = ""):
         key = identifier()
@@ -172,6 +175,8 @@ class Service:
 
     def rpc_result_feedback(self, asset_id: str, favorite: bool, selected: bool, notes: str):
         asset = self.store.asset(asset_id)
+        if selected and asset["kind"] == "preview":
+            raise ValueError("Renderize a versão completa antes de escolhê-la como resultado preferido")
         with self.store.connect() as db:
             if selected:
                 db.execute("UPDATE assets SET selected=0 WHERE project_id=?", (asset["project_id"],))
@@ -232,7 +237,7 @@ class Service:
         return self.store.job(job_id)
 
     def rpc_engine_stop(self):
-        if self.active or self.store.rows("SELECT id FROM jobs WHERE state IN ('loading','generating','submitted') OR (state='interrupted' AND remote_id IS NOT NULL)"):
+        if self.active or self.local.owned() or self.store.rows("SELECT id FROM jobs WHERE state IN ('loading','generating','submitted') OR (state='interrupted' AND remote_id IS NOT NULL)"):
             raise ValueError("Inferência ativa. Este perfil não oferece interrupção segura.")
         return self.engine.stop()
 
@@ -256,7 +261,7 @@ class Service:
         return self.setup.plan(destination)
 
     def rpc_setup_install(self, destination: str, authorized: bool, model_cache: str = "", audacity_path: str = ""):
-        if self.active or (self.setup_thread and self.setup_thread.is_alive()):
+        if self.active or self.local.owned() or (self.setup_thread and self.setup_thread.is_alive()):
             raise ValueError("Outra operação pesada está ativa")
         if not authorized:
             raise ValueError("Instalação requer autorização")
@@ -324,6 +329,10 @@ class Service:
         while not self.stopping.wait(1):
             if self.setup_thread and self.setup_thread.is_alive():
                 continue
+            if self.local.owned():
+                # After a core crash the orphan may still be running. Never
+                # start another model or silently repeat its interrupted job.
+                continue
             if self.store.rows("SELECT id FROM jobs WHERE state='interrupted' AND remote_id IS NOT NULL"):
                 # An unreachable remote task may still be active. Never stop its
                 # process or submit more work until an explicit recovery.
@@ -335,6 +344,14 @@ class Service:
                     self.engine.stop()
                 continue
             job = jobs[0]
+            if job["params"].get("_engine") in {VOICE_ID, FX_ID}:
+                self.work_local(job)
+                continue
+            owner = self.engine.owned_process()
+            ignored = {p.pid for p in [owner, *owner.children(recursive=True)]} if owner else set()
+            if self.external_heavy_process(ignored):
+                self.store.execute("UPDATE jobs SET stage='Aguardando motor externo descarregar' WHERE id=?",(job["id"],))
+                continue
             metrics = {"peak_rss_gib": 0, "minimum_available_gib": psutil.virtual_memory().available / 2**30}
             def sample():
                 metrics["peak_rss_gib"] = max(metrics["peak_rss_gib"], self.engine.rss())
@@ -392,6 +409,70 @@ class Service:
                 self.engine.last_used = time.monotonic()
                 self.engine.status = "ready" if self.engine.owned_process() else "stopped"
 
+    def work_local(self, job):
+        params = job["params"]
+        metrics = {"peak_rss_gib":0,"minimum_available_gib":psutil.virtual_memory().available/2**30}
+        def sample(rss):
+            metrics["peak_rss_gib"] = max(metrics["peak_rss_gib"],rss)
+            metrics["minimum_available_gib"] = min(metrics["minimum_available_gib"],psutil.virtual_memory().available/2**30)
+            self.store.execute("UPDATE jobs SET metrics=? WHERE id=?",(json.dumps(metrics),job["id"]))
+        with self.mutation_lock:
+            if self.stopping.is_set() or self.store.job(job["id"])["state"] != "queued":
+                return
+            if self.engine.owned_process():
+                self.engine.stop()
+            if self.external_heavy_process():
+                self.store.execute("UPDATE jobs SET stage='Aguardando motor externo descarregar' WHERE id=?",(job["id"],))
+                return
+            threshold = 7.5 if params["_engine"] == VOICE_ID else 3.
+            if metrics["minimum_available_gib"] < threshold:
+                self.store.execute("UPDATE jobs SET stage=? WHERE id=?",(f"Aguardando {threshold} GiB de RAM livre",job["id"]))
+                return
+            self.active = True
+            self.store.execute("UPDATE jobs SET state='generating',stage=?,started=? WHERE id=?",
+                ("V3 CPU: carregar e sintetizar" if params["_engine"]==VOICE_ID else "DSP nativo: renderizar WAV",time.time(),job["id"]))
+        try:
+            if params.get("_parent_id"):
+                self.verified_source(params["_parent_id"])
+            if params.get("reference_path") and sha256(Path(params["reference_path"])) != params["reference_sha256"]:
+                raise ValueError("Referência vocal modificada após enfileiramento")
+            output, receipt, measured = self.local.run(job,sample)
+            if params.get("_parent_id"):
+                self.verified_source(params["_parent_id"])
+            metadata = inspect_wav(output)
+            if params["_engine"]==FX_ID and metadata["peak"]>=1:
+                raise ValueError("Render DSP excedeu headroom; original preservado")
+            metadata.update(sha256=sha256(output),parameters=params,render_receipt=receipt)
+            metrics.update(measured)
+            if "inference_seconds" in receipt:
+                metrics.update(load_seconds=receipt["load_seconds"],inference_seconds=receipt["inference_seconds"],imports_seconds=receipt["imports_seconds"])
+            key = identifier()
+            kind = "voice" if params["_engine"]==VOICE_ID else ("preview" if params["preview"] else "processed")
+            name = "Voz · " + str(params["seed"]) if kind=="voice" else ("Prévia · " if kind=="preview" else "FX · ") + params["recipe"]["name"]
+            with self.store.connect() as db:
+                db.execute("INSERT INTO assets(id,project_id,session_id,job_id,path,name,kind,metadata,parent_id,created) VALUES(?,?,?,?,?,?,?,?,?,?)",
+                    (key,job["project_id"],job["session_id"],job["id"],str(output),name,kind,json.dumps(metadata),params.get("_parent_id"),time.time()))
+                db.execute("UPDATE jobs SET state='completed',stage='WAV local validado',metrics=?,finished=? WHERE id=?",(json.dumps(metrics),time.time(),job["id"]))
+            self.store.event("completed","Resultado local preservado",job["id"])
+        except Exception as error:
+            self.store.execute("UPDATE jobs SET state='interrupted',stage='Verificação necessária',error=?,finished=? WHERE id=?",(str(error),time.time(),job["id"]))
+            self.store.event("error",str(error),job["id"])
+        finally:
+            self.active = False
+
+    @staticmethod
+    def external_heavy_process(ignored=None):
+        for process in psutil.process_iter(["pid","name","cmdline"]):
+            try:
+                if process.pid == os.getpid() or process.pid in (ignored or set()) or "python" not in (process.info["name"] or "").lower():
+                    continue
+                command = " ".join(process.info["cmdline"] or []).lower()
+                if any(marker in command for marker in ("acestep.api_server","voice_worker.py","continuation_generate.py","generate_voice.py")):
+                    return True
+            except psutil.Error:
+                continue
+        return False
+
 
 def schema(properties=None, required=None):
     return {"type": "object", "properties": properties or {}, "required": required or [], "additionalProperties": False}
@@ -435,3 +516,4 @@ METHODS = {
     "codex_register": tool("Registrar servidor stdio e skill com backup da configuração Codex, preservando outros servidores.", {"executable": {"type": "string"}}),
     "mcp_heartbeat": tool("Registrar handshake efetivamente concluído.", {"client": S, "protocol": S}, ["client", "protocol"]),
 }
+METHODS.update(studio_methods(tool,S,ID,B))

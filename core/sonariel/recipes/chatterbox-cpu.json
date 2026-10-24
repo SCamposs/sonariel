@@ -1,0 +1,25 @@
+{
+  "id": "chatterbox-v3-cpu-1",
+  "python": "3.11.15",
+  "torch": "2.6.0+cpu",
+  "torchaudio": "2.6.0+cpu",
+  "checkpoint_revision": "5bb1f6ee58e50c3b8d408bc82a6d3740c2db6e18",
+  "sources": {
+    "chatterbox": {
+      "commit": "5de7a54aa4e5e2baadb0182dde554908b48b85c2",
+      "url": "https://codeload.github.com/resemble-ai/chatterbox/zip/5de7a54aa4e5e2baadb0182dde554908b48b85c2",
+      "sha256": "bb7363a76c0c0432a0305681fe2e533bbfb0f10fcf7b98d75a439d9a909f1576"
+    },
+    "perth": {
+      "commit": "ff1c8ac55a976971245cdd53c18d6131ca00d993",
+      "url": "https://codeload.github.com/resemble-ai/Perth/zip/ff1c8ac55a976971245cdd53c18d6131ca00d993",
+      "sha256": "de43869691c365a936c6ac4995b56d1311f21209d2020c7f43a337fa7f8fd4bc"
+    }
+  },
+  "license": "MIT; Python wheel dependency terms apply",
+  "minimum_available_ram_gib": 7.5,
+  "minimum_disk_gib": 14,
+  "headless_omissions": ["gradio", "spacy-pkuseg", "pykakasi"],
+  "language_paths_tested": ["sw", "pt"],
+  "note": "Language declaration is not pronunciation validation. Chinese/Japanese optional preprocessing is not installed by this headless recipe. No downloads on inference. Official watermark stays enabled."
+}
