@@ -185,17 +185,14 @@ export function MusicEngines({
             />{" "}
             Li e aceito Stability Community e os termos Gemma para este uso.
           </label>
-          <label>
-            Nova pasta dedicada fora do Git
-            <input
+          <PathField label="Nova pasta dedicada fora do Git" kind="directory" disabled={busy}
               value={destination}
-              onChange={(e) => {
-                setDestination(e.target.value);
+              onChange={(value) => {
+                setDestination(value);
                 setPlan(undefined);
                 setAuthorized(false);
               }}
             />
-          </label>
           <button
             className="outline"
             disabled={busy || !destination}
@@ -245,28 +242,12 @@ export function MusicEngines({
           )}
           <details className="fx-layer">
             <summary>Ou vincular instalação existente, sem reinstalar</summary>
-            <label>
-              Python isolado
-              <input
-                value={python}
-                onChange={(e) => setPython(e.target.value)}
-                placeholder="Caminho absoluto para Scripts/python.exe"
-              />
-            </label>
-            <label>
-              Fonte oficial fixada
-              <input
-                value={source}
-                onChange={(e) => setSource(e.target.value)}
-              />
-            </label>
-            <label>
-              Pasta dos modelos
-              <input
-                value={models}
-                onChange={(e) => setModels(e.target.value)}
-              />
-            </label>
+            <PathField label="Python isolado" kind="executable" disabled={busy}
+              value={python} onChange={setPython} placeholder="Caminho absoluto para Scripts/python.exe" />
+            <PathField label="Fonte oficial fixada" kind="directory" disabled={busy}
+              value={source} onChange={setSource} />
+            <PathField label="Pasta dos modelos" kind="directory" disabled={busy}
+              value={models} onChange={setModels} />
             <button
               className="outline"
               disabled={busy || !accepted || !python || !source || !models}
@@ -804,14 +785,8 @@ export function FxStudio({
               label: a.name,
             }))}
           />
-          <label>
-            Destino do novo WAV
-            <input
-              placeholder="Caminho absoluto de um arquivo novo"
-              value={exportPath}
-              onChange={(e) => setExportPath(e.target.value)}
-            />
-          </label>
+          <PathField label="Destino do novo WAV" kind="wav-save" disabled={busy}
+            placeholder="Caminho absoluto de um arquivo novo" value={exportPath} onChange={setExportPath} />
           <button
             className="outline"
             disabled={busy || !exportAsset || !exportPath}
@@ -1063,13 +1038,8 @@ export function FxStudio({
           </div>
           <details className="fx-layer">
             <summary>Importar / compartilhar preset JSON</summary>
-            <label>
-              Caminho JSON local
-              <input
-                value={filePath}
-                onChange={(e) => setFilePath(e.target.value)}
-              />
-            </label>
+            <PathField label="Caminho JSON local" kind="preset" disabled={busy}
+              value={filePath} onChange={setFilePath} />
             <div className="studio-toolbar">
               <button
                 className="outline"
@@ -1210,21 +1180,10 @@ export function VoiceStudio({
           </p>
           <details className="fx-layer" open={!engine?.installed}>
             <summary>Vincular ambiente isolado existente</summary>
-            <label>
-              Python do ambiente
-              <input
-                value={python}
-                onChange={(e) => setPython(e.target.value)}
-                placeholder="Caminho absoluto para Scripts/python.exe"
-              />
-            </label>
-            <label>
-              Pasta dos checkpoints
-              <input
-                value={models}
-                onChange={(e) => setModels(e.target.value)}
-              />
-            </label>
+            <PathField label="Python do ambiente" kind="executable" disabled={busy}
+              value={python} onChange={setPython} placeholder="Caminho absoluto para Scripts/python.exe" />
+            <PathField label="Pasta dos checkpoints" kind="directory" disabled={busy}
+              value={models} onChange={setModels} />
             <button
               className="outline"
               disabled={busy || !python || !models}
@@ -1241,24 +1200,16 @@ export function VoiceStudio({
           </details>
           <details className="fx-layer">
             <summary>Instalar V3 CPU em pasta dedicada</summary>
-            <label>
-              Nova pasta fora de repositórios
-              <input
+            <PathField label="Nova pasta fora de repositórios" kind="directory" disabled={busy}
                 value={destination}
-                onChange={(e) => {
-                  setDestination(e.target.value);
+                onChange={(value) => {
+                  setDestination(value);
                   setPlan(undefined);
                   setInstallAuthorized(false);
                 }}
               />
-            </label>
-            <label>
-              Cache local de checkpoints (opcional)
-              <input
-                value={models}
-                onChange={(e) => setModels(e.target.value)}
-              />
-            </label>
+            <PathField label="Cache local de checkpoints (opcional)" kind="directory" disabled={busy}
+              value={models} onChange={setModels} />
             <button
               className="outline"
               disabled={busy || !destination}
@@ -1398,14 +1349,8 @@ export function VoiceStudio({
                   />
                 </label>
               </div>
-              <label>
-                Referência vocal própria/autorizada (opcional)
-                <input
-                  value={reference}
-                  onChange={(e) => setReference(e.target.value)}
-                  placeholder="Caminho local do áudio"
-                />
-              </label>
+              <PathField label="Referência vocal própria/autorizada (opcional)" kind="audio" disabled={busy}
+                value={reference} onChange={setReference} placeholder="Caminho local do áudio" />
               <label className="check">
                 <input
                   type="checkbox"
@@ -1492,3 +1437,4 @@ export function VoiceStudio({
     </div>
   );
 }
+import { PathField } from "./ui/path-field";

@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Native Windows file/folder selection next to editable path fields across library, environment, voice and FX. Presets offer separate open/save dialogs; cancellation preserves values and export still refuses overwriting existing files.
 - Keep wrapped sidebar labels left-aligned with fixed-width navigation icons.
 - Animate the shared workspace refresh control while its request is pending, disable duplicate clicks and reset its state on success or failure. Existing reduced-motion preferences are preserved.
 

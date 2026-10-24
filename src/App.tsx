@@ -4,6 +4,7 @@ import { SelectControl } from "./ui/select-control";
 import { SidePanel } from "./ui/side-panel";
 import { WorkflowGuide } from "./ui/workflow-guide";
 import { UpdateControl } from "./ui/update-control";
+import { PathField } from "./ui/path-field";
 import { FxStudio, VoiceStudio, MusicEngines } from "./studio";
 import {
   Activity,
@@ -1027,14 +1028,8 @@ export function App() {
                             onChange={(e) => setRegisterName(e.target.value)}
                           />
                         </label>
-                        <label className="full">
-                          Caminho local absoluto
-                          <input
-                            required
-                            value={registerPath}
-                            onChange={(e) => setRegisterPath(e.target.value)}
-                          />
-                        </label>
+                        <PathField className="full" label="Caminho local absoluto" kind="audio"
+                          required value={registerPath} onChange={setRegisterPath} disabled={busy} />
                         <button className="primary" disabled={busy || !project}>
                           Registrar arquivo
                         </button>
@@ -1271,30 +1266,12 @@ export function App() {
                             <ChevronRight size={14} />
                           </button>
                         ))}
-                        <label>
-                          Pasta do ambiente
-                          <input
-                            required
-                            value={root}
-                            placeholder={
-                              data.environment?.root ??
-                              "Pasta com .venv e ACE-Step-1.5"
-                            }
-                            onChange={(e) => setRoot(e.target.value)}
-                          />
-                        </label>
-                        <label>
-                          Executável do Audacity
-                          <input
-                            required
-                            value={audacityPath}
-                            placeholder={
-                              data.environment?.audacity ??
-                              "Caminho completo para Audacity.exe"
-                            }
-                            onChange={(e) => setAudacityPath(e.target.value)}
-                          />
-                        </label>
+                        <PathField label="Pasta do ambiente" kind="directory" required
+                          value={root} onChange={setRoot} disabled={busy}
+                          placeholder={data.environment?.root ?? "Pasta com .venv e ACE-Step-1.5"} />
+                        <PathField label="Executável do Audacity" kind="executable" required
+                          value={audacityPath} onChange={setAudacityPath} disabled={busy}
+                          placeholder={data.environment?.audacity ?? "Caminho completo para Audacity.exe"} />
                         <button className="primary" disabled={busy}>
                           Inspecionar e vincular
                         </button>
@@ -1310,14 +1287,9 @@ export function App() {
                           Audacity portátil. Downloads verificados, instalação
                           retomável.
                         </p>
-                        <label>
-                          Destino da instalação
-                          <input
-                            value={destination}
-                            placeholder={`${data.data_home}\\engine`}
-                            onChange={(e) => setDestination(e.target.value)}
-                          />
-                        </label>
+                        <PathField label="Destino da instalação" kind="directory"
+                          value={destination} onChange={setDestination} disabled={busy}
+                          placeholder={`${data.data_home}\\engine`} />
                         <button
                           className="outline"
                           disabled={busy}
@@ -1584,14 +1556,9 @@ export function App() {
                           identificados. Exportações são registradas como
                           versões relacionadas.
                         </p>
-                        <label>
-                          Executável do Audacity (independente dos motores)
-                          <input
-                            value={audacityPath}
-                            onChange={(e) => setAudacityPath(e.target.value)}
-                            placeholder="Caminho absoluto para Audacity.exe"
-                          />
-                        </label>
+                        <PathField label="Executável do Audacity (independente dos motores)" kind="executable"
+                          value={audacityPath} onChange={setAudacityPath} disabled={busy}
+                          placeholder="Caminho absoluto para Audacity.exe" />
                         <button
                           className="outline"
                           disabled={busy || !audacityPath}

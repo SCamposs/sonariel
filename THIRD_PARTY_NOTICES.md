@@ -12,6 +12,7 @@ Original Sonariel code is covered by the Sonariel Source Available License 1.0 i
 | Base UI / Floating UI | MIT · https://github.com/mui/base-ui and https://github.com/floating-ui/floating-ui; unstyled interaction primitives behind Sonariel-owned components |
 | Vite, Vitest | MIT · https://github.com/vitejs/vite and https://github.com/vitest-dev/vitest |
 | Lucide | ISC · https://github.com/lucide-icons/lucide |
+| Tauri dialog plugin / rfd | Apache-2.0 OR MIT / MIT · https://github.com/tauri-apps/plugins-workspace and https://github.com/PolyMeilex/rfd; native file and folder selection |
 | Barlow, Urbanist, JetBrains Mono | SIL Open Font License 1.1; license texts ship in their Fontsource packages |
 | Python | Python Software Foundation License · https://www.python.org/psf/license/ |
 | PyInstaller | GPL-2.0-or-later with bootloader exception · https://pyinstaller.org/en/stable/license.html |
