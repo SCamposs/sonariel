@@ -9,22 +9,118 @@ import time
 from pathlib import Path
 
 from .environment import HIDDEN, sha256
-from .local_engine import FX_ID, VOICE_ID, LANGUAGES, catalog
+from .local_engine import FX_ID, VOICE_ID, STABLE_IDS, LANGUAGES, catalog
 from .setup import resource
 from .store import identifier
 
 
-def validate_fx(value):
+def validate_fx(value, sample_rate=None):
     import jsonschema
     jsonschema.validate(value, FX_RECIPE)
     if len(json.dumps(value, allow_nan=False)) > 200000:
         raise ValueError("Preset excede limite de tamanho")
+    if "layers" in value:
+        if value["reverse_swell_ms"] > value["lead_ms"]:
+            raise ValueError("Swell reverso não pode ultrapassar o pre-roll")
+        chains=[value["master"],*[layer["chain"] for layer in value["layers"]]]
+        if any(chain["output_channels"] != 2 for chain in chains):
+            raise ValueError("Cadeias em camadas exigem saída estéreo")
+        if any(layer["chain"]["tail_seconds"] > 6 for layer in value["layers"]):
+            raise ValueError("Cauda individual de camada deve ser de até seis segundos")
+    else:
+        chains=[value]
+    for chain in chains:
+        for stage in chain["chain"]:
+            effect=stage["effect"]
+            if sample_rate and effect["type"] in {"bell","lowpass","highpass"} and effect["hz"] > sample_rate*.45:
+                raise ValueError("Frequência do filtro excede 45% do sample rate da fonte")
+            if effect["type"]=="chorus" and effect["variation_ms"]>=effect["separation_ms"]:
+                raise ValueError("Variação do chorus deve ser menor que a separação")
     return value
 
 
 class Studio:
     def rpc_engines_list(self):
         return catalog(self.store)
+
+    def rpc_audacity_configure(self, executable: str):
+        path = Path(executable).resolve(strict=True)
+        if not path.is_file() or path.name.lower() != "audacity.exe":
+            raise ValueError("Selecione o executável local Audacity.exe")
+        if str(path).startswith("\\\\"):
+            raise ValueError("Use uma instalação local do Audacity")
+        self.store.set("audacity_executable", str(path))
+        return dict(executable=str(path), configured=True, tested=False)
+
+    def rpc_stable_setup_plan(self, destination: str, family: str):
+        from .stable_setup import StableSetup
+        return StableSetup(self.store).plan(destination, family)
+
+    def rpc_stable_setup_install(self, destination: str, family: str, authorized: bool,
+                                 accepted_licenses: bool, model_cache: str = ""):
+        from .stable_setup import StableSetup
+        if not authorized or not accepted_licenses:
+            raise ValueError("Autorize a instalação e aceite Stability Community e Gemma explicitamente")
+        if self.active or self.local.owned() or (self.setup_thread and self.setup_thread.is_alive()):
+            raise ValueError("Aguarde a operação ativa")
+        if self.engine.owned_process() or self.external_heavy_process():
+            raise ValueError("Descarregue os motores antes de instalar outro ambiente")
+        setup = StableSetup(self.store)
+        plan = setup.plan(destination, family)
+        self.store.set("setup_status", dict(state="running", stage="Preparar LiteRT isolado", engine="stable-litert"))
+        def install():
+            try:
+                linked = setup.install(destination, family, authorized, accepted_licenses, model_cache)
+                self.rpc_stable_environment_link(**linked)
+                self.store.set("setup_status", dict(state="completed", stage="LiteRT CPU instalado e vinculado", destination=plan["destination"], engine="stable-litert"))
+            except Exception as error:
+                self.store.set("setup_status", dict(state="error", stage=str(error), engine="stable-litert", destination=plan["destination"], retryable=True))
+                self.store.event("setup_error", str(error))
+        self.setup_thread = threading.Thread(target=install, daemon=True)
+        self.setup_thread.start()
+        return dict(state="running", destination=plan["destination"])
+
+    def rpc_stable_environment_link(self, python_path: str, source: str, models: str,
+                                    families: list[str], accepted_licenses: bool):
+        from .stable_setup import VERSIONS, verify_source, selected_files
+        if not accepted_licenses:
+            raise ValueError("Aceite explícito de Stability Community e Gemma necessário")
+        if self.active or self.local.owned():
+            raise ValueError("Aguarde a fila antes de trocar o ambiente LiteRT")
+        python = Path(python_path).resolve(strict=True)
+        source_root, models_root = Path(source).resolve(strict=True), Path(models).resolve(strict=True)
+        if python.name.lower() != "python.exe" or not source_root.is_dir() or not models_root.is_dir():
+            raise ValueError("Selecione Python, fonte e modelos do ambiente isolado")
+        code = "import sys,json,importlib.metadata as m; print(json.dumps({'python':list(sys.version_info[:3]),'packages':{k:m.version(k) for k in " + repr(list(VERSIONS)) + "}}))"
+        result = subprocess.run([str(python), "-c", code], capture_output=True, text=True, timeout=30, **HIDDEN)
+        if result.returncode:
+            raise ValueError("Ambiente LiteRT incompleto")
+        versions = json.loads(result.stdout)
+        if versions["python"] != [3,11,15] or versions["packages"] != VERSIONS:
+            raise ValueError("Versões fora da receita LiteRT CPU validada")
+        manifest = json.loads(resource("stable-models.json").read_text(encoding="utf-8"))
+        verify_source(source_root, manifest)
+        for file in selected_files(manifest, families):
+            path = models_root / file["path"]
+            if not path.is_file() or path.stat().st_size != file["bytes"] or sha256(path) != file["sha256"]:
+                raise ValueError("Checkpoint LiteRT ausente ou diferente: " + file["path"])
+        config = dict(python=str(python), source=str(source_root), models=str(models_root),
+            families=families, versions=versions, accepted_licenses=True, acceptance_time=time.time(), model_revision=manifest["revision"])
+        self.store.set("stable_environment", config)
+        self.store.event("environment", "LiteRT CPU vinculado por versões e hashes; aceite de licenças registrado localmente")
+        return config
+
+    def rpc_music_generate(self, engine_id: str, project_id: str, request_key: str, prompt: str,
+                            seed: int, duration: float, steps: int = 8, batch_size: int = 1,
+                            session_id: str | None = None):
+        if engine_id not in STABLE_IDS:
+            raise ValueError("Este contrato aceita apenas Stable Audio LiteRT; Turbo mantém generate")
+        environment = self.store.setting("stable_environment", {})
+        if not environment.get("accepted_licenses") or STABLE_IDS[engine_id] not in environment.get("families", []):
+            raise ValueError("Configure e aceite as licenças do motor escolhido antes de gerar")
+        params = dict(_engine=engine_id, prompt=prompt, seed=seed, duration=duration, steps=steps, batch_size=batch_size,
+                      mode="text2audio", cfg=1., apg=1., backend="litert-cpu")
+        return self.enqueue_local(project_id, request_key, params, session_id)
 
     def rpc_voice_setup_plan(self, destination: str):
         from .voice_setup import VoiceSetup
@@ -174,8 +270,8 @@ class Studio:
         return dict(path=str(output))
 
     def rpc_fx_render(self, asset_id: str, request_key: str, recipe: dict, preview: bool = False):
-        validate_fx(recipe)
         asset=self.verified_source(asset_id)
+        validate_fx(recipe,asset["metadata"]["sample_rate"])
         if Path(asset["path"]).suffix.lower() != ".wav":
             raise ValueError("FX nativo aceita WAV; converta outros formatos explicitamente")
         params=dict(_engine=FX_ID,source_path=asset["path"],source_sha256=asset["metadata"]["sha256"],
@@ -233,6 +329,11 @@ def studio_methods(tool, S, ID, B):
         repetition_penalty=number(1,2),min_p=number(0,1),top_p=number(.01,1)),[])
     return {
         "engines_list":tool("Consultar categorias, instalação e capacidades reais, sem carregar modelos."),
+        "audacity_configure":tool("Selecionar Audacity local independentemente dos motores; não altera módulos ou preferências.",dict(executable=S),["executable"]),
+        "stable_setup_plan":tool("Receita LiteRT CPU e termos Stability/Gemma antes de instalar.",dict(destination=S,family=dict(enum=["sm-music","medium"])),["destination","family"]),
+        "stable_setup_install":tool("Instalar LiteRT isolado após autorização e aceite explícito das duas licenças. Não registra uso comercial.",dict(destination=S,family=dict(enum=["sm-music","medium"]),authorized=B,accepted_licenses=B,model_cache=dict(type="string")),["destination","family","authorized","accepted_licenses"]),
+        "stable_environment_link":tool("Vincular LiteRT CPU por hashes/versões após aceite explícito das duas licenças.",dict(python_path=S,source=S,models=S,families=dict(type="array",items=dict(enum=["sm-music","medium"]),minItems=1,maxItems=2,uniqueItems=True),accepted_licenses=B),["python_path","source","models","families","accepted_licenses"]),
+        "music_generate":tool("Enfileirar Stable Audio LiteRT text2audio; batch 1, CFG/APG 1, sem BPM/tonalidade garantidos. Turbo usa generate.",dict(engine_id=dict(enum=list(STABLE_IDS)),project_id=ID,request_key=S,prompt=dict(type="string",minLength=1,maxLength=4000),seed=dict(type="integer",minimum=0,maximum=4294967295),duration=number(5,60),steps=dict(type="integer",enum=[4,8,16]),batch_size=dict(const=1),session_id=ID),["engine_id","project_id","request_key","prompt","seed","duration"]),
         "voice_setup_plan":tool("Receita V3 CPU isolada: componentes, versões, licenças e destino.",dict(destination=S),["destination"]),
         "voice_setup_install":tool("Instalar V3 CPU isolado após autorização; retorna sem bloquear. Cache local é copiado e verificado.",dict(destination=S,authorized=B,model_cache=dict(type="string")),["destination","authorized"]),
         "voice_environment_link":tool("Vincular ambiente V3 CPU por versões e hashes, sem alterá-lo.",dict(python_path=S,models=S),["python_path","models"]),

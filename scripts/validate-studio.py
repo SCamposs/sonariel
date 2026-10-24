@@ -29,6 +29,7 @@ def main():
     ap=argparse.ArgumentParser()
     ap.add_argument('--home',type=Path,required=True)
     ap.add_argument('--fixtures',type=Path)
+    ap.add_argument('--wav',type=Path,help='Independent WAV to test native gain/fade and export without AI')
     ap.add_argument('--voice-python')
     ap.add_argument('--voice-models')
     ap.add_argument('--voice-text')
@@ -66,6 +67,18 @@ def main():
             assert sha256(Path(output['path']))==sha256(expected),'Golden WAV differs byte-for-byte'
             assert sha256(source)==before
             report.append(dict(kind='fx-golden',expected_sha256=sha256(expected),job=result))
+        if args.wav:
+            before=sha256(args.wav)
+            asset=service.invoke('result_import',dict(project_id=project,path=str(args.wav),name='Independent music source'))
+            recipe=dict(name='Gain and fades',schema_version=1,output_channels=2,tail_seconds=0,bypass=False,
+                chain=[dict(wet=1,effect=dict(type='gain',db=-3)),dict(wet=1,effect=dict(type='fade',in_ms=100,out_ms=300))])
+            job=service.invoke('fx_render',dict(asset_id=asset['id'],request_key='independent-fx',recipe=recipe))
+            result=wait(service,job['job_id'])
+            output=result['results'][0]
+            exported=service.invoke('result_export',dict(asset_id=output['id'],destination=str(args.home/'exported.wav')))
+            assert sha256(args.wav)==before and exported['sha256']==output['metadata']['sha256']
+            assert output['metadata']['peak']<1 and output['parent_id']==asset['id']
+            report.append(dict(kind='independent-fx',job=result,export=exported,source_unchanged=True))
         if args.voice_text:
             if not all([args.voice_python,args.voice_models,args.language]):ap.error('Voice requires explicit environment and language')
             service.invoke('voice_environment_link',dict(python_path=args.voice_python,models=args.voice_models))

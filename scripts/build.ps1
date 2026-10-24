@@ -6,7 +6,10 @@ Push-Location $root
 try {
     & cargo build --release --locked --manifest-path native/fx/Cargo.toml
     if ($LASTEXITCODE -ne 0) { throw 'Native DSP build failed' }
-    & '.\.venv\Scripts\python.exe' -m PyInstaller --noconfirm --clean --onedir --name sonariel-core --paths core --collect-data sonariel --add-binary 'native/fx/target/release/sonariel-fx.exe;sonariel/bin' --distpath build/runtime --workpath build/pyinstaller --specpath build core/entry.py
+    $nativeFx = Join-Path $root 'native/fx/target/release/sonariel-fx.exe'
+    $voiceWorker = Join-Path $root 'core/sonariel/recipes/voice_worker.py'
+    $stableWorker = Join-Path $root 'core/sonariel/recipes/stable_worker.py'
+    & '.\.venv\Scripts\python.exe' -m PyInstaller --noconfirm --clean --onedir --name sonariel-core --paths core --collect-data sonariel --add-data "$voiceWorker;sonariel/recipes" --add-data "$stableWorker;sonariel/recipes" --add-binary "$nativeFx;sonariel/bin" --distpath build/runtime --workpath build/pyinstaller --specpath build core/entry.py
     if ($LASTEXITCODE -ne 0) { throw 'Core bundle failed' }
     & '.\.venv\Scripts\python.exe' scripts/collect-notices.py
     if ($LASTEXITCODE -ne 0) { throw 'License collection failed' }

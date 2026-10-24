@@ -17,7 +17,7 @@ from .engine import Engine, inspect_wav
 from .environment import discover, graphics, inspect_environment, recipe, sha256, telemetry
 from .setup import Setup
 from .store import Store, identifier
-from .local_engine import LocalRunner, VOICE_ID, FX_ID
+from .local_engine import LocalRunner, LOCAL_ADAPTERS, VOICE_ID, FX_ID
 from .studio import Studio, studio_methods
 
 
@@ -291,7 +291,10 @@ class Service(Studio):
         skill_file = skill_folder / "SKILL.md"
         skill_text = resource("sonariel-skill.md").read_text(encoding="utf-8")
         if skill_file.exists() and skill_file.read_text(encoding="utf-8") != skill_text:
-            raise ValueError("Já existe uma skill sonariel diferente. Arquivo preservado; revise antes de substituir.")
+            import hashlib
+            previous = hashlib.sha256(skill_file.read_text(encoding="utf-8").encode()).hexdigest()
+            if previous != "df441ccddd7d0c54a3d0fcb4e46ab61592559c4c462c02b479a3b47f11a2635d":
+                raise ValueError("Já existe uma skill sonariel diferente. Arquivo preservado; revise antes de substituir.")
         args = ["mcp"] if executable or getattr(sys, "frozen", False) else ["-m", "sonariel", "mcp"]
         root = Path(os.environ.get("CODEX_HOME", str(Path.home() / ".codex")))
         config = root / "config.toml"
@@ -315,6 +318,8 @@ class Service(Studio):
             temp.write_text(text + section, encoding="utf-8")
             temp.replace(config)
         skill_folder.mkdir(parents=True, exist_ok=True)
+        if skill_file.exists() and skill_file.read_text(encoding="utf-8") != skill_text:
+            shutil.copy2(skill_file, self.store.home / "backups" / ("sonariel-skill-" + str(time.time_ns()) + ".md"))
         skill_file.write_text(skill_text, encoding="utf-8")
         result = {"configured": True, "tested": False, "client_reload_required": True, "skill_installed": True}
         self.store.set("codex", result)
@@ -344,7 +349,7 @@ class Service(Studio):
                     self.engine.stop()
                 continue
             job = jobs[0]
-            if job["params"].get("_engine") in {VOICE_ID, FX_ID}:
+            if job["params"].get("_engine") in LOCAL_ADAPTERS:
                 self.work_local(job)
                 continue
             owner = self.engine.owned_process()
@@ -411,6 +416,7 @@ class Service(Studio):
 
     def work_local(self, job):
         params = job["params"]
+        adapter = LOCAL_ADAPTERS[params["_engine"]]
         metrics = {"peak_rss_gib":0,"minimum_available_gib":psutil.virtual_memory().available/2**30}
         def sample(rss):
             metrics["peak_rss_gib"] = max(metrics["peak_rss_gib"],rss)
@@ -424,13 +430,13 @@ class Service(Studio):
             if self.external_heavy_process():
                 self.store.execute("UPDATE jobs SET stage='Aguardando motor externo descarregar' WHERE id=?",(job["id"],))
                 return
-            threshold = 7.5 if params["_engine"] == VOICE_ID else 3.
+            threshold = adapter.minimum_available_gib
             if metrics["minimum_available_gib"] < threshold:
                 self.store.execute("UPDATE jobs SET stage=? WHERE id=?",(f"Aguardando {threshold} GiB de RAM livre",job["id"]))
                 return
             self.active = True
             self.store.execute("UPDATE jobs SET state='generating',stage=?,started=? WHERE id=?",
-                ("V3 CPU: carregar e sintetizar" if params["_engine"]==VOICE_ID else "DSP nativo: renderizar WAV",time.time(),job["id"]))
+                (adapter.stage,time.time(),job["id"]))
         try:
             if params.get("_parent_id"):
                 self.verified_source(params["_parent_id"])
@@ -445,15 +451,16 @@ class Service(Studio):
             metadata.update(sha256=sha256(output),parameters=params,render_receipt=receipt)
             metrics.update(measured)
             if "inference_seconds" in receipt:
-                metrics.update(load_seconds=receipt["load_seconds"],inference_seconds=receipt["inference_seconds"],imports_seconds=receipt["imports_seconds"])
+                metrics.update(load_seconds=receipt["load_seconds"],inference_seconds=receipt["inference_seconds"],imports_seconds=receipt.get("imports_seconds",0))
             key = identifier()
-            kind = "voice" if params["_engine"]==VOICE_ID else ("preview" if params["preview"] else "processed")
-            name = "Voz · " + str(params["seed"]) if kind=="voice" else ("Prévia · " if kind=="preview" else "FX · ") + params["recipe"]["name"]
+            kind = {"voice":"voice","music":"generated","fx":"preview" if params.get("preview") else "processed"}[adapter.category]
+            name = (("Voz · " if kind=="voice" else "Geração · ") + str(params["seed"])) if kind in {"voice","generated"} else ("Prévia · " if kind=="preview" else "FX · ") + params["recipe"]["name"]
             with self.store.connect() as db:
                 db.execute("INSERT INTO assets(id,project_id,session_id,job_id,path,name,kind,metadata,parent_id,created) VALUES(?,?,?,?,?,?,?,?,?,?)",
                     (key,job["project_id"],job["session_id"],job["id"],str(output),name,kind,json.dumps(metadata),params.get("_parent_id"),time.time()))
                 db.execute("UPDATE jobs SET state='completed',stage='WAV local validado',metrics=?,finished=? WHERE id=?",(json.dumps(metrics),time.time(),job["id"]))
             self.store.event("completed","Resultado local preservado",job["id"])
+            self.store.set("engine_validation:"+params["_engine"],dict(time=time.time(),job_id=job["id"],sha256=metadata["sha256"]))
         except Exception as error:
             self.store.execute("UPDATE jobs SET state='interrupted',stage='Verificação necessária',error=?,finished=? WHERE id=?",(str(error),time.time(),job["id"]))
             self.store.event("error",str(error),job["id"])
@@ -467,7 +474,7 @@ class Service(Studio):
                 if process.pid == os.getpid() or process.pid in (ignored or set()) or "python" not in (process.info["name"] or "").lower():
                     continue
                 command = " ".join(process.info["cmdline"] or []).lower()
-                if any(marker in command for marker in ("acestep.api_server","voice_worker.py","continuation_generate.py","generate_voice.py")):
+                if any(marker in command for marker in ("acestep.api_server","voice_worker.py","stable_worker.py","generate_stable.py","continuation_generate.py","generate_voice.py")):
                     return True
             except psutil.Error:
                 continue

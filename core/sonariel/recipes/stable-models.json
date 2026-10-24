@@ -1,0 +1,182 @@
+{
+  "repo": "stabilityai/stable-audio-3-optimized",
+  "revision": "08b17423649b5714b22eab20f96bf00751f2358a",
+  "code_commit": "77e0398c26f7d22d801ec1bb036307e8b231f741",
+  "files": [
+    {
+      "path": "tflite/sa3-sm-music/dit_w8a8.tflite",
+      "sha256": "1d8ef99bf10f51cc52b68f7b527d3773828e700758b253edd8a8e088a906e241",
+      "bytes": 539350360
+    },
+    {
+      "path": "tflite/sa3-m/dit_w8a8.tflite",
+      "sha256": "e60ea3a8b530de93ee7f1fd7b4426597006dbcde7bce45750d39c439f4ef9602",
+      "bytes": 1667708664
+    },
+    {
+      "path": "tflite/same-s/enc_w8a8.tflite",
+      "sha256": "d9f70cbd21f4daab94a9b6f2499cf9315253e93e152a18225f2b4960d9780a70",
+      "bytes": 64024104
+    },
+    {
+      "path": "tflite/same-s/dec_w8a8.tflite",
+      "sha256": "90cad5ef81e6b18eb205012aee03bc53ed59e1c17033b79a84a4612674b1e03a",
+      "bytes": 89329616
+    },
+    {
+      "path": "tflite/t5gemma/encoder_fp16.tflite",
+      "sha256": "8530d0b3e6b9b9dcf1239145c2a853fb749708eaddbb472ff8f0802b50059372",
+      "bytes": 563818608
+    }
+  ],
+  "source_files": [
+    {
+      "path": "optimized/tflite/build/build_paths.py",
+      "sha256": "5efcac6efb816c4b680fe8be7650b8030329a916ede91af87eb1dc47678402d3"
+    },
+    {
+      "path": "optimized/tflite/build/tfl_surgery.py",
+      "sha256": "05305cf439b2f8d6154fc8cd4d306642738e2da569214e826ada436896ac44fa"
+    },
+    {
+      "path": "optimized/tflite/build/verify_final.py",
+      "sha256": "2e779fb94295b9299328dc52a98e080ea775fb053cf496e58a013f3db1ef5e0f"
+    },
+    {
+      "path": "optimized/tflite/build/export/export_dit.py",
+      "sha256": "a1c7e12746a534114602a48eda4d39ac379c9dd609daeaab443a88e7f890e2cf"
+    },
+    {
+      "path": "optimized/tflite/build/export/export_enc_windowed.py",
+      "sha256": "7f2653560c8dd66112a7b92659d18a586f20b25449292d5c43d390bbbed74557"
+    },
+    {
+      "path": "optimized/tflite/build/export/export_same_s_fixed.py",
+      "sha256": "2b67d29a339f8d15fe9721364e049856a25dbb30f1cfc1bb61e328d8aea75d6a"
+    },
+    {
+      "path": "optimized/tflite/build/export/export_windowed_param.py",
+      "sha256": "e0103a2b54fa196c17d2a2c3e902c452903cffc937dbfb5c3fa926e3beeb2579"
+    },
+    {
+      "path": "optimized/tflite/build/extract/extract_same_l_decoder_weights.py",
+      "sha256": "9c886a9d9c153b89cf55fc0c403ab83f6d6c7bf2171c1a60a626346073f85128"
+    },
+    {
+      "path": "optimized/tflite/build/extract/extract_same_l_encoder_weights.py",
+      "sha256": "59a537bd8c24c47b078e697fa9613fa295e0f6afa4beb4a6b8f1aa015c08f3f6"
+    },
+    {
+      "path": "optimized/tflite/build/extract/extract_same_s_decoder_weights.py",
+      "sha256": "ed8de0d3c7219421a160fbd76444dfd687a4658c0cb7b07bcab8350f58801eaf"
+    },
+    {
+      "path": "optimized/tflite/build/extract/extract_same_s_encoder_weights.py",
+      "sha256": "f595f5557a2162e31452ec523d8bb946e64216aa6a14af871884b081b2d07658"
+    },
+    {
+      "path": "optimized/tflite/build/quant_merge/merge_rungs_generic.py",
+      "sha256": "449e20200a436503950e0a6850339f7dbb9409199c3634702962f33c4345ac8c"
+    },
+    {
+      "path": "optimized/tflite/build/quant_merge/quant_one.py",
+      "sha256": "ff96622ada544925e181cf6fa60a5ed537a5b25806082f5c0e62189be923dd47"
+    },
+    {
+      "path": "optimized/tflite/build/torch_defs/limiter.py",
+      "sha256": "52659fba64944be7bea52edf025fbd628d94e1630757f10797fc710f2c58996a"
+    },
+    {
+      "path": "optimized/tflite/build/torch_defs/same_l_decoder_torch.py",
+      "sha256": "f929cabc57137ff0f141280413296002355df8810004f2d65b698e8b8e61f9c4"
+    },
+    {
+      "path": "optimized/tflite/build/torch_defs/same_l_encoder_torch.py",
+      "sha256": "a5103af23083d825185f2e49a433d05a6210a4f0f2cd9d85f5d25b148aa5d9ee"
+    },
+    {
+      "path": "optimized/tflite/build/torch_defs/same_s_decoder_torch.py",
+      "sha256": "9545597acefe52abef15cccaa8d964feffccd207af371887e15c191892bb42f9"
+    },
+    {
+      "path": "optimized/tflite/build/torch_defs/same_s_encoder_torch.py",
+      "sha256": "b21d8ccbfe50ba83d119ca2c640f64a01217e21b6f067de72b01a8ba4caae727"
+    },
+    {
+      "path": "optimized/tflite/build/torch_defs/windowed_decoder.py",
+      "sha256": "3257219ac18e4e38631e4ba66c4dec51d5ca5a76af11224cbb9d51e0bf446f42"
+    },
+    {
+      "path": "optimized/tflite/models/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "optimized/tflite/models/tokenizer.model",
+      "sha256": "61a7b147390c64585d6c3543dd6fc636906c9af3865a5548f27f31aee1d4c8e2"
+    },
+    {
+      "path": "optimized/tflite/models/defs/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "optimized/tflite/models/defs/tflite_pipeline.py",
+      "sha256": "229f34424d8ace818e416a8a3e50b92b859a074af44f4d5ed29eddc845b30e64"
+    },
+    {
+      "path": "optimized/tflite/scripts/examples.py",
+      "sha256": "9a8d376357b3fcf5c79c38f43bbf5e565999f09c8b08bccd4b7d3a2979b6479d"
+    },
+    {
+      "path": "optimized/tflite/scripts/install.py",
+      "sha256": "86a2421ed034d4aa21e16e291741ae5cabd200fb84512f0706c7b94604c40fad"
+    },
+    {
+      "path": "optimized/tflite/scripts/lora_core.py",
+      "sha256": "7c27fbb6231517cd16c87cb07ba9ae3f1cbc6838e47093a840894380bcb88104"
+    },
+    {
+      "path": "optimized/tflite/scripts/lora_patch.py",
+      "sha256": "e302943921a7fa84681a96df68e4930ecd62477018c029aee03e1f7698ab688c"
+    },
+    {
+      "path": "optimized/tflite/scripts/rung_decoder.py",
+      "sha256": "c2e82c53e3189e0fc3a1f948c19d84b5016e90e9eddac6e27c9e2daa20c612e7"
+    },
+    {
+      "path": "optimized/tflite/scripts/rung_dit.py",
+      "sha256": "229531d9a6298094427def0aa2715814c0324ba0bde819cd77f7f8797168f061"
+    },
+    {
+      "path": "optimized/tflite/scripts/rung_encoder.py",
+      "sha256": "cbfa3ca9693f67fa3216f5d8143db82e7b963d54eeac0e99b2ebfb1d8570419a"
+    },
+    {
+      "path": "optimized/tflite/scripts/sa3_gradio.py",
+      "sha256": "ce7dcde67e1092a1ae1db0a270a4d3258169e6099cd2cf7e4d904bcd909434c8"
+    },
+    {
+      "path": "optimized/tflite/scripts/sa3_tflite.py",
+      "sha256": "6e7a993346d17740d6a43c9d9a061b0bc30ad37eed4a191e5fe16fdcdeb8b0e7"
+    },
+    {
+      "path": "optimized/tflite/scripts/spec.py",
+      "sha256": "3e85ee7850a4e3861733823c1c712a123550c48c1cbd47cbb0e0baea2f31b42d"
+    },
+    {
+      "path": "optimized/tflite/scripts/test_lora_patch.py",
+      "sha256": "f36de7afd8a19f7b48db5f1f5526c4b729d6dff294d7ed9ce7d5bb965204ac40"
+    },
+    {
+      "path": "optimized/tflite/scripts/test_windows_compat.py",
+      "sha256": "fc21b66730650ea476f26e61688e17aeaeff8ea293a9c5a3ffcc83a6820b7495"
+    },
+    {
+      "path": "optimized/tflite/scripts/weights.py",
+      "sha256": "24c783e2fc06aa34285120ad98eebd9ccb2ecce9f39ca776ca55eb028c772e33"
+    }
+  ],
+  "source_archive": {
+    "url": "https://codeload.github.com/Stability-AI/stable-audio-3/zip/77e0398c26f7d22d801ec1bb036307e8b231f741",
+    "sha256": "04e85c047a1f85c3f66976768b1dd02e0774823944c6f1b2229c29e95cba71fe"
+  }
+}

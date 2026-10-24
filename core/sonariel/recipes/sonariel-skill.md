@@ -1,11 +1,11 @@
 ---
 name: sonariel
-description: Manage local music projects, ACE-Step generation jobs and safe Audacity handoffs through Sonariel MCP. Use for Sonariel audio work; creative conversation stays in Codex.
+description: Manage local music and voice generation, non-destructive native FX, projects and safe Audacity handoffs through Sonariel MCP. Creative conversation stays in Codex.
 ---
 
 # Sonariel workflow
 
-1. Query `sonariel_environment_status` and `sonariel_projects_list`. Read the selected project's saved musical context. Save only context explicitly requested by the user, not the chat transcript.
+1. Query `sonariel_engines_list` and `sonariel_projects_list`. Read the selected project's saved context. Save only context explicitly requested by the user, not the chat transcript. Installed, tested locally and artistically approved are separate states. Turbo remains the default music engine; alternatives require an explicit choice.
 2. Register existing local audio with `sonariel_reference_register`. `reference_id` controls style. `source_id` provides source content for an explicitly selected `cover` task. Do not silently substitute these modes.
 3. Call `sonariel_generate` with a stable request_key, explicit duration (10–120 s), BPM, key_scale, time_signature and seed. CPU requires batch_size=1, Turbo, DiT-only. Planning/LM/Flash Attention remain disabled. A cover's duration must match its source. The installed revision ignores cover strength in text2music, so that mode requires strength 1.
 4. The call returns job_id promptly. Use `sonariel_job_get` or `sonariel_queue_list` to follow it. If a call times out, reuse the same request_key; do not create a duplicate job. Report stage and elapsed time, not invented percent or ETA. Waiting on memory is an expected queue state.
@@ -14,3 +14,17 @@ description: Manage local music projects, ACE-Step generation jobs and safe Auda
 7. Use `sonariel_engine_stop` to unload an idle managed model. Queue cancellation only works before submission; active inference interruption is unsupported.
 
 The engine and audio stay local. Codex's model runtime is separate. Inspect actual capabilities before promising GPU support. Setup and existing-environment linking are distinct operations; do not reinstall a working environment.
+
+## Voice
+
+Use `sonariel_voice_profiles_list` and optional `sonariel_voice_profile_save`; voice references require explicit authorization. Call `sonariel_voice_generate` with exact requested text, explicit supported language and seed, optional profile and supported expressivity parameters. It returns a shared-queue job_id. Do not autocorrect invented spelling, append content, or fix a universal language. Model-inherent normalization/pronunciation is not guaranteed by tokenizer acceptance. Identity across utterances is not proven. Preserve the official watermark.
+
+## Native FX
+
+Use `sonariel_fx_presets_list` then `sonariel_fx_render` with a validated recipe and stable request_key. FX accepts any registered WAV, does not load TTS/PyTorch and preserves the source. `preview=true` renders at most ten seconds of source plus configured tails; it is not a final candidate. Persist user choices with `sonariel_result_feedback`, inspect lineage and parameters with job_get/results_list, and copy a final WAV with `sonariel_result_export` (new destination only). Presets may be global or private to a project. Do not publish project data as generic defaults. Do not replace a validated chain with a similarly named approximation.
+
+## Alternative music / setup
+
+`sonariel_music_generate` handles configured Stable Audio 3 LiteRT text2audio explicitly; it is not the Turbo contract. Supply engine_id, prompt, seed and duration (5–60 seconds), batch_size=1, steps 4/8/16 (8 tested). CFG/APG remain 1. Do not promise exact BPM/key or silently route cover/reference requests through text2audio. SFT is listed as pending validation, not a working adapter.
+
+Voice and LiteRT have independent setup_plan/install and environment_link tools. Inspect the plan first and obtain authorization before installation. Stable Audio requires explicit user acceptance of both Stability Community and Gemma terms before download/link; never infer acceptance or commercial registration. Do not override memory gates, kill unrelated processes or load multiple heavy engines. Existing assets remain usable while generation waits for RAM.

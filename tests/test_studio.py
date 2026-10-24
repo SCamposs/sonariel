@@ -132,3 +132,80 @@ def test_owned_local_crash_process_blocks_update_and_stop(service,monkeypatch):
     monkeypatch.setattr(service.local,'owned',lambda: object())
     with pytest.raises(ValueError,match='Conclua a fila'):service.prepare_update()
     with pytest.raises(ValueError,match='Inferência ativa'):service.invoke('engine_stop')
+
+
+def test_stable_requires_explicit_terms_before_any_install_or_link(service,tmp_path):
+    from sonariel.stable_setup import StableSetup
+    destination=tmp_path/'no-download'
+    with pytest.raises(ValueError,match='aceite'):
+        StableSetup(service.store).install(str(destination),'sm-music',True,False)
+    assert not destination.exists()
+    with pytest.raises(ValueError,match='Aceite'):
+        service.invoke('stable_environment_link',dict(python_path='missing',source='missing',models='missing',families=['medium'],accepted_licenses=False))
+    assert not service.store.setting('stable_environment')
+
+
+def test_audacity_can_be_configured_without_a_music_engine(service,tmp_path):
+    exe=tmp_path/'Audacity.exe';exe.write_bytes(b'fixture')
+    value=service.invoke('audacity_configure',dict(executable=str(exe)))
+    assert value['configured'] and not value['tested']
+    assert service.store.setting('audacity_executable')==str(exe)
+    assert service.store.setting('environment') is None
+    with pytest.raises(ValueError):service.invoke('audacity_configure',dict(executable=str(tmp_path)))
+
+
+def test_local_recovery_never_resubmits_uncertain_inference(service):
+    project=service.invoke('project_create',dict(name='Recovery study'))['project_id']
+    args=dict(project_id=project,request_key='recover-voice',text='Olá.',language='pt',seed=1)
+    job=service.invoke('voice_generate',args)
+    service.store.execute("UPDATE jobs SET state='generating' WHERE id=?",(job['job_id'],))
+    service.recover()
+    assert service.store.job(job['job_id'])['state']=='interrupted'
+    assert service.invoke('voice_generate',args)['already_submitted']
+    assert len(service.invoke('queue_list'))==1
+
+
+def test_turbo_gate_remains_unchanged_and_sft_is_not_advertised_as_operational(service):
+    from sonariel.environment import recipe
+    assert recipe()['minimum_available_ram_gib']==16
+    sft=next(e for e in service.invoke('engines_list') if e['id']=='acestep-v15-sft')
+    assert not sft['compatible'] and not sft['installed'] and sft['blocked_reason']
+
+
+def test_stable_uses_shared_queue_separate_contract_and_idempotency(service):
+    project=service.invoke('project_create',dict(name='Music study'))['project_id']
+    args=dict(engine_id='stable-audio-3-small-music',project_id=project,request_key='music-1',prompt='Quiet piano.',seed=1,duration=10)
+    with pytest.raises(ValueError,match='licenças'):
+        service.invoke('music_generate',args)
+    service.store.set('stable_environment',dict(accepted_licenses=True,families=['sm-music']))
+    first=service.invoke('music_generate',args)
+    assert service.invoke('music_generate',args)['already_submitted']
+    job=service.store.job(first['job_id'])
+    assert job['params']['steps']==8 and job['params']['batch_size']==1
+    assert job['params']['cfg']==1 and 'bpm' not in job['params']
+    with pytest.raises(Exception):service.invoke('music_generate',dict(args,bpm=72))
+    with pytest.raises(Exception):service.invoke('music_generate',dict(args,batch_size=2))
+    with pytest.raises(ValueError,match='licenças'):
+        service.invoke('music_generate',dict(args,engine_id='stable-audio-3-medium'))
+
+
+def test_stable_source_allows_crlf_but_rejects_changed_code(tmp_path):
+    import hashlib
+    from sonariel.stable_setup import verify_source, selected_files
+    file=tmp_path/'runtime.py';file.write_bytes(b'print(1)\r\n')
+    spec=dict(source_files=[dict(path='runtime.py',sha256=hashlib.sha256(b'print(1)\n').hexdigest())])
+    verify_source(tmp_path,spec)
+    file.write_bytes(b'print(2)\n')
+    with pytest.raises(ValueError,match='diferente'):verify_source(tmp_path,spec)
+    manifest=json.loads((Path(__file__).parents[1]/'core/sonariel/recipes/stable-models.json').read_text())
+    files=selected_files(manifest,['sm-music'])
+    assert len(files)==3 and not any('sa3-m/' in f['path'] for f in files)
+
+
+def test_preview_cannot_be_selected_as_final_and_invalid_fx_rejected(service,tmp_path):
+    _,asset=imported(service,tmp_path)
+    service.store.execute("UPDATE assets SET kind='preview' WHERE id=?",(asset['id'],))
+    with pytest.raises(ValueError,match='Renderize'):service.invoke('result_feedback',dict(asset_id=asset['id'],selected=True,favorite=False,notes=''))
+    recipe=chain();recipe['chain']=[dict(wet=1,effect=dict(type='lowpass',hz=16000,q=.7))]
+    with pytest.raises(ValueError,match='sample rate'):
+        service.invoke('fx_render',dict(asset_id=asset['id'],request_key='nyquist',recipe=recipe))

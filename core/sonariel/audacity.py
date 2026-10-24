@@ -105,7 +105,7 @@ class Audacity:
         title = "sonariel-" + edit_id
         config = self.store.setting("environment", {})
         if not status()["running"]:
-            executable = Path(config.get("audacity", ""))
+            executable = Path(self.store.setting("audacity_executable") or config.get("audacity", ""))
             if not executable.is_file() or executable.name.lower() != "audacity.exe":
                 raise ValueError("Configure o executável do Audacity")
             subprocess.Popen([str(executable)])

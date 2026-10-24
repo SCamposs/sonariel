@@ -54,7 +54,7 @@ class VoiceSetup:
         uv=next((root/'tools').rglob('uv.exe'))
         env=os.environ.copy();env.update(UV_PYTHON_INSTALL_DIR=str(root/'python'),UV_CACHE_DIR=str(cache/'uv'))
         stage('Preparar Python 3.11.15 isolado')
-        command([uv,'python','install','3.11.15'],env)
+        command([uv,'python','install','--no-bin','--no-registry','3.11.15'],env)
         python=root/'.venv/Scripts/python.exe'
         if not python.exists():command([uv,'venv','--python','3.11.15',root/'.venv'],env)
         stage('Instalar somente dependências CPU fixadas')

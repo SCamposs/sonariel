@@ -6,6 +6,7 @@ import os
 import subprocess
 import sys
 import time
+from dataclasses import dataclass
 from pathlib import Path
 
 import psutil
@@ -18,6 +19,54 @@ LANGUAGES = dict(ar="Arabic", da="Danish", de="German", el="Greek", en="English"
     pt="Portuguese", ru="Russian", sv="Swedish", sw="Swahili", tr="Turkish", zh="Chinese")
 VOICE_ID = "chatterbox-v3"
 FX_ID = "native-fx"
+STABLE_IDS = {"stable-audio-3-small-music":"sm-music", "stable-audio-3-medium":"medium"}
+
+
+def prepare_fx(store, folder, params, output):
+    preset = folder / "preset.json"
+    preset.write_text(json.dumps(params["recipe"], allow_nan=False), encoding="utf-8")
+    source_path = params["source_path"]
+    if params.get("preview"):
+        import soundfile as sf
+        with sf.SoundFile(source_path) as source:
+            excerpt = source.read(frames=source.samplerate*10, dtype="float32", always_2d=True)
+            preview = folder / "preview-source.wav"
+            sf.write(preview,excerpt,source.samplerate,subtype="FLOAT")
+        source_path = str(preview)
+    return [str(fx_binary()), source_path, str(output), str(preset)]
+
+
+def prepare_worker(store, folder, params, output, setting, worker):
+    config = store.setting(setting)
+    if not config:
+        raise ValueError("Configure o ambiente do motor antes de gerar")
+    request = folder / "request.json"
+    request.write_text(json.dumps(dict(params=params, config=config, models=config.get("models"), output=str(output))), encoding="utf-8")
+    return [config["python"], str(Path(__file__).with_name("recipes") / worker), str(request)]
+
+
+def prepare_voice(store, folder, params, output):
+    return prepare_worker(store,folder,params,output,"voice_environment","voice_worker.py")
+
+
+def prepare_stable(store, folder, params, output):
+    return prepare_worker(store,folder,params,output,"stable_environment","stable_worker.py")
+
+
+@dataclass(frozen=True)
+class LocalAdapter:
+    category: str
+    minimum_available_gib: float
+    maximum_rss_gib: float
+    stage: str
+    prepare: object
+
+
+LOCAL_ADAPTERS = {
+    VOICE_ID: LocalAdapter("voice",7.5,9,"V3 CPU: carregar e sintetizar",prepare_voice),
+    FX_ID: LocalAdapter("fx",3,4,"DSP nativo: renderizar WAV",prepare_fx),
+    **{key:LocalAdapter("music",5 if family=="sm-music" else 6,8,"LiteRT CPU: carregar e gerar",prepare_stable) for key,family in STABLE_IDS.items()},
+}
 
 
 def fx_binary() -> Path:
@@ -27,21 +76,23 @@ def fx_binary() -> Path:
 
 
 def catalog(store) -> list[dict]:
-    def item(key, name, category, license, backend, modes, ready=False, **extra):
+    def item(key, name, category, license, backend, modes, ready=False, experimental=True, **extra):
         return dict(id=key, name=name, category=category, license=license, backend=backend,
-                    modes=modes, installed=ready, compatible=ready, experimental=True, **extra)
+                    modes=modes, installed=ready, compatible=ready, experimental=experimental,
+                    tested=bool(store.setting("engine_validation:"+key)), **extra)
     voice = store.setting("voice_environment")
+    stable = store.setting("stable_environment",{})
     return [
         item("acestep-v15-turbo", "ACE-Step 1.5 Turbo", "music", "MIT", "torch-cpu",
-             ["text2music", "cover"], bool(store.setting("environment")), baseline=True),
+             ["text2music", "cover"], bool(store.setting("environment")), experimental=False, baseline=True),
         item("acestep-v15-sft", "ACE-Step 1.5 SFT", "music", "MIT", "torch-cpu",
              ["text2music", "cover"], blocked_reason="Isolated validation pending"),
         item("stable-audio-3-small-music", "Stable Audio 3 Small-Music", "music",
-             "Stability Community + Gemma terms", "litert-cpu", ["text2audio", "audio2audio", "inpaint"],
-             requires_license_acceptance=True, blocked_reason="License acceptance and isolated validation pending"),
+             "Stability Community + Gemma terms", "litert-cpu", ["text2audio"], "sm-music" in stable.get("families",[]),
+             requires_license_acceptance=True, upstream_modes=["audio2audio","inpaint"], attribution="Powered by Stability AI"),
         item("stable-audio-3-medium", "Stable Audio 3 Medium", "music",
-             "Stability Community + Gemma terms", "litert-cpu", ["text2audio", "audio2audio", "inpaint"],
-             requires_license_acceptance=True, blocked_reason="License acceptance and isolated validation pending"),
+             "Stability Community + Gemma terms", "litert-cpu", ["text2audio"], "medium" in stable.get("families",[]),
+             requires_license_acceptance=True, upstream_modes=["audio2audio","inpaint"], attribution="Powered by Stability AI"),
         item(VOICE_ID, "Chatterbox Multilingual V3", "voice", "MIT; dependency notices apply", "torch-cpu",
              ["text2speech", "authorized_voice_reference"], bool(voice), languages=LANGUAGES,
              language_paths_tested=["sw", "pt"], omitted_optional_preprocessors=["zh", "ja"],
@@ -72,29 +123,11 @@ class LocalRunner:
         folder = self.store.home / "run" / job["id"]
         folder.mkdir(exist_ok=False)
         output = self.store.home / "output" / (job["id"] + ".wav")
-        if params["_engine"] == FX_ID:
-            preset = folder / "preset.json"
-            preset.write_text(json.dumps(params["recipe"], allow_nan=False), encoding="utf-8")
-            source_path = params["source_path"]
-            if params.get("preview"):
-                import soundfile as sf
-                with sf.SoundFile(source_path) as source:
-                    excerpt = source.read(frames=source.samplerate*10, dtype="float32", always_2d=True)
-                    preview = folder / "preview-source.wav"
-                    sf.write(preview,excerpt,source.samplerate,subtype="FLOAT")
-                source_path = str(preview)
-            command = [str(fx_binary()), source_path, str(output), str(preset)]
-            maximum_rss = 4
-        elif params["_engine"] == VOICE_ID:
-            config = self.store.setting("voice_environment")
-            if not config:
-                raise ValueError("Configure o ambiente Chatterbox V3 antes de gerar")
-            request = folder / "request.json"
-            request.write_text(json.dumps(dict(params=params, models=config["models"], output=str(output))), encoding="utf-8")
-            command = [config["python"], str(Path(__file__).with_name("recipes") / "voice_worker.py"), str(request)]
-            maximum_rss = 9
-        else:
+        adapter = LOCAL_ADAPTERS.get(params["_engine"])
+        if not adapter:
             raise ValueError("Adaptador local não reconhecido")
+        command = adapter.prepare(self.store,folder,params,output)
+        maximum_rss = adapter.maximum_rss_gib
         env = os.environ.copy()
         env.update(HF_HUB_OFFLINE="1", HF_HOME=str(self.store.home / "cache/voice"),
                    OMP_NUM_THREADS="6", MKL_NUM_THREADS="6")
@@ -106,12 +139,22 @@ class LocalRunner:
         owned = psutil.Process(process.pid)
         self.store.set("local_process", dict(pid=process.pid, created=owned.create_time(), job_id=job["id"]))
         safety_error = None
+        last_stage = None
         try:
             while process.poll() is None:
                 try:
                     rss = sum(p.memory_info().rss for p in [owned, *owned.children(recursive=True)] if p.is_running()) / 2**30
                     peak = max(peak, rss)
                     sample(rss)
+                    progress = folder / "progress.json"
+                    if progress.is_file():
+                        try:
+                            stage = json.loads(progress.read_text(encoding="utf-8"))["stage"][:200]
+                            if stage != last_stage:
+                                self.store.execute("UPDATE jobs SET stage=? WHERE id=?",(stage,job["id"]))
+                                last_stage = stage
+                        except (OSError,ValueError,KeyError):
+                            pass
                     if psutil.virtual_memory().available < 2.5 * 2**30 or rss > maximum_rss:
                         safety_error = "Limite de segurança de memória atingido; somente o processo deste job foi interrompido"
                         break
