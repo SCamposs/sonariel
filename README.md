@@ -12,7 +12,7 @@ Escolha `Sonariel_<versão>_x64-setup.exe`. Não é necessário instalar Node, R
 
 - Windows x64 e WebView2 (o instalador oferece o componente quando necessário).
 - O padrão musical permanece **CPU, ACE-Step Turbo e DiT-only**. A versão 0.3 acrescenta Stable Audio 3 Small-Music/Medium via LiteRT CPU, Chatterbox Multilingual V3 e DSP nativo independente. SFT está pendente, não é anunciado como motor operacional. Não há aceleração por GPU neste perfil.
-- O **ACE-Step** exige 16 GiB livres para carregar, ou 4 GiB com o motor gerenciado já carregado. Essa proteção não é uma exigência do app inteiro: voz, LiteRT e FX têm limites próprios. A fila executa um pedido por vez, sem carregar modelos ao abrir a interface.
+- O **ACE-Step** exige 12 GiB livres para começar a carregar, ou 4 GiB com o motor gerenciado já carregado. Esse limite não garante memória suficiente até o fim: um teste curto anterior chegou a cerca de 14 GiB no processo e quase esgotou a RAM física disponível. Voz, LiteRT e FX têm limites próprios. A fila executa um pedido por vez, sem carregar modelos ao abrir a interface.
 - Internet é necessária para downloads iniciais e atualizações. A geração é local; o Sonariel não envia áudio e prompts a serviços de geração na nuvem.
 
 O instalador ainda não tem assinatura de editor Windows/Authenticode. A assinatura criptográfica dos pacotes de atualização é uma proteção diferente e não remove avisos do Windows sobre editor desconhecido.

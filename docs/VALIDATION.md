@@ -2,6 +2,11 @@
 
 This file records real execution separately from implementation coverage. No musical references, audio, private logs or machine-specific paths belong in this repository.
 
+## Unreleased: user-requested startup threshold
+
+- ACE-Step cold-start threshold changed from 16 to 12 GiB at the owner's explicit request. Warm start remains 4 GiB; CPU/Turbo/DiT-only, disabled LM/Flash Attention and single-task ownership are unchanged.
+- This is not an optimized lower-memory model or a new memory-safety benchmark. Historical measurements below remain applicable; no extra inference was launched to validate the reduction. Existing queued work can proceed once 12 GiB are available.
+
 ## v0.2 release checks
 
 - Python: 42 tests passed, including update preparation refusing queued/active work, setup and open MCP clients; the private desktop lifecycle operation is not a public MCP tool.

@@ -13,7 +13,7 @@
   "init_llm": false,
   "flash_attention": false,
   "minimum_total_ram_gib": 23,
-  "minimum_available_ram_gib": 16,
+  "minimum_available_ram_gib": 12,
   "minimum_disk_gib": 16,
   "uv": {
     "version": "0.13.5",

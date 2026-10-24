@@ -165,9 +165,9 @@ def test_local_recovery_never_resubmits_uncertain_inference(service):
     assert len(service.invoke('queue_list'))==1
 
 
-def test_turbo_gate_remains_unchanged_and_sft_is_not_advertised_as_operational(service):
+def test_turbo_cold_gate_is_twelve_and_sft_is_not_advertised_as_operational(service):
     from sonariel.environment import recipe
-    assert recipe()['minimum_available_ram_gib']==16
+    assert recipe()['minimum_available_ram_gib']==12
     sft=next(e for e in service.invoke('engines_list') if e['id']=='acestep-v15-sft')
     assert not sft['compatible'] and not sft['installed'] and sft['blocked_reason']
 

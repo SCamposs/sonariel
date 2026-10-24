@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Lower the ACE-Step cold-start gate from 16 to 12 GiB at the owner's explicit request, retaining the 4 GiB warm gate and RAM telemetry. Not a new low-memory inference profile or a guarantee against paging/allocation failure.
 - Native Windows file/folder selection next to editable path fields across library, environment, voice and FX. Presets offer separate open/save dialogs; cancellation preserves values and export still refuses overwriting existing files.
 - Keep wrapped sidebar labels left-aligned with fixed-width navigation icons.
 - Animate the shared workspace refresh control while its request is pending, disable duplicate clicks and reset its state on success or failure. Existing reduced-motion preferences are preserved.
