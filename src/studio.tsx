@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { rpc, type Asset, type Snapshot, formatTime, states } from "./api";
 import { AudioSlider } from "./ui/audio-slider";
+import { PathField } from "./ui/path-field";
 import { SelectControl } from "./ui/select-control";
 import "./studio.css";
 
@@ -1437,4 +1438,3 @@ export function VoiceStudio({
     </div>
   );
 }
-import { PathField } from "./ui/path-field";

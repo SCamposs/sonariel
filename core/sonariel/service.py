@@ -19,6 +19,7 @@ from .setup import Setup
 from .store import Store, identifier
 from .local_engine import LocalRunner, LOCAL_ADAPTERS, VOICE_ID, FX_ID
 from .studio import Studio, studio_methods
+from .storage import Storage, storage_methods
 
 
 def local_audio(value: str) -> Path:
@@ -30,7 +31,7 @@ def local_audio(value: str) -> Path:
     return path.resolve(strict=True)
 
 
-class Service(Studio):
+class Service(Studio, Storage):
     def __init__(self, store: Store | None = None, start_worker: bool = True):
         self.store = store or Store()
         self.engine = Engine(self.store)
@@ -117,7 +118,7 @@ class Service(Studio):
         return result
 
     def rpc_projects_list(self):
-        return self.store.rows("SELECT p.*,(SELECT count(*) FROM assets a WHERE a.project_id=p.id AND a.kind NOT IN ('reference','preview')) AS result_count FROM projects p ORDER BY created DESC")
+        return self.store.rows("SELECT p.*,(SELECT count(*) FROM assets a WHERE a.project_id=p.id AND a.kind NOT IN ('reference','preview') AND a.id NOT IN (SELECT asset_id FROM asset_trash)) AS result_count FROM projects p ORDER BY created DESC")
 
     def rpc_project_create(self, name: str, context: str = ""):
         key = identifier()
@@ -171,7 +172,7 @@ class Service(Studio):
         return self.store.asset(key)
 
     def rpc_results_list(self, project_id: str | None = None):
-        return self.store.rows("SELECT * FROM assets WHERE kind!='reference'" + (" AND project_id=?" if project_id else "") + " ORDER BY created DESC", (project_id,) if project_id else ())
+        return self.store.rows("SELECT * FROM assets WHERE kind!='reference' AND id NOT IN (SELECT asset_id FROM asset_trash)" + (" AND project_id=?" if project_id else "") + " ORDER BY created DESC", (project_id,) if project_id else ())
 
     def rpc_result_feedback(self, asset_id: str, favorite: bool, selected: bool, notes: str):
         asset = self.store.asset(asset_id)
@@ -524,3 +525,4 @@ METHODS = {
     "mcp_heartbeat": tool("Registrar handshake efetivamente concluído.", {"client": S, "protocol": S}, ["client", "protocol"]),
 }
 METHODS.update(studio_methods(tool,S,ID,B))
+METHODS.update(storage_methods(tool,ID,B))

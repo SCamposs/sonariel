@@ -14,3 +14,4 @@ All visual decisions remain in `controls.css` and the existing product styleshee
 
 The DOM contract tests cover selection by keyboard, focus restoration/containment, Escape dismissal, slider values and disabled controls. jsdom platform adapters do not establish real layout or animation correctness; verify those in the installed desktop before a release.
 - `PathField`: editable path with native Tauri open/folder/save dialogs, matching file filters, cancellation preservation and explicit browser-preview fallback. Selection alone never imports, installs or writes a file; core validation and no-overwrite rules remain authoritative.
+- `ConfirmationDialog`: Base UI focus containment, safe initial focus on the cancel button, Escape/close handling and explicit confirmation for recoverable storage discard. It cannot execute a filesystem action itself.

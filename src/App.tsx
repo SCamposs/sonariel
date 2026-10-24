@@ -5,6 +5,7 @@ import { SidePanel } from "./ui/side-panel";
 import { WorkflowGuide } from "./ui/workflow-guide";
 import { UpdateControl } from "./ui/update-control";
 import { PathField } from "./ui/path-field";
+import { StorageWorkspace } from "./storage";
 import { FxStudio, VoiceStudio, MusicEngines } from "./studio";
 import {
   Activity,
@@ -51,6 +52,7 @@ type Page =
   | "library"
   | "voice"
   | "fx"
+  | "storage"
   | "environment"
   | "bridges";
 const pages: {
@@ -88,6 +90,12 @@ const pages: {
     name: "FX & processamento",
     icon: Settings2,
     caption: "Cadeias nativas & render não destrutivo",
+  },
+  {
+    id: "storage",
+    name: "Armazenamento",
+    icon: Disc3,
+    caption: "Inventário & descarte recuperável",
   },
   {
     id: "environment",
@@ -513,6 +521,7 @@ export function App() {
             </div>
           ) : (
             <>
+              {page === "storage" && <StorageWorkspace data={data} act={act} busy={busy} />}
               {page === "voice" && (
                 <VoiceStudio
                   key={data.selected_project}

@@ -47,7 +47,7 @@ def test_existing_database_rows_and_user_version_preserved(tmp_path):
     assert reopened.rows('SELECT * FROM projects')[0]['context']=='Keep this'
     assert reopened.setting('preferences')['idle_minutes']==7
     with reopened.connect() as db:
-        assert db.execute('PRAGMA user_version').fetchone()[0]==2
+        assert db.execute('PRAGMA user_version').fetchone()[0]==3
     store.execute('PRAGMA user_version=999')
     with pytest.raises(ValueError,match='mais nova'):
         Store(store.home)

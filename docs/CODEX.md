@@ -17,6 +17,8 @@ The bundled skill is installed at `~/.agents/skills/sonariel/SKILL.md`. It descr
 
 Recommended sequence: environment_status → projects_list → project_select → reference_register (if needed) → generate → job_get → result_feedback → audacity_import/export after an editing request. Tools are prefixed `sonariel_`. Complete schemas are returned by tools/list; unsupported fields/modes are rejected.
 
+Storage operations: `storage_list` inventories registered files; `storage_preview` produces a content-bound token; `storage_discard` requires that token and explicit confirmation of selected IDs. `storage_restore` recovers an item. Never infer discard approval from a missing favorite flag. External files are not moved/deleted, protected/dependent assets are blocked, and there is no permanent-delete API. See [STORAGE.md](STORAGE.md). Reload the MCP connection after upgrading to receive the expanded tool list.
+
 The UI has no competing creative chat or primary prompt editor. Prompt, model, seed, input roles and parameters remain visible in result details. Only explicitly saved musical context is persisted. Sonariel audio inference is local; the Codex model is a separate service.
 
 ## Stable Audio source input (0.3.1)

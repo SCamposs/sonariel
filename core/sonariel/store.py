@@ -27,8 +27,14 @@ class Store:
             (self.home / name).mkdir(exist_ok=True)
         self.path = self.home / "sonariel.sqlite3"
         with self.connect() as db:
-            if db.execute("PRAGMA user_version").fetchone()[0] > 2:
+            previous_version = db.execute("PRAGMA user_version").fetchone()[0]
+            if previous_version > 3:
                 raise ValueError("Banco criado por versão mais nova do Sonariel; não será alterado")
+            if previous_version in (1, 2):
+                # Consistent SQLite backup includes committed WAL pages, not a live file copy.
+                backup = self.home / 'backups' / f'pre-schema3-{time.time_ns()}.sqlite3'
+                with sqlite3.connect(backup) as target:
+                    db.backup(target)
             db.executescript('''
                 PRAGMA journal_mode=WAL;
                 CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY, value TEXT NOT NULL);
@@ -40,12 +46,13 @@ class Store:
                 CREATE TABLE IF NOT EXISTS edits(id TEXT PRIMARY KEY,asset_id TEXT NOT NULL REFERENCES assets(id),project_path TEXT NOT NULL,created REAL NOT NULL);
             ''')
             version = db.execute("PRAGMA user_version").fetchone()[0]
-            if version > 2:
+            if version > 3:
                 raise ValueError("Banco criado por versão mais nova do Sonariel; não será alterado")
             db.executescript('''
                 CREATE TABLE IF NOT EXISTS fx_presets(id TEXT PRIMARY KEY,project_id TEXT REFERENCES projects(id),name TEXT NOT NULL,recipe TEXT NOT NULL,created REAL NOT NULL);
                 CREATE TABLE IF NOT EXISTS voice_profiles(id TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(id),name TEXT NOT NULL,language TEXT NOT NULL,reference_id TEXT REFERENCES assets(id),consent INTEGER NOT NULL,created REAL NOT NULL);
-                PRAGMA user_version=2;
+                CREATE TABLE IF NOT EXISTS asset_trash(asset_id TEXT PRIMARY KEY REFERENCES assets(id),original_path TEXT NOT NULL,trash_path TEXT,sha256 TEXT NOT NULL,state TEXT NOT NULL,created REAL NOT NULL);
+                PRAGMA user_version=3;
             ''')
 
     def connect(self) -> sqlite3.Connection:
@@ -84,6 +91,8 @@ class Store:
         return rows[0]
 
     def asset(self, asset_id: str) -> dict:
+        if self.rows('SELECT asset_id FROM asset_trash WHERE asset_id=?', (asset_id,)):
+            raise ValueError('Áudio na lixeira; restaure antes de usar')
         rows = self.rows("SELECT * FROM assets WHERE id=?", (asset_id,))
         if not rows:
             raise ValueError("Áudio não encontrado")
