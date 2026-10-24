@@ -2,10 +2,16 @@
 
 This file records real execution separately from implementation coverage. No musical references, audio, private logs or machine-specific paths belong in this repository.
 
-## Unreleased: user-requested startup threshold
+## v0.3.2 checks
+
+- Python: 82 tests passed. Storage coverage includes managed music/voice/FX/preview/export roundtrips, unchanged external files, protected favorites/references/lineage/voice/Audacity dependencies, stale previews, missing confirmation, occupied restore targets, interrupted moves, tampered trash and consistent migration backups.
+- Frontend: 38 tests passed, including native-picker filters, folder/file/save selection contracts, cancellation, failure/retry, focus return, manual typing and browser fallback; storage confirmation/cancellation and queue protections; shared refresh success/failure. Typecheck, Vite production build and Rust `cargo check --locked` passed. Browser mocks do not prove Windows native-dialog behavior.
+- No production assets were discarded, moved or restored as validation. There is no permanent-delete operation, automatic cleanup or recursive filesystem scan. Trash retains bytes and does not reclaim disk space. Only already registered files appear in the inventory.
+- The actual packaged core completed a stdio MCP handshake with 47 tools in a fresh isolated profile. A one-second synthetic WAV was processed with native gain (no AI), its managed output moved to the recoverable trash and restored with matching SHA-256; the external input remained unchanged and its parent dependency was protected. The final packaged runtime repeated this roundtrip successfully.
+- The Windows desktop preview opened native executable and folder pickers and WAV Save As, showing the expected dialog types/default filename. Cancelling did not save/import/install anything. The central inventory and discard preview were inspected in the real desktop; production cleanup was not exercised. The final footer uses an explicit flex row, 12px gap and wrapping between cancel/confirm actions.
 
 - ACE-Step cold-start threshold changed from 16 to 12 GiB at the owner's explicit request. Warm start remains 4 GiB; CPU/Turbo/DiT-only, disabled LM/Flash Attention and single-task ownership are unchanged.
-- This is not an optimized lower-memory model or a new memory-safety benchmark. Historical measurements below remain applicable; no extra inference was launched to validate the reduction. Existing queued work can proceed once 12 GiB are available.
+- This is not an optimized lower-memory model or a new memory-safety benchmark. An already queued, separately authorized production job completed after the threshold reduction, reaching approximately 14.16 GiB engine RSS and a sampled low of 0.55 GiB available physical RAM. This demonstrates completion of that run, not comfortable headroom or reliability under other loads. No additional AI inference was launched for release validation. Existing queued work can proceed once 12 GiB are available.
 
 ## v0.2 release checks
 

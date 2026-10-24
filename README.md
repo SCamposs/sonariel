@@ -2,7 +2,7 @@
 
 Um aplicativo desktop para criar músicas e vozes com IA local, processar WAVs com efeitos nativos e organizar projetos, sessões e versões. A direção criativa acontece na conversa com o Codex; o Sonariel acompanha a execução e preserva suas escolhas.
 
-> **0.3.1** acrescenta áudio de entrada ao Stable Audio e formata as notas do atualizador, mantendo voz, DSP e os motores existentes. Consulte [a expansão e suas limitações](docs/EXPANSION.md) e [as notas da release](docs/releases/v0.3.1.md).
+> **0.3.2** acrescenta seletores nativos de arquivos/pastas e inventário central com descarte recuperável, além de ajustes na navegação e atualização. Consulte [armazenamento e seus limites](docs/STORAGE.md) e [as notas da release](docs/releases/v0.3.2.md).
 
 ## Baixar para Windows
 
@@ -44,6 +44,8 @@ Quem usa a versão 0.1 precisa instalar a 0.2 uma vez manualmente para receber o
 
 ## Dados e privacidade
 
+Em **Armazenamento**, consulte os áudios catalogados, seus caminhos e tamanhos. O descarte exige prévia e confirmação: WAVs gerenciados vão para uma lixeira recuperável, e arquivos externos têm apenas seu registro ocultado. Nada é limpo automaticamente. A lixeira mantém os bytes, portanto não libera espaço em disco; não há exclusão permanente nesta versão. [Saiba como descartar e restaurar](docs/STORAGE.md).
+
 Dados locais ficam por padrão em `%USERPROFILE%\.sonariel`; `SONARIEL_HOME` pode selecionar outro diretório. Projetos, áudio, backups, ambientes, modelos e logs não fazem parte deste repositório. O tutorial e a preferência de atualizações ficam no perfil local do WebView.
 
 O núcleo escuta somente em loopback, com autenticação local. Abrir o aplicativo ou o MCP não carrega modelos. O Sonariel não contém telemetria de uso. As consultas opcionais de atualização acessam o GitHub, que recebe os dados normais de uma conexão HTTP; elas não enviam áudio, prompts ou o banco de projetos. Downloads de componentes usam suas fontes oficiais.
@@ -74,7 +76,7 @@ npm.cmd run dev
 
 `npm run dev` é uma superfície local de verificação. O produto distribuído é o desktop Tauri. `scripts/build.ps1` prepara um instalador de desenvolvimento sem assinatura de atualização; releases oficiais usam o fluxo assinado em [docs/RELEASING.md](docs/RELEASING.md).
 
-Para testar um build local sem substituir o app instalado, execute `scripts/build.ps1` e depois `scripts/run-preview.ps1`. O segundo comando prepara uma cópia executável em `%USERPROFILE%\SonarielPreview\0.3.1` e usa `%USERPROFILE%\.sonariel-preview`, separado do perfil estável. O instalador de desenvolvimento não é instalado automaticamente. Não conecte o Codex de produção ao preview por engano: ele tem banco e núcleo próprios.
+Para testar um build local sem substituir o app instalado, execute `scripts/build.ps1` e depois `scripts/run-preview.ps1`. O segundo comando prepara uma cópia executável em `%USERPROFILE%\SonarielPreview\0.3.2` e usa `%USERPROFILE%\.sonariel-preview`, separado do perfil estável. O instalador de desenvolvimento não é instalado automaticamente. Não conecte o Codex de produção ao preview por engano: ele tem banco e núcleo próprios.
 
 ## Documentação e limitações
 

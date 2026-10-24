@@ -10,11 +10,15 @@ from pathlib import Path
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--generate", action="store_true")
+parser.add_argument("--storage", action="store_true", help="Synthetic native DSP and recoverable storage roundtrip, isolated profile only; no AI")
 parser.add_argument("--fx-wav", type=Path, help="Explicit native FX/export test on a local WAV; no synthesis")
 parser.add_argument("--executable", type=Path, help="Test the distributed sonariel-core.exe instead of development Python")
 parser.add_argument("--stable-input-root", type=Path, help="Existing licensed LiteRT environment for one explicitly authorized synthetic 5s audio-input test")
 parser.add_argument("--authorize-stable-input-generation", action="store_true")
 args = parser.parse_args()
+if args.storage:
+    if not os.environ.get('SONARIEL_HOME') or Path(os.environ['SONARIEL_HOME']).resolve() == (Path.home()/'.sonariel').resolve():
+        parser.error('Storage validation requires an explicit isolated SONARIEL_HOME')
 if args.stable_input_root:
     if not args.authorize_stable_input_generation or not os.environ.get("SONARIEL_HOME"):
         parser.error("Stable input generation requires explicit authorization and isolated SONARIEL_HOME")
@@ -50,6 +54,42 @@ try:
     assert {e["category"] for e in engines} == {"music", "voice", "fx"}
     assert all("sonariel_"+name in {t["name"] for t in tools} for name in ["voice_generate","music_generate","fx_render","fx_preset_save","result_export"])
     print(json.dumps({"handshake": handshake["serverInfo"], "tool_count": len(tools), "linked_compatible": bool((status["environment"] or {}).get("compatible")), "engine_categories": sorted({e["category"] for e in engines})}), flush=True)
+    if args.storage:
+        import wave
+        import math
+        import struct
+        home=Path(tool('snapshot')['data_home'])
+        source=home/'storage-synthetic.wav'
+        assert not source.exists(), 'Use a fresh validation profile'
+        with wave.open(str(source),'wb') as stream:
+            stream.setparams((1,2,48000,48000,'NONE','not compressed'))
+            stream.writeframes(b''.join(struct.pack('<h',int(2000*math.sin(2*math.pi*220*n/48000))) for n in range(48000)))
+        original_hash=hashlib.sha256(source.read_bytes()).hexdigest()
+        project=tool('project_create',dict(name='Storage protocol verification'))['project_id']
+        original=tool('result_import',dict(project_id=project,path=str(source),name='Synthetic external source'))
+        recipe=dict(name='Storage fixture',schema_version=1,output_channels=2,tail_seconds=0,bypass=False,
+            chain=[dict(wet=1,effect=dict(type='gain',db=-3))])
+        job=tool('fx_render',dict(asset_id=original['id'],request_key='storage-fixture-'+project,recipe=recipe))
+        for _ in range(120):
+            result=tool('job_get',dict(job_id=job['job_id']))
+            if result['state']=='completed': break
+            if result['state']=='interrupted': raise RuntimeError(result['error'])
+            time.sleep(.25)
+        else: raise TimeoutError('Native synthetic DSP timed out')
+        output=result['results'][0]
+        original_plan=tool('storage_preview',dict(asset_ids=[original['id']]))
+        assert original_plan['entries'][0]['blocked'], 'Parent dependency must be protected'
+        plan=tool('storage_preview',dict(asset_ids=[output['id']]))
+        assert plan['entries'][0]['action']=='move_to_trash' and plan['reclaimed_bytes']==0
+        tool('storage_discard',dict(asset_ids=[output['id']],preview_token=plan['token'],confirmed=True))
+        assert not Path(output['path']).exists()
+        assert not any(a['id']==output['id'] for a in tool('results_list',dict(project_id=project)))
+        tool('storage_restore',dict(asset_id=output['id']))
+        assert hashlib.sha256(Path(output['path']).read_bytes()).hexdigest()==output['metadata']['sha256']
+        assert hashlib.sha256(source.read_bytes()).hexdigest()==original_hash
+        receipt=dict(storage='passed',output=output['path'],external_unchanged=True,tool_count=len(tools),model_loaded=False)
+        (home/'storage-acceptance.json').write_text(json.dumps(receipt,indent=2),encoding='utf-8')
+        print(json.dumps(receipt),flush=True)
     if args.stable_input_root:
         import numpy as np
         import soundfile as sf

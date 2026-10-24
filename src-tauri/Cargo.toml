@@ -1,6 +1,6 @@
 [package]
 name = "sonariel"
-version = "0.3.1"
+version = "0.3.2"
 description = "Sonariel local audio workstation"
 license-file = "../LICENSE"
 edition = "2021"

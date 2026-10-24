@@ -1,7 +1,9 @@
 # Changelog
 
-## Unreleased
+## 0.3.2
 
+- Central registered-audio inventory and confirmed recoverable discard/restore. Managed output WAVs move to an internal trash journal; imported/external files are never moved or deleted. Protected references, favorites, chosen versions, shared files and dependencies cannot be discarded. No permanent erase or automatic cleanup; trash retains disk space.
+- Schema 3 adds a discard journal, with a consistent pre-migration SQLite backup for schema 1/2 databases. Existing asset metadata, lineage and job history are retained.
 - Lower the ACE-Step cold-start gate from 16 to 12 GiB at the owner's explicit request, retaining the 4 GiB warm gate and RAM telemetry. Not a new low-memory inference profile or a guarantee against paging/allocation failure.
 - Native Windows file/folder selection next to editable path fields across library, environment, voice and FX. Presets offer separate open/save dialogs; cancellation preserves values and export still refuses overwriting existing files.
 - Keep wrapped sidebar labels left-aligned with fixed-width navigation icons.
