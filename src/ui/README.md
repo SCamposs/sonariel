@@ -6,6 +6,7 @@ These are application-owned components, not a theme imported from a UI kit.
 - `SelectControl`: string-valued selection, keyboard navigation, typeahead and portaled popup positioning.
 - `AudioSlider`: controlled scalar audio value, pointer/keyboard interaction and human-readable accessible values.
 - `WorkflowGuide`: six-step first-use dialog, replayable from the sidebar, with a continuous animated progress track and keyboard navigation. A versioned local WebView preference remembers completion or dismissal, without touching project data or invoking workflow operations. Its styling is local to `workflow-guide.css`.
+- `WindowTitlebar`: narrow Tauri window adapter with drag/double-click handling, minimize/restore/close, resize-state subscription cleanup and visible error reporting. Native buttons are disabled in the browser verification surface. It uses the existing tokens, not another UI library.
 
 The public props use React and plain application types. Only these implementation files import the pinned `@base-ui/react` subpaths. Screens must not import Base UI or depend on its compound component anatomy. Upstream fixes remain package updates rather than a vendored fork; replacing the interaction engine is localized here.
 

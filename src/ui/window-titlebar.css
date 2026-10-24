@@ -1,0 +1,80 @@
+.window-frame {
+  height: 100vh;
+  overflow: hidden;
+}
+.window-frame > .app-shell {
+  height: calc(100vh - 32px);
+}
+.window-titlebar {
+  height: 32px;
+  display: flex;
+  align-items: stretch;
+  background: var(--deep);
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  user-select: none;
+}
+.window-drag-region {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  padding: 0 13px;
+}
+.window-drag-region > svg {
+  color: var(--amber);
+  flex-shrink: 0;
+}
+.window-title {
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 12px;
+}
+.window-title-context {
+  font:
+    8px "JetBrains Mono",
+    monospace;
+  letter-spacing: 0.06em;
+  margin-left: 8px;
+}
+.window-controls {
+  display: flex;
+  flex-shrink: 0;
+}
+.window-button {
+  width: 46px;
+  min-height: 31px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+}
+.window-button:hover:not(:disabled) {
+  background: var(--hover);
+  filter: none;
+}
+.window-button:focus-visible {
+  outline-offset: -3px;
+}
+.window-close:hover:not(:disabled) {
+  background: var(--red);
+  color: var(--deep);
+}
+.window-control-error {
+  align-self: center;
+  font-size: 11px;
+  color: var(--red);
+  padding: 0 10px;
+}
+@media (max-width: 1050px) {
+  .window-title-context {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .window-button {
+    transition: none;
+  }
+}

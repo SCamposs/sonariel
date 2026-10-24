@@ -23,7 +23,7 @@ const steps = [
     location: "Seu workflow local",
     icon: AudioLines,
     description:
-      "Use o Codex para conversar sobre música. O Sonariel organiza a execução local, as versões e suas escolhas.",
+      "Use o Codex para dirigir músicas e vozes. O Sonariel organiza a execução local, os efeitos e suas versões.",
     points: [
       "Direção e pedidos de geração ficam no Codex.",
       "Aqui você acompanha, escuta, compara e prepara a edição.",
@@ -35,9 +35,9 @@ const steps = [
     location: "Ambiente",
     icon: Cpu,
     description:
-      "Vincule uma instalação compatível do ACE-Step ou revise o plano para instalar um ambiente isolado.",
+      "Revise os motores em Ambiente e o setup vocal em Voice Studio. Cada instalação usa sua própria pasta isolada.",
     points: [
-      "O perfil atual usa CPU, modelo Turbo e DiT-only.",
+      "Turbo continua como padrão musical. Alternativas experimentais e voz têm capacidades e licenças próprias.",
       "Modelos só são carregados quando uma geração pode começar. A RAM livre é verificada antes.",
     ],
     note: "Abrir o aplicativo não carrega o modelo. Detectar uma GPU não significa usá-la para gerar.",
@@ -80,13 +80,13 @@ const steps = [
   },
   {
     title: "Escute, escolha e leve para edição",
-    location: "Biblioteca & versões → Audacity",
+    location: "Biblioteca & versões → FX ou Audacity",
     icon: AudioLines,
     description:
       "Ouça no player, compare duas versões e registre notas, favoritas e a escolha atual antes de editar.",
     points: [
-      "A ponte abre um projeto identificado do Sonariel no Audacity, com mod-script-pipe habilitado.",
-      "A edição e a exportação criam novas versões, preservando o áudio original.",
+      "Em FX, ajuste cadeias e peça uma prévia curta; os controles não disparam renders a cada movimento.",
+      "Renderize e exporte novas versões preservando o original. Audacity é opcional e exige mod-script-pipe.",
     ],
     note: "Pronto para explorar. Comece em Ambiente ou retome seu projeto atual.",
   },

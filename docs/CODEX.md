@@ -13,7 +13,7 @@ startup_timeout_sec = 30
 
 Reload the Codex client to discover newly registered tools. A server protocol test is recorded separately from registration. A test client handshake does not imply that a preexisting Codex conversation has loaded the server.
 
-The bundled skill is installed at `~/.agents/skills/sonariel/SKILL.md`. It describes the real tool sequence, CPU memory limits, request-key recovery and reference/source semantics. A different existing skill is preserved for review.
+The bundled skill is installed at `~/.agents/skills/sonariel/SKILL.md`. It describes music/voice/FX contracts, CPU memory limits, request-key recovery and reference/source semantics. Registration can update the exact known v0.2 skill with a timestamped backup. Custom/unknown existing skill content is preserved for review. Reload Codex after installing this expansion to discover its new tools; the existing installed server is not silently replaced by development builds.
 
 Recommended sequence: environment_status → projects_list → project_select → reference_register (if needed) → generate → job_get → result_feedback → audacity_import/export after an editing request. Tools are prefixed `sonariel_`. Complete schemas are returned by tools/list; unsupported fields/modes are rejected.
 
