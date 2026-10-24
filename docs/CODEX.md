@@ -19,6 +19,25 @@ Recommended sequence: environment_status → projects_list → project_select �
 
 The UI has no competing creative chat or primary prompt editor. Prompt, model, seed, input roles and parameters remain visible in result details. Only explicitly saved musical context is persisted. Sonariel audio inference is local; the Codex model is a separate service.
 
+## Stable Audio source input (0.3.1)
+
+`music_generate` retains text2audio by default (5–60s). Source-driven variation is
+explicit: register a WAV in the same project, prepare/link the LiteRT audio encoder
+and resampler, and pass `mode="audio2audio"`, `source_id`, exact source duration
+(5–120s), and optional `init_noise_level` (default 0.25, range 0.01 <= sigma < 1).
+The source may be a registered reference or result. This is source-content
+conditioning, not a `reference_audio` style control. Smaller sigma changes the
+initial latent mix; it does not certify perceptual similarity. Sigma 1 is rejected
+because it ignores the source. Never silently substitute text generation.
+
+Use batch 1 and 8 steps as the tested CPU recipe. The source hash is checked at
+enqueue, before the worker and after rendering; the result stores its source as
+parent. Source duration is not silently truncated to fit a requested duration.
+WAV mono/stereo at other sample rates is resampled with pinned soxr HQ inside the
+isolated worker; the original is unchanged. New setups include the encoder and
+resampler; older text-only links keep working but must explicitly prepare/relink
+before audio input is available. No inference-active cancellation is added.
+
 Official contracts consulted:
 
 - https://developers.openai.com/codex/mcp

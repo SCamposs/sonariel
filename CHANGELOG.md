@@ -1,8 +1,10 @@
 # Changelog
 
-## Unreleased
+## 0.3.1
 
 - Format updater release notes as safe Markdown inside the existing dialog, preserving its framing and 170px scroll area. Embedded HTML/media and non-HTTPS links are not rendered. The renderer loads only when notes are shown.
+- Explicit Stable Audio audio2audio through the shared queue/MCP, with same-project source ID, immutable hash, source-duration matching up to 120s, controlled latent perturbation and parent lineage. Existing text2audio requests remain capped at 60s.
+- Pinned SAME-S encoder and soxr HQ input resampling in the isolated CPU setup. Older text-only environments stay usable; preparing/linking audio-input components requires an explicit setup action.
 
 ## 0.3.0
 

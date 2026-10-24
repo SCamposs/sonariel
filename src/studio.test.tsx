@@ -81,6 +81,15 @@ const props = () => ({
   edit: vi.fn(),
 });
 
+it("distinguishes text-only LiteRT setup from prepared audio-input capability", () => {
+  const p=props();
+  const data={...snapshot,engines:[{id:'stable-audio-3-medium',name:'Medium',category:'music',installed:true,backend:'litert-cpu',license:'Terms',audio_input_ready:false}]} as unknown as Snapshot;
+  const view=render(<MusicEngines {...p} data={data} />);
+  expect(screen.getByText(/Áudio de entrada requer encoder/)).toBeTruthy();
+  view.rerender(<MusicEngines {...p} data={{...data,engines:data.engines!.map(e=>({...e,audio_input_ready:true}))}} />);
+  expect(screen.getByText(/áudio de entrada até 120 s/)).toBeTruthy();
+});
+
 it("edits a real FX recipe without rendering on every control change", async () => {
   vi.mocked(rpc).mockResolvedValue([]);
   const p = props();

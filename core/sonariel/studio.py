@@ -104,22 +104,55 @@ class Studio:
             path = models_root / file["path"]
             if not path.is_file() or path.stat().st_size != file["bytes"] or sha256(path) != file["sha256"]:
                 raise ValueError("Checkpoint LiteRT ausente ou diferente: " + file["path"])
+        encoder = next(file for file in manifest["files"] if file["path"] == "tflite/same-s/enc_w8a8.tflite")
+        encoder_path = models_root / encoder["path"]
+        encoder_present = encoder_path.is_file()
+        if encoder_present and sha256(encoder_path) != encoder["sha256"]:
+            raise ValueError("Encoder de áudio LiteRT diferente da receita")
+        probe = subprocess.run([str(python), "-c", "import importlib.metadata as m; print(next((d.version for d in m.distributions() if d.metadata['Name'].lower()=='soxr'),''))"], capture_output=True, text=True, timeout=30, **HIDDEN)
+        audio_input_ready = encoder_present and probe.returncode == 0 and probe.stdout.strip() == "1.0.0"
         config = dict(python=str(python), source=str(source_root), models=str(models_root),
-            families=families, versions=versions, accepted_licenses=True, acceptance_time=time.time(), model_revision=manifest["revision"])
+            families=families, versions=versions, accepted_licenses=True, acceptance_time=time.time(), model_revision=manifest["revision"],
+            audio_input_ready=audio_input_ready, resampler_version=probe.stdout.strip() if probe.returncode == 0 else None)
         self.store.set("stable_environment", config)
         self.store.event("environment", "LiteRT CPU vinculado por versões e hashes; aceite de licenças registrado localmente")
         return config
 
     def rpc_music_generate(self, engine_id: str, project_id: str, request_key: str, prompt: str,
                             seed: int, duration: float, steps: int = 8, batch_size: int = 1,
-                            session_id: str | None = None):
+                            session_id: str | None = None, mode: str = "text2audio",
+                            source_id: str | None = None, init_noise_level: float | None = None):
         if engine_id not in STABLE_IDS:
             raise ValueError("Este contrato aceita apenas Stable Audio LiteRT; Turbo mantém generate")
         environment = self.store.setting("stable_environment", {})
         if not environment.get("accepted_licenses") or STABLE_IDS[engine_id] not in environment.get("families", []):
             raise ValueError("Configure e aceite as licenças do motor escolhido antes de gerar")
         params = dict(_engine=engine_id, prompt=prompt, seed=seed, duration=duration, steps=steps, batch_size=batch_size,
-                      mode="text2audio", cfg=1., apg=1., backend="litert-cpu")
+                      mode=mode, cfg=1., apg=1., backend="litert-cpu")
+        if mode == "text2audio":
+            if source_id is not None or init_noise_level is not None:
+                raise ValueError("Áudio de entrada exige mode=audio2audio explícito; não é referência de estilo")
+            if duration > 60:
+                raise ValueError("text2audio mantém limite local de 60 segundos")
+        elif mode == "audio2audio":
+            if not environment.get("audio_input_ready"):
+                raise ValueError("Prepare encoder SAME-S e resampler pelo setup LiteRT e vincule novamente o ambiente")
+            if not source_id:
+                raise ValueError("audio2audio exige source_id do projeto")
+            asset = self.verified_source(source_id)
+            if asset["project_id"] != project_id:
+                raise ValueError("Fonte de áudio pertence a outro projeto")
+            if asset["metadata"]["channels"] not in (1, 2):
+                raise ValueError("Fonte deve ser WAV mono ou estéreo")
+            if abs(duration - asset["metadata"]["duration"]) > 1 / asset["metadata"]["sample_rate"]:
+                raise ValueError("Duração audio2audio deve coincidir com a fonte completa; registre um trecho separado para recortar")
+            sigma = .25 if init_noise_level is None else init_noise_level
+            if not .01 <= sigma < 1:
+                raise ValueError("init_noise_level deve ser >=0.01 e <1; 1 ignoraria a fonte")
+            params.update(source_id=source_id, source_path=asset["path"], source_sha256=asset["metadata"]["sha256"],
+                          source_duration=asset["metadata"]["duration"], init_noise_level=sigma, _parent_id=source_id)
+        else:
+            raise ValueError("Modo musical não suportado")
         return self.enqueue_local(project_id, request_key, params, session_id)
 
     def rpc_voice_setup_plan(self, destination: str):
@@ -333,7 +366,7 @@ def studio_methods(tool, S, ID, B):
         "stable_setup_plan":tool("Receita LiteRT CPU e termos Stability/Gemma antes de instalar.",dict(destination=S,family=dict(enum=["sm-music","medium"])),["destination","family"]),
         "stable_setup_install":tool("Instalar LiteRT isolado após autorização e aceite explícito das duas licenças. Não registra uso comercial.",dict(destination=S,family=dict(enum=["sm-music","medium"]),authorized=B,accepted_licenses=B,model_cache=dict(type="string")),["destination","family","authorized","accepted_licenses"]),
         "stable_environment_link":tool("Vincular LiteRT CPU por hashes/versões após aceite explícito das duas licenças.",dict(python_path=S,source=S,models=S,families=dict(type="array",items=dict(enum=["sm-music","medium"]),minItems=1,maxItems=2,uniqueItems=True),accepted_licenses=B),["python_path","source","models","families","accepted_licenses"]),
-        "music_generate":tool("Enfileirar Stable Audio LiteRT text2audio; batch 1, CFG/APG 1, sem BPM/tonalidade garantidos. Turbo usa generate.",dict(engine_id=dict(enum=list(STABLE_IDS)),project_id=ID,request_key=S,prompt=dict(type="string",minLength=1,maxLength=4000),seed=dict(type="integer",minimum=0,maximum=4294967295),duration=number(5,60),steps=dict(type="integer",enum=[4,8,16]),batch_size=dict(const=1),session_id=ID),["engine_id","project_id","request_key","prompt","seed","duration"]),
+        "music_generate":tool("Stable Audio LiteRT: text2audio até 60s ou audio2audio explícito até 120s com source_id e duração integral da fonte. init_noise_level menor preserva mais a fonte; não é força de referência de estilo. Batch 1, CFG/APG 1. Turbo usa generate.",dict(engine_id=dict(enum=list(STABLE_IDS)),project_id=ID,request_key=S,prompt=dict(type="string",minLength=1,maxLength=4000),seed=dict(type="integer",minimum=0,maximum=4294967295),duration=number(5,120),steps=dict(type="integer",enum=[4,8,16]),batch_size=dict(const=1),session_id=ID,mode=dict(enum=["text2audio","audio2audio"]),source_id=ID,init_noise_level=dict(type="number",minimum=.01,exclusiveMaximum=1)),["engine_id","project_id","request_key","prompt","seed","duration"]),
         "voice_setup_plan":tool("Receita V3 CPU isolada: componentes, versões, licenças e destino.",dict(destination=S),["destination"]),
         "voice_setup_install":tool("Instalar V3 CPU isolado após autorização; retorna sem bloquear. Cache local é copiado e verificado.",dict(destination=S,authorized=B,model_cache=dict(type="string")),["destination","authorized"]),
         "voice_environment_link":tool("Vincular ambiente V3 CPU por versões e hashes, sem alterá-lo.",dict(python_path=S,models=S),["python_path","models"]),

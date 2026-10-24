@@ -1,5 +1,9 @@
 # Audio engines expansion (0.3.0)
 
+The historical 0.3.0 evidence below describes text-only Stable Audio integration.
+Version 0.3.1 adds explicit source audio; see [STABLE_AUDIO_INPUT.md](STABLE_AUDIO_INPUT.md)
+for the new setup, queue/MCP contract and separate live validation.
+
 The owner authorized direct integration into main without a pull request and then
 publication of the signed 0.3.0 release. The beta validation below predates release
 promotion; publishing does not install the update or change production data.

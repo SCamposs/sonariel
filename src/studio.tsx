@@ -115,6 +115,13 @@ export function MusicEngines({
                   <p className="muted">
                     {engine.backend} · {engine.license}
                   </p>
+                  {engine.id.startsWith("stable-audio") && (
+                    <p className="muted">
+                      {engine.audio_input_ready
+                        ? "Texto até 60 s · áudio de entrada até 120 s, preservando a duração da fonte."
+                        : "Texto até 60 s. Áudio de entrada requer encoder SAME-S e resampler; revise o setup LiteRT e vincule novamente."}
+                    </p>
+                  )}
                 </div>
                 <span className={`badge ${engine.installed ? "mint" : ""}`}>
                   {engine.tested
@@ -131,9 +138,16 @@ export function MusicEngines({
         <details className="fx-layer">
           <summary>Configurar Stable Audio 3 · LiteRT CPU experimental</summary>
           <p>
-            Powered by Stability AI · text2audio · DiT e decoder w8a8. Sem
+            Powered by Stability AI · texto ou variação de áudio · DiT e codec w8a8. Sem
             garantia de BPM ou tonalidade exatos. A qualidade musical ainda
             depende de escuta.
+          </p>
+          <p className="muted">
+            O setup inclui encoder SAME-S (~61 MiB) e resampler soxr para WAVs
+            mono/estéreo. Registre a fonte em Referências e peça ao Codex
+            mode=audio2audio com seu source_id. Isso usa o conteúdo da fonte,
+            não apenas seu estilo. init_noise_level menor preserva mais a fonte;
+            não garante identidade musical nem direitos para distribuição.
           </p>
           <SelectControl
             label="Família Stable Audio"

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sonariel-core"
-version = "0.3.0"
+version = "0.3.1"
 description = "Local audio orchestration for the Sonariel desktop and MCP"
 license = {file = "LICENSE"}
 requires-python = ">=3.12,<3.13"

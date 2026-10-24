@@ -16,8 +16,10 @@ TERMS = {"LICENSE.md":"d6f6b1a4dce5c852bd6d7d9482d002baf0ccdb71e662250b73be9eec8
          "NOTICE":"66f856d7da72797f528fca46b7c80634ab481f917bfe020960e123d84b19f75f"}
 
 
-def selected_files(manifest, families):
+def selected_files(manifest, families, include_audio=False):
     selected = {"tflite/t5gemma/encoder_fp16.tflite", "tflite/same-s/dec_w8a8.tflite"}
+    if include_audio:
+        selected.add("tflite/same-s/enc_w8a8.tflite")
     selected.update(f"tflite/{FAMILIES[family]}/dit_w8a8.tflite" for family in families)
     return [file for file in manifest["files"] if file["path"] in selected]
 
@@ -46,7 +48,8 @@ class StableSetup:
             licenses=["https://huggingface.co/stabilityai/stable-audio-3-optimized/blob/08b17423649b5714b22eab20f96bf00751f2358a/LICENSE.md",
                       "https://huggingface.co/stabilityai/stable-audio-3-optimized/blob/08b17423649b5714b22eab20f96bf00751f2358a/LICENSE_GEMMA.md"],
             notice="Powered by Stability AI. Licenças próprias; aceite local não equivale a registro/autorização comercial.",
-            versions=VERSIONS, modes=["text2audio"])
+            versions=VERSIONS, modes=["text2audio", "audio2audio"],
+            audio_input_components=["SAME-S encoder w8a8 (~61 MiB)", "soxr 1.0.0 HQ resampler"])
 
     def install(self, destination, family, authorized, accepted_licenses, model_cache=""):
         if not authorized or not accepted_licenses:
@@ -99,7 +102,7 @@ class StableSetup:
         models = root / "models"
         models.mkdir(exist_ok=True)
         families = sorted(set(state["families"]) | {family})
-        for file in selected_files(spec, families):
+        for file in selected_files(spec, families, include_audio=True):
             target = models / file["path"]
             target.parent.mkdir(parents=True, exist_ok=True)
             stage("Verificar modelo: " + file["path"])

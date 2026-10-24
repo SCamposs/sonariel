@@ -19,6 +19,7 @@ Original Sonariel code is covered by the Sonariel Source Available License 1.0 i
 | Requests | Apache-2.0 · https://requests.readthedocs.io/ |
 | SoundFile, libsndfile | BSD-3-Clause / LGPL-2.1-or-later · https://python-soundfile.readthedocs.io/ |
 | NumPy | BSD-3-Clause · https://numpy.org/ |
+| Python-soxr / libsoxr | LGPL-2.1-or-later · https://github.com/dofuuz/python-soxr; runs inside the separately installed LiteRT environment, with its package notices |
 | jsonschema | MIT · https://github.com/python-jsonschema/jsonschema |
 | ACE-Step 1.5 | MIT; model cards and component-specific licenses apply · https://github.com/ace-step/ACE-Step-1.5 |
 | PyTorch / torchaudio | BSD-style licenses · https://pytorch.org/ |

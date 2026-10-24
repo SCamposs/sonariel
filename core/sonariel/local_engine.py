@@ -82,17 +82,21 @@ def catalog(store) -> list[dict]:
                     tested=bool(store.setting("engine_validation:"+key)), **extra)
     voice = store.setting("voice_environment")
     stable = store.setting("stable_environment",{})
+    stable_modes = ["text2audio"] + (["audio2audio"] if stable.get("audio_input_ready") else [])
+    stable_audio = dict(audio_input_ready=bool(stable.get("audio_input_ready")),
+                        audio_input_note=None if stable.get("audio_input_ready") else "Prepare encoder SAME-S e soxr pelo setup LiteRT e vincule novamente para usar áudio de entrada",
+                        text_max_seconds=60, audio_input_max_seconds=120)
     return [
         item("acestep-v15-turbo", "ACE-Step 1.5 Turbo", "music", "MIT", "torch-cpu",
              ["text2music", "cover"], bool(store.setting("environment")), experimental=False, baseline=True),
         item("acestep-v15-sft", "ACE-Step 1.5 SFT", "music", "MIT", "torch-cpu",
              ["text2music", "cover"], blocked_reason="Isolated validation pending"),
         item("stable-audio-3-small-music", "Stable Audio 3 Small-Music", "music",
-             "Stability Community + Gemma terms", "litert-cpu", ["text2audio"], "sm-music" in stable.get("families",[]),
-             requires_license_acceptance=True, upstream_modes=["audio2audio","inpaint"], attribution="Powered by Stability AI"),
+             "Stability Community + Gemma terms", "litert-cpu", stable_modes, "sm-music" in stable.get("families",[]),
+             requires_license_acceptance=True, upstream_modes=["inpaint"], attribution="Powered by Stability AI", **stable_audio),
         item("stable-audio-3-medium", "Stable Audio 3 Medium", "music",
-             "Stability Community + Gemma terms", "litert-cpu", ["text2audio"], "medium" in stable.get("families",[]),
-             requires_license_acceptance=True, upstream_modes=["audio2audio","inpaint"], attribution="Powered by Stability AI"),
+             "Stability Community + Gemma terms", "litert-cpu", stable_modes, "medium" in stable.get("families",[]),
+             requires_license_acceptance=True, upstream_modes=["inpaint"], attribution="Powered by Stability AI", **stable_audio),
         item(VOICE_ID, "Chatterbox Multilingual V3", "voice", "MIT; dependency notices apply", "torch-cpu",
              ["text2speech", "authorized_voice_reference"], bool(voice), languages=LANGUAGES,
              language_paths_tested=["sw", "pt"], omitted_optional_preprocessors=["zh", "ja"],

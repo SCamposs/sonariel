@@ -2,7 +2,7 @@
 
 Um aplicativo desktop para criar músicas e vozes com IA local, processar WAVs com efeitos nativos e organizar projetos, sessões e versões. A direção criativa acontece na conversa com o Codex; o Sonariel acompanha a execução e preserva suas escolhas.
 
-> **0.3.0** acrescenta voz e processamento nativo, além de motores musicais experimentais. Consulte [a expansão e suas limitações](docs/EXPANSION.md) e [as notas da release](docs/releases/v0.3.0.md).
+> **0.3.1** acrescenta áudio de entrada ao Stable Audio e formata as notas do atualizador, mantendo voz, DSP e os motores existentes. Consulte [a expansão e suas limitações](docs/EXPANSION.md) e [as notas da release](docs/releases/v0.3.1.md).
 
 ## Baixar para Windows
 
@@ -29,6 +29,8 @@ O instalador ainda não tem assinatura de editor Windows/Authenticode. A assinat
 Para a ponte com o Audacity, habilite `mod-script-pipe` e reinicie o editor. O app usa projetos identificados do Sonariel, sem editar um projeto alheio aberto. O original de áudio é preservado ao criar versões editadas.
 
 **Voice Studio** organiza idiomas/perfis e interpretações solicitadas ao Codex. **FX & processamento** aceita qualquer WAV registrado: adicione/reordene efeitos, ajuste parâmetros, peça uma prévia curta e renderize uma versão completa somente quando desejar. Originais não são sobrescritos. A biblioteca permite comparar duas versões. O setup é independente por motor; Stable Audio exige aceite individual de seus termos, e seus pesos não acompanham o app.
+
+Para variar uma gravação pelo Stable Audio, prepare o encoder de entrada pelo setup LiteRT, vincule novamente o ambiente e registre o WAV em **Referências**. Peça ao Codex `music_generate` com `mode="audio2audio"`, `source_id`, duração integral da fonte (5–120 s) e `init_noise_level` entre 0,01 e menos de 1. Valores menores perturbam menos a fonte; não são uma porcentagem garantida de semelhança. O áudio entra como conteúdo, não só como referência de estilo. Sem `source_id`, o modo padrão continua sendo texto, limitado a 60 s. Não há garantia de cópia idêntica nem liberação de direitos sobre a gravação usada.
 
 ## Atualizações
 
@@ -72,7 +74,7 @@ npm.cmd run dev
 
 `npm run dev` é uma superfície local de verificação. O produto distribuído é o desktop Tauri. `scripts/build.ps1` prepara um instalador de desenvolvimento sem assinatura de atualização; releases oficiais usam o fluxo assinado em [docs/RELEASING.md](docs/RELEASING.md).
 
-Para testar um build local sem substituir o app instalado, execute `scripts/build.ps1` e depois `scripts/run-preview.ps1`. O segundo comando prepara uma cópia executável em `%USERPROFILE%\SonarielPreview\0.3.0` e usa `%USERPROFILE%\.sonariel-preview`, separado do perfil estável. O instalador de desenvolvimento não é instalado automaticamente. Não conecte o Codex de produção ao preview por engano: ele tem banco e núcleo próprios.
+Para testar um build local sem substituir o app instalado, execute `scripts/build.ps1` e depois `scripts/run-preview.ps1`. O segundo comando prepara uma cópia executável em `%USERPROFILE%\SonarielPreview\0.3.1` e usa `%USERPROFILE%\.sonariel-preview`, separado do perfil estável. O instalador de desenvolvimento não é instalado automaticamente. Não conecte o Codex de produção ao preview por engano: ele tem banco e núcleo próprios.
 
 ## Documentação e limitações
 

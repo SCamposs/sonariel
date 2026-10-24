@@ -144,6 +144,9 @@ export type EngineInfo = {
   tested?: boolean;
   backend: string;
   license: string;
+  modes?: string[];
+  audio_input_ready?: boolean;
+  audio_input_note?: string | null;
   languages?: Record<string, string>;
   blocked_reason?: string;
 };

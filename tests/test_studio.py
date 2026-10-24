@@ -200,6 +200,71 @@ def test_stable_source_allows_crlf_but_rejects_changed_code(tmp_path):
     manifest=json.loads((Path(__file__).parents[1]/'core/sonariel/recipes/stable-models.json').read_text())
     files=selected_files(manifest,['sm-music'])
     assert len(files)==3 and not any('sa3-m/' in f['path'] for f in files)
+    assert len(selected_files(manifest,['sm-music'],include_audio=True))==4
+
+
+def test_stable_audio_input_explicit_source_integrity_and_lineage(service,tmp_path):
+    project=service.invoke('project_create',dict(name='Music input'))['project_id']
+    path=tmp_path/'input.wav'
+    sf.write(path,.1*np.sin(np.arange(240000)*2*np.pi*220/48000),48000,subtype='FLOAT')
+    source=service.invoke('reference_register',dict(project_id=project,path=str(path),name='Input source'))
+    args=dict(engine_id='stable-audio-3-medium',project_id=project,request_key='a2a-1',prompt='Quiet tone.',seed=3,duration=5,
+              mode='audio2audio',source_id=source['id'],init_noise_level=.25)
+    service.store.set('stable_environment',dict(accepted_licenses=True,families=['medium']))
+    with pytest.raises(ValueError,match='encoder'):service.invoke('music_generate',args)
+    service.store.set('stable_environment',dict(accepted_licenses=True,families=['medium'],audio_input_ready=True))
+    first=service.invoke('music_generate',args)
+    assert service.invoke('music_generate',args)['already_submitted']
+    params=service.store.job(first['job_id'])['params']
+    assert params['_parent_id']==source['id'] and params['source_sha256']==source['metadata']['sha256']
+    assert params['duration']==5 and params['mode']=='audio2audio'
+    with pytest.raises(ValueError,match='Duração'):service.invoke('music_generate',dict(args,duration=6))
+    with pytest.raises(ValueError,match='explícito'):service.invoke('music_generate',dict(args,mode='text2audio'))
+    with pytest.raises(ValueError,match='60 segundos'):
+        service.invoke('music_generate',dict({k:v for k,v in args.items() if k not in {'source_id','init_noise_level'}},mode='text2audio',duration=61))
+    with pytest.raises(Exception):service.invoke('music_generate',dict(args,init_noise_level=1))
+    with pytest.raises(Exception):service.invoke('music_generate',dict(args,duration=121))
+    with pytest.raises(ValueError,match='source_id'):service.invoke('music_generate',{k:v for k,v in args.items() if k!='source_id'})
+    other=service.invoke('project_create',dict(name='Other'))['project_id']
+    with pytest.raises(ValueError,match='outro projeto'):service.invoke('music_generate',dict(args,project_id=other))
+    path.write_bytes(b'changed')
+    with pytest.raises(ValueError,match='mudou'):service.invoke('music_generate',args)
+    assert len(service.invoke('queue_list'))==1
+
+
+def test_stable_audio_input_helpers_resample_pad_and_mix(tmp_path):
+    from sonariel.recipes.stable_worker import source_audio, mix_source_noise, sha
+    path=tmp_path/'source.wav';sf.write(path,np.full(48000,.1,np.float32),48000,subtype='FLOAT')
+    params=dict(source_path=str(path),source_sha256=sha(path),duration=1)
+    class Resampler:
+        @staticmethod
+        def resample(audio,rate,target,quality):
+            assert audio.shape==(48000,2) and (rate,target,quality)==(48000,44100,'HQ')
+            return np.full((44100,2),.1,np.float32)
+    audio,info=source_audio(params,45056,Resampler)
+    assert audio.shape==(1,2,45056) and not audio[:,:,44100:].any()
+    assert info['full_source'] and info['resampling']=='soxr HQ'
+    mixed=mix_source_noise(np.ones((1,256,12)),np.zeros((1,256,12)),.25)
+    assert np.allclose(mixed,.75)
+    with pytest.raises(ValueError):mix_source_noise(mixed,mixed,1.)
+    with pytest.raises(ValueError,match='trim'):source_audio(params,40000,Resampler)
+    path.write_bytes(b'changed')
+    with pytest.raises(ValueError,match='changed'):source_audio(params,45056,Resampler)
+
+
+def test_stable_progress_retries_windows_read_race_without_failing_render(tmp_path,monkeypatch):
+    from sonariel.recipes import stable_worker
+    replace=Path.replace;attempts=[]
+    def racing(path,target):
+        attempts.append(1)
+        if len(attempts)<3:raise PermissionError('Windows read handle')
+        return replace(path,target)
+    monkeypatch.setattr(Path,'replace',racing)
+    monkeypatch.setattr(stable_worker.time,'sleep',lambda _:None)
+    stable_worker.write_progress(tmp_path/'request.json','Encode source')
+    assert len(attempts)==3 and json.loads((tmp_path/'progress.json').read_text())['stage']=='Encode source'
+    monkeypatch.setattr(Path,'replace',lambda *args:(_ for _ in ()).throw(PermissionError('Busy')))
+    stable_worker.write_progress(tmp_path/'request.json','Next stage')
 
 
 def test_preview_cannot_be_selected_as_final_and_invalid_fx_rejected(service,tmp_path):

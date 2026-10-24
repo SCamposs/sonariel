@@ -1882,6 +1882,10 @@ function JobPanel({ job }: { job: Job }) {
       ),
     ],
     ["Modelo", engine],
+    ...(job.params.mode === "audio2audio" ? [
+      ["Fonte", String(job.params.source_id ?? "Não informada")],
+      ["Perturbação da fonte (σ)", String(job.params.init_noise_level)],
+    ] : []),
   ];
   return (
     <div className="job-detail">
