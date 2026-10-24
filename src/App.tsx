@@ -4,6 +4,7 @@ import { SelectControl } from "./ui/select-control";
 import { SidePanel } from "./ui/side-panel";
 import { WorkflowGuide } from "./ui/workflow-guide";
 import { UpdateControl } from "./ui/update-control";
+import { FxStudio, VoiceStudio, MusicEngines } from "./studio";
 import {
   Activity,
   ArrowDownToLine,
@@ -43,7 +44,14 @@ import {
   type Snapshot,
 } from "./api";
 
-type Page = "projects" | "queue" | "library" | "environment" | "bridges";
+type Page =
+  | "projects"
+  | "queue"
+  | "library"
+  | "voice"
+  | "fx"
+  | "environment"
+  | "bridges";
 const pages: {
   id: Page;
   name: string;
@@ -67,6 +75,18 @@ const pages: {
     name: "Biblioteca & versões",
     icon: AudioLines,
     caption: "Escuta, comparação & decisão",
+  },
+  {
+    id: "voice",
+    name: "Voice Studio",
+    icon: Headphones,
+    caption: "Perfis, interpretação & versões",
+  },
+  {
+    id: "fx",
+    name: "FX & processamento",
+    icon: Settings2,
+    caption: "Cadeias nativas & render não destrutivo",
   },
   {
     id: "environment",
@@ -169,6 +189,7 @@ export function App() {
   const [query, setQuery] = useState("");
   const [favorites, setFavorites] = useState(false);
   const [activeId, setActiveId] = useState<string>();
+  const [fxAssetId, setFxAssetId] = useState<string>();
   const [compare, setCompare] = useState<string[]>([]);
   const [connection, setConnection] = useState<{
     url: string;
@@ -251,6 +272,7 @@ export function App() {
   const assets =
     data?.assets.filter(
       (a) =>
+        a.kind !== "preview" &&
         (!project || a.project_id === project.id) &&
         (!favorites || a.favorite) &&
         a.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()),
@@ -393,7 +415,12 @@ export function App() {
           </div>
           <div className="top-signals">
             <span className="mono">
-              <i className="dot" /> CPU · DiT-only
+              <i className="dot" />{" "}
+              {page === "voice"
+                ? "V3 · CPU"
+                : page === "fx"
+                  ? "DSP · nativo"
+                  : "CPU · DiT-only"}
             </span>
             <span className="mono">
               RAM {data?.telemetry.available_gib.toFixed(1) ?? "—"}{" "}
@@ -475,6 +502,37 @@ export function App() {
             </div>
           ) : (
             <>
+              {page === "voice" && (
+                <VoiceStudio
+                  key={data.selected_project}
+                  data={data}
+                  busy={busy}
+                  act={act}
+                  listen={(asset) => {
+                    selectAudio(asset);
+                    setPlaying(true);
+                  }}
+                  edit={(asset) => void sendToAudacity(asset)}
+                  openFx={(asset) => {
+                    setFxAssetId(asset.id);
+                    setPage("fx");
+                  }}
+                />
+              )}
+              {page === "fx" && (
+                <FxStudio
+                  key={data.selected_project}
+                  data={data}
+                  busy={busy}
+                  act={act}
+                  initialAssetId={fxAssetId}
+                  listen={(asset) => {
+                    selectAudio(asset);
+                    setPlaying(true);
+                  }}
+                  edit={(asset) => void sendToAudacity(asset)}
+                />
+              )}
               {page === "projects" && (
                 <>
                   {projectForm && (
@@ -792,7 +850,13 @@ export function App() {
                               <Clock3 size={19} />
                               <div>
                                 <strong>
-                                  {String(job.params.prompt).slice(0, 75)}
+                                  {String(
+                                    job.params.prompt ??
+                                      job.params.text ??
+                                      (job.params.recipe as { name?: string })
+                                        ?.name ??
+                                      "Processamento local",
+                                  ).slice(0, 75)}
                                 </strong>
                                 <p>
                                   {job.stage} · seed {String(job.params.seed)}
@@ -1137,6 +1201,7 @@ export function App() {
 
               {page === "environment" && (
                 <>
+                  <MusicEngines data={data} busy={busy} act={act} />
                   <div className="profile-banner">
                     <ShieldCheck size={31} />
                     <div>
@@ -1422,8 +1487,8 @@ export function App() {
                     <ChevronRight />
                     <span>
                       <Cpu size={24} />
-                      <strong>ACE-Step</strong>
-                      <small>Geração em CPU</small>
+                      <strong>Motores & FX</strong>
+                      <small>Áudio em CPU</small>
                     </span>
                     <ChevronRight />
                     <span>
@@ -1509,6 +1574,27 @@ export function App() {
                           identificados. Exportações são registradas como
                           versões relacionadas.
                         </p>
+                        <label>
+                          Executável do Audacity (independente dos motores)
+                          <input
+                            value={audacityPath}
+                            onChange={(e) => setAudacityPath(e.target.value)}
+                            placeholder="Caminho absoluto para Audacity.exe"
+                          />
+                        </label>
+                        <button
+                          className="outline"
+                          disabled={busy || !audacityPath}
+                          onClick={() =>
+                            void act(
+                              "audacity_configure",
+                              { executable: audacityPath },
+                              "Caminho salvo; módulos e preferências preservados.",
+                            )
+                          }
+                        >
+                          Salvar caminho do Audacity
+                        </button>
                         <button
                           className="outline"
                           disabled={busy}
@@ -1779,6 +1865,24 @@ export function App() {
 }
 
 function JobPanel({ job }: { job: Job }) {
+  const engine = String(job.params._engine ?? "acestep-v15-turbo");
+  const duration = job.params.audio_duration ?? job.params.duration;
+  const fields = [
+    [
+      "Duração",
+      duration === undefined ? "Conforme fonte / síntese" : `${duration} s`,
+    ],
+    ["Seed", String(job.params.seed ?? "Não aplicável")],
+    [
+      "Modo",
+      String(
+        job.params.task_type ??
+          job.params.mode ??
+          (engine === "native-fx" ? "DSP nativo" : "Texto para voz"),
+      ),
+    ],
+    ["Modelo", engine],
+  ];
   return (
     <div className="job-detail">
       <div className="job-meta">
@@ -1799,31 +1903,30 @@ function JobPanel({ job }: { job: Job }) {
         <span>tempo decorrido</span>
       </div>
       <p className="readonly-label">
-        PROMPT RECEBIDO DO CODEX · SOMENTE LEITURA
+        PARÂMETROS DA SOLICITAÇÃO · SOMENTE LEITURA
       </p>
-      <p className="prompt-text">{String(job.params.prompt)}</p>
+      <p className="prompt-text">
+        {String(
+          job.params.prompt ??
+            job.params.text ??
+            (job.params.recipe as { name?: string })?.name ??
+            "Processamento local",
+        )}
+      </p>
       <div className="inventory job-inventory">
-        <div>
-          <span>Duração</span>
-          <strong>{String(job.params.audio_duration)} s</strong>
-        </div>
-        <div>
-          <span>Seed</span>
-          <strong>{String(job.params.seed)}</strong>
-        </div>
-        <div>
-          <span>Modo</span>
-          <strong>{String(job.params.task_type)}</strong>
-        </div>
-        <div>
-          <span>Modelo</span>
-          <strong>Turbo / CPU</strong>
-        </div>
+        {fields.map(([label, value]) => (
+          <div key={label}>
+            <span>{label}</span>
+            <strong>{value}</strong>
+          </div>
+        ))}
       </div>
       {job.metrics.load_seconds !== undefined && (
         <div className="data-line">
           <span>Carga: {job.metrics.load_seconds.toFixed(2)} s</span>
-          <span>DiT: {job.metrics.inference_seconds?.toFixed(2) ?? "—"} s</span>
+          <span>
+            Inferência: {job.metrics.inference_seconds?.toFixed(2) ?? "—"} s
+          </span>
           <span>Pico: {job.metrics.peak_rss_gib?.toFixed(2)} GiB</span>
         </div>
       )}

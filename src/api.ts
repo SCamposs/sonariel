@@ -73,6 +73,8 @@ export type Job = {
   };
 };
 export type Snapshot = {
+  engines?: EngineInfo[];
+  voice_environment?: { python: string; models: string } | null;
   projects: Project[];
   sessions: Session[];
   assets: Asset[];
@@ -130,6 +132,20 @@ export type Snapshot = {
     project_path: string;
     created: number;
   }[];
+};
+
+export type EngineInfo = {
+  id: string;
+  name: string;
+  category: "music" | "voice" | "fx";
+  installed: boolean;
+  compatible: boolean;
+  experimental: boolean;
+  tested?: boolean;
+  backend: string;
+  license: string;
+  languages?: Record<string, string>;
+  blocked_reason?: string;
 };
 
 export const states: Record<string, string> = {
