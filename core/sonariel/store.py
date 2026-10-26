@@ -54,6 +54,11 @@ class Store:
                 CREATE TABLE IF NOT EXISTS asset_trash(asset_id TEXT PRIMARY KEY REFERENCES assets(id),original_path TEXT NOT NULL,trash_path TEXT,sha256 TEXT NOT NULL,state TEXT NOT NULL,created REAL NOT NULL);
                 PRAGMA user_version=3;
             ''')
+            # Record origin once, before any UI preference is chosen. Existing
+            # installations keep Portuguese and their independent tour state.
+            db.execute("INSERT OR IGNORE INTO settings(key,value) VALUES(?,?)", (
+                "ui_preferences", json.dumps({"locale": None, "existing_installation": previous_version > 0}),
+            ))
 
     def connect(self) -> sqlite3.Connection:
         db = sqlite3.connect(self.path, timeout=20)

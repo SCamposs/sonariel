@@ -1,15 +1,18 @@
+import { systemMessage } from "../i18n/system-message";
+import { tr } from "../i18n";
+import { useTranslation } from "react-i18next";
 import { useId, useRef, useState } from "react";
 import { open, save } from "@tauri-apps/plugin-dialog";
 import { FolderOpen, Save } from "lucide-react";
 import "./path-field.css";
 
 type PathKind = "directory" | "executable" | "audio" | "wav-save" | "preset";
-const filters = {
-  executable: [{ name: "Executável Windows", extensions: ["exe"] }],
-  audio: [{ name: "Áudio", extensions: ["wav", "flac", "mp3", "ogg"] }],
-  "wav-save": [{ name: "Áudio WAV", extensions: ["wav"] }],
-  preset: [{ name: "Preset JSON", extensions: ["json"] }],
-};
+const getFilters = () => ({
+  executable: [{ name: tr("files", "windowsExecutable"), extensions: ["exe"] }],
+  audio: [{ name: tr("files", "audio"), extensions: ["wav", "flac", "mp3", "ogg"] }],
+  "wav-save": [{ name: tr("files", "wavAudio"), extensions: ["wav"] }],
+  preset: [{ name: tr("files", "jsonPreset"), extensions: ["json"] }],
+});
 
 /** Native selection changes only the field; core validation still owns I/O. */
 export function PathField({ label, value, onChange, kind, placeholder, required,
@@ -18,6 +21,7 @@ export function PathField({ label, value, onChange, kind, placeholder, required,
   kind: PathKind; placeholder?: string; required?: boolean;
   disabled?: boolean; className?: string;
 }) {
+  useTranslation();
   const id = useId();
   const [picking, setPicking] = useState(false);
   const [error, setError] = useState("");
@@ -32,12 +36,12 @@ export function PathField({ label, value, onChange, kind, placeholder, required,
     try {
       const options = { title: label, defaultPath: value || (saving
         ? (kind === "preset" ? "preset.json" : "audio.wav") : undefined),
-        filters: kind === "directory" ? undefined : filters[kind] };
+        filters: kind === "directory" ? undefined : getFilters()[kind] };
       const selected = saving ? await save(options) : await open({ ...options,
         directory: kind === "directory", multiple: false });
       if (typeof selected === "string") onChange(selected);
     } catch (e) {
-      setError(`Não foi possível abrir o seletor: ${String(e)}`);
+      setError(tr("files", "couldNotOpenTheFilePickerValue", { value0: String(e) }));
     } finally {
       inFlight.current = false;
       setPicking(false);
@@ -52,16 +56,16 @@ export function PathField({ label, value, onChange, kind, placeholder, required,
         aria-describedby={error ? `${id}-error` : undefined} />
       <button type="button" className="outline path-picker"
         disabled={disabled || picking || !native} aria-busy={picking}
-        aria-label={`${kind === "wav-save" ? "Salvar como" : "Selecionar"}: ${label}`}
-        title={native ? label : "Seletor nativo disponível no aplicativo desktop; cole o caminho nesta prévia."}
+        aria-label={`${kind === "wav-save" ? tr("files", "saveAs") : tr("files", "select")}: ${label}`}
+        title={native ? label : tr("files", "theNativePickerIsAvailableInTheDesktop")}
         onClick={() => void pick(kind === "wav-save")}>
         <FolderOpen size={17} aria-hidden="true" />
       </button>
       {kind === "preset" && <button type="button" className="outline path-picker"
         disabled={disabled || picking || !native} aria-busy={picking}
-        aria-label={`Salvar como: ${label}`} title="Escolher destino de um novo preset JSON"
+        aria-label={`Salvar como: ${label}`} title={tr("files", "chooseADestinationForANewJsonPreset")}
         onClick={() => void pick(true)}><Save size={17} aria-hidden="true" /></button>}
     </div>
-    {error && <span id={`${id}-error`} className="path-field-error" role="alert">{error}</span>}
+    {error && <span id={`${id}-error`} className="path-field-error" role="alert">{systemMessage(error)}</span>}
   </div>;
 }

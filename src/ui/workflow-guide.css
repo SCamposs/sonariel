@@ -30,6 +30,15 @@
   border-bottom: 1px solid var(--line);
   background: var(--deep);
 }
+.language-settings-body {
+  padding: 24px 28px;
+  display: grid;
+  gap: 20px;
+}
+.language-settings-body label {
+  display: grid;
+  gap: 10px;
+}
 .guide-header h2 {
   font-size: 17px;
 }

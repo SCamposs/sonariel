@@ -1,3 +1,5 @@
+import { tr } from "../i18n";
+import { useTranslation } from "react-i18next";
 import { useRef, useState } from "react";
 import { Dialog } from "@base-ui/react/dialog";
 import {
@@ -15,80 +17,78 @@ import {
 import "./workflow-guide.css";
 
 export const GUIDE_STORAGE_KEY = "sonariel.workflow-guide.v1";
-const returnHint =
-  "Este tutorial continua disponível na sidebar, em “Instruções do workflow”.";
-const steps = [
+const getSteps = () => [
   {
-    title: "Da ideia à escuta, tudo no seu ritmo",
-    location: "Seu workflow local",
+    title: tr("guide", "fromIdeaToListeningAtYourOwnPace"),
+    location: tr("guide", "yourLocalWorkflow"),
     icon: AudioLines,
     description:
-      "Use o Codex para dirigir músicas e vozes. O Sonariel organiza a execução local, os efeitos e suas versões.",
+      tr("guide", "useCodexToDirectMusicAndVoicesSonariel"),
     points: [
-      "Direção e pedidos de geração ficam no Codex.",
-      "Aqui você acompanha, escuta, compara e prepara a edição.",
+      tr("guide", "creativeDirectionAndGenerationRequestsStayInCodex"),
+      tr("guide", "followExecutionListenCompareAndPrepareEditsHere"),
     ],
-    note: "Este guia leva cerca de um minuto. Você pode fechar agora e voltar depois.",
+    note: tr("guide", "thisGuideTakesAboutAMinuteYouCan"),
   },
   {
-    title: "Prepare o motor uma única vez",
-    location: "Ambiente",
+    title: tr("guide", "prepareAnEngineOnce"),
+    location: tr("guide", "environment"),
     icon: Cpu,
     description:
-      "Revise os motores em Ambiente e o setup vocal em Voice Studio. Cada instalação usa sua própria pasta isolada.",
+      tr("guide", "reviewEnginesInEnvironmentAndVoiceSetupIn"),
     points: [
-      "Turbo continua como padrão musical. Alternativas experimentais e voz têm capacidades e licenças próprias.",
-      "Modelos só são carregados quando uma geração pode começar. A RAM livre é verificada antes.",
+      tr("guide", "turboRemainsTheMusicDefaultExperimentalAlternativesAnd"),
+      tr("guide", "modelsLoadOnlyWhenAGenerationCanStart"),
     ],
-    note: "Abrir o aplicativo não carrega o modelo. Detectar uma GPU não significa usá-la para gerar.",
+    note: tr("guide", "openingTheAppDoesNotLoadAModel"),
   },
   {
-    title: "Dê um contexto à sua produção",
-    location: "Projetos & sessões",
+    title: tr("guide", "giveYourProductionContext"),
+    location: tr("guide", "projectsSessions"),
     icon: Folder,
     description:
-      "Crie um projeto com a intenção musical e use sessões para organizar os momentos de trabalho.",
+      tr("guide", "createAProjectWithYourMusicalIntentAnd"),
     points: [
-      "Confira o projeto ativo antes de pedir uma geração.",
-      "Resultados, referências e decisões ficam associados ao projeto.",
+      tr("guide", "checkTheActiveProjectBeforeRequestingAGeneration"),
+      tr("guide", "resultsReferencesAndDecisionsStayAssociatedWithThe"),
     ],
-    note: "A sessão organiza a produção; não substitui o projeto de edição do Audacity.",
+    note: tr("guide", "aSessionOrganizesProductionItDoesNotReplace"),
   },
   {
-    title: "Conecte a conversa ao aplicativo",
-    location: "Audacity & Codex",
+    title: tr("guide", "connectTheConversationToTheApp"),
+    location: tr("guide", "audacityCodex"),
     icon: Link2,
     description:
-      "Use “Configurar conexão Codex” para registrar a ponte MCP. Depois, recarregue o cliente Codex para carregar as ferramentas.",
+      tr("guide", "useConfigureCodexConnectionToRegisterTheMcp"),
     points: [
-      "Peça ao Codex para usar o Sonariel e informe direção, duração e parâmetros.",
-      "Configuração salva e conexão testada são estados diferentes. Confira o diagnóstico da ponte.",
+      tr("guide", "askCodexToUseSonarielAndProvideDirection"),
+      tr("guide", "savedConfigurationAndATestedConnectionAreDifferent"),
     ],
-    note: "O registro preserva as outras conexões e cria um backup da configuração existente.",
+    note: tr("guide", "registrationPreservesOtherConnectionsAndBacksUpThe"),
   },
   {
-    title: "Acompanhe sem perder o controle",
-    location: "Fila de geração",
+    title: tr("guide", "followExecutionAndStayInControl"),
+    location: tr("guide", "generationQueue"),
     icon: Activity,
     description:
-      "A fila mostra a etapa real de cada pedido, o tempo decorrido e a memória observada.",
+      tr("guide", "theQueueShowsEachRequestSRealStage"),
     points: [
-      "Uma geração é executada por vez. Se faltar RAM, o pedido aguarda.",
-      "Só pedidos ainda não enviados ao motor podem ser cancelados. Fechar a janela não interrompe o processamento.",
+      tr("guide", "oneGenerationRunsAtATimeRequestsWait"),
+      tr("guide", "onlyRequestsNotYetSubmittedToTheEngine"),
     ],
-    note: "Prompt, seed e parâmetros ficam junto do resultado para permitir novas iterações.",
+    note: tr("guide", "promptsSeedsAndParametersStayWithTheResult"),
   },
   {
-    title: "Escute, escolha e leve para edição",
-    location: "Biblioteca & versões → FX ou Audacity",
+    title: tr("guide", "listenChooseAndPrepareAnEdit"),
+    location: tr("guide", "libraryVersionsFxOrAudacity"),
     icon: AudioLines,
     description:
-      "Ouça no player, compare duas versões e registre notas, favoritas e a escolha atual antes de editar.",
+      tr("guide", "listenInThePlayerCompareTwoVersionsAnd"),
     points: [
-      "Em FX, ajuste cadeias e peça uma prévia curta; os controles não disparam renders a cada movimento.",
-      "Renderize e exporte novas versões preservando o original. Audacity é opcional e exige mod-script-pipe.",
+      tr("guide", "inFxAdjustChainsAndRequestAShort"),
+      tr("guide", "renderAndExportNewVersionsWhilePreservingThe"),
     ],
-    note: "Pronto para explorar. Comece em Ambiente ou retome seu projeto atual.",
+    note: tr("guide", "readyToExploreStartInEnvironmentOrReturn"),
   },
 ];
 
@@ -102,6 +102,9 @@ function needsIntroduction() {
 
 /** Presentational tour only: never invokes setup, generation or editing RPCs. */
 export function WorkflowGuide({ ready }: { ready: boolean }) {
+  useTranslation();
+  const returnHint = tr("guide", "thisGuideRemainsAvailableInTheSidebarUnder");
+  const steps = getSteps();
   const [open, setOpen] = useState(needsIntroduction);
   const [step, setStep] = useState(0);
   const [reminder, setReminder] = useState(false);
@@ -132,8 +135,7 @@ export function WorkflowGuide({ ready }: { ready: boolean }) {
           setOpen(true);
         }}
       >
-        <CircleHelp size={15} /> Instruções do workflow
-      </button>
+        <CircleHelp size={15} /> {tr("guide", "workflowInstructions")}</button>
       {reminder && (
         <p className="guide-return-notice" role="status">
           {returnHint}
@@ -170,21 +172,18 @@ export function WorkflowGuide({ ready }: { ready: boolean }) {
             }}
           >
             <header className="guide-header">
-              <Dialog.Title>Conheça o Sonariel</Dialog.Title>
+              <Dialog.Title>{tr("guide", "getToKnowSonariel")}</Dialog.Title>
               <Dialog.Close
                 ref={closeButton}
                 className="icon-button"
-                aria-label="Fechar tutorial"
-                title="Fechar e explorar por conta própria"
+                aria-label={tr("guide", "closeTutorial")}
+                title={tr("guide", "closeAndExploreOnYourOwn")}
               >
                 <X size={19} />
               </Dialog.Close>
             </header>
             <Dialog.Description className="visually-hidden">
-              Guia de uso em seis etapas. Use Próximo passo e Passo anterior, ou
-              as setas do teclado. Pode ser fechado a qualquer momento e
-              reaberto em Instruções do workflow na sidebar.
-            </Dialog.Description>
+              {tr("guide", "sixStepGuideUseNextStepAndPrevious")}</Dialog.Description>
             <div className="guide-progress-row">
               <span className="mono" aria-hidden="true">
                 {String(step + 1).padStart(2, "0")} / 06
@@ -192,11 +191,11 @@ export function WorkflowGuide({ ready }: { ready: boolean }) {
               <div
                 className="guide-progress"
                 role="progressbar"
-                aria-label="Etapas do tutorial"
+                aria-label={tr("guide", "tutorialSteps")}
                 aria-valuemin={1}
                 aria-valuemax={steps.length}
                 aria-valuenow={step + 1}
-                aria-valuetext={`Etapa ${step + 1} de ${steps.length}`}
+                aria-valuetext={tr("guide", "stepValueOfValue", { value0: step + 1, value1: steps.length })}
               >
                 <span
                   style={{ transform: `scaleX(${(step + 1) / steps.length})` }}
@@ -231,8 +230,7 @@ export function WorkflowGuide({ ready }: { ready: boolean }) {
                   disabled={step === 0}
                   onClick={() => setStep((value) => Math.max(0, value - 1))}
                 >
-                  <ArrowLeft size={16} /> Passo anterior
-                </button>
+                  <ArrowLeft size={16} /> {tr("guide", "previousStep")}</button>
                 <button
                   className="primary"
                   onClick={() =>
@@ -243,7 +241,7 @@ export function WorkflowGuide({ ready }: { ready: boolean }) {
                         )
                   }
                 >
-                  {last ? "Concluir tutorial" : "Próximo passo"}
+                  {last ? tr("guide", "finishTutorial") : tr("guide", "nextStep")}
                   {last ? <Check size={16} /> : <ArrowRight size={16} />}
                 </button>
               </div>

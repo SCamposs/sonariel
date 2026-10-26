@@ -1,0 +1,838 @@
+[
+  {
+    "key": "audacityDidNotRespondWithin20SecondsCheck",
+    "source": "Audacity não respondeu em 20 segundos. Verifique diálogos abertos antes de repetir a operação."
+  },
+  {
+    "key": "audacityRejectedValueValue",
+    "source": "Audacity recusou {{value1}}: {{value3}}"
+  },
+  {
+    "key": "audacityDisconnectedThePipeDuringItsResponse",
+    "source": "Audacity desconectou o pipe durante a resposta"
+  },
+  {
+    "key": "selectAResultToEdit",
+    "source": "Selecione um resultado para edição"
+  },
+  {
+    "key": "theActiveProjectDoesNotMatchTheSonariel",
+    "source": "O projeto ativo não corresponde à edição Sonariel. Foco alterado; nenhuma edição aplicada."
+  },
+  {
+    "key": "editIsNotRegistered",
+    "source": "Edição não registrada"
+  },
+  {
+    "key": "fadesMustFitWithinTheTrackAndBe",
+    "source": "Fades devem caber na faixa e ter no máximo 10 segundos"
+  },
+  {
+    "key": "audacityResponseExceededTheSafeLimit",
+    "source": "Resposta do Audacity excedeu o limite seguro"
+  },
+  {
+    "key": "configureTheAudacityExecutable",
+    "source": "Configure o executável do Audacity"
+  },
+  {
+    "key": "theNewProjectIsNotEmptyImportStopped",
+    "source": "Projeto novo não está vazio; importação interrompida"
+  },
+  {
+    "key": "couldNotConfirmTheImportedTrack",
+    "source": "Não foi possível confirmar a faixa importada"
+  },
+  {
+    "key": "modScriptPipeIsMissingOrBusyWith",
+    "source": "mod-script-pipe ausente ou ocupado por outro cliente. Preserve os projetos abertos; libere o cliente do pipe antes de testar novamente."
+  },
+  {
+    "key": "audioIsEmptyOrContainsInvalidSamples",
+    "source": "Áudio vazio ou com amostras inválidas"
+  },
+  {
+    "key": "audioIsSilent",
+    "source": "Áudio silencioso"
+  },
+  {
+    "key": "engineLoadingTimedOut",
+    "source": "Tempo limite ao carregar motor"
+  },
+  {
+    "key": "linkACompatibleEnvironmentBeforeGenerating",
+    "source": "Vincule um ambiente compatível antes de gerar"
+  },
+  {
+    "key": "unrecognizedResultUrl",
+    "source": "URL de resultado não reconhecida"
+  },
+  {
+    "key": "port8001IsOccupiedByAnExternalEngine",
+    "source": "Porta 8001 ocupada por motor externo. Pare-o com seu comando original antes de gerenciar pelo Sonariel."
+  },
+  {
+    "key": "theActiveEngineIsOutsideTheValidatedCpu",
+    "source": "Motor ativo fora do perfil CPU validado"
+  },
+  {
+    "key": "theEngineExitedWhileLoadingCheckTheEngine",
+    "source": "Motor encerrou ao carregar. Consulte o log do motor no diagnóstico."
+  },
+  {
+    "key": "unexpectedActiveLm",
+    "source": "LM ativo inesperadamente"
+  },
+  {
+    "key": "theDestinationDoesNotContainARecognizedVenv",
+    "source": "Destino não contém .venv e ACE-Step-1.5 reconhecidos"
+  },
+  {
+    "key": "configureTheEngineEnvironmentBeforeGenerating",
+    "source": "Configure o ambiente do motor antes de gerar"
+  },
+  {
+    "key": "previousLocalProcessingIsStillActiveItWill",
+    "source": "Processamento local anterior ainda ativo; não será duplicado"
+  },
+  {
+    "key": "unrecognizedLocalAdapter",
+    "source": "Adaptador local não reconhecido"
+  },
+  {
+    "key": "useAnAbsoluteLocalAudioPath",
+    "source": "Use caminho local absoluto para áudio"
+  },
+  {
+    "key": "invalidLocalAudioFile",
+    "source": "Arquivo de áudio local inválido"
+  },
+  {
+    "key": "updateInProgressWaitForTheAppTo",
+    "source": "Atualização em andamento. Aguarde o reinício do aplicativo."
+  },
+  {
+    "key": "unsupportedOperation",
+    "source": "Operação não suportada"
+  },
+  {
+    "key": "waitForTheActiveTaskBeforeChangingEnvironments",
+    "source": "Aguarde a tarefa ativa para trocar ambiente"
+  },
+  {
+    "key": "selectAudacityExe",
+    "source": "Selecione Audacity.exe"
+  },
+  {
+    "key": "projectNotFound",
+    "source": "Projeto não encontrado"
+  },
+  {
+    "key": "thePreviousVersionBelongsToAnotherProject",
+    "source": "Versão anterior pertence a outro projeto"
+  },
+  {
+    "key": "renderTheFullVersionBeforeChoosingItAs",
+    "source": "Renderize a versão completa antes de escolhê-la como resultado preferido"
+  },
+  {
+    "key": "theCpuProfileRequiresBatchSize1",
+    "source": "O perfil CPU exige batch_size=1"
+  },
+  {
+    "key": "theInstalledRevisionNeutralizesAudioCoverStrengthIn",
+    "source": "A revisão instalada neutraliza audio_cover_strength em text2music. Use 1 e reference_id para estilo."
+  },
+  {
+    "key": "inferenceIsActiveThisProfileDoesNotSupport",
+    "source": "Inferência ativa. Este perfil não oferece interrupção segura."
+  },
+  {
+    "key": "anotherResourceIntensiveOperationIsActive",
+    "source": "Outra operação pesada está ativa"
+  },
+  {
+    "key": "installationRequiresAuthorization",
+    "source": "Instalação requer autorização"
+  },
+  {
+    "key": "thisConnectionAcceptsOnlyTheDistributedSonarielCore",
+    "source": "A conexão aceita somente o executável sonariel-core.exe distribuído"
+  },
+  {
+    "key": "finishTheQueueAndResolveInterruptedTasksBefore",
+    "source": "Conclua a fila e resolva tarefas interrompidas antes de atualizar."
+  },
+  {
+    "key": "waitForEnvironmentInstallationBeforeUpdating",
+    "source": "Aguarde a instalação do ambiente antes de atualizar."
+  },
+  {
+    "key": "closeSonarielMcpConnectionsSuchAsTheCodex",
+    "source": "Feche as conexões MCP do Sonariel (por exemplo, o cliente Codex) antes de atualizar."
+  },
+  {
+    "key": "theSessionDoesNotBelongToThisProject",
+    "source": "Sessão não pertence ao projeto"
+  },
+  {
+    "key": "coverRequiresSourceIdReferenceIdIsSeparate",
+    "source": "Cover exige source_id. reference_id é uma condição de estilo diferente."
+  },
+  {
+    "key": "inCoverModeDurationMustMatchTheSource",
+    "source": "No modo cover, a duração deve corresponder ao áudio-fonte"
+  },
+  {
+    "key": "text2musicDoesNotUseSourceIdChooseCover",
+    "source": "text2music não usa source_id. Escolha cover explicitamente."
+  },
+  {
+    "key": "requestKeyWasAlreadyUsedWithDifferentParameters",
+    "source": "request_key já usada com parâmetros diferentes. Use outra chave para uma nova solicitação."
+  },
+  {
+    "key": "onlyTasksNotYetSubmittedToTheEngine",
+    "source": "Somente tarefas ainda não enviadas ao motor podem ser canceladas"
+  },
+  {
+    "key": "aDifferentSonarielSkillAlreadyExistsFilePreserved",
+    "source": "Já existe uma skill sonariel diferente. Arquivo preservado; revise antes de substituir."
+  },
+  {
+    "key": "aSonarielServerWithAnotherCommandAlreadyExists",
+    "source": "Já existe um servidor sonariel com outro comando; configuração preservada"
+  },
+  {
+    "key": "theVoiceReferenceChangedAfterEnqueueing",
+    "source": "Referência vocal modificada após enfileiramento"
+  },
+  {
+    "key": "dspRenderingExceededMemoryHeadroomOriginalPreserved",
+    "source": "Render DSP excedeu headroom; original preservado"
+  },
+  {
+    "key": "theReferenceBelongsToAnotherProject",
+    "source": "Referência pertence a outro projeto"
+  },
+  {
+    "key": "chooseADedicatedSubfolderOutsideARepository",
+    "source": "Escolha uma subpasta dedicada fora de um repositório"
+  },
+  {
+    "key": "explicitlyAuthorizeTheRecipeAndDestinationBeforeInstalling",
+    "source": "Autorize explicitamente a receita e o destino antes de instalar"
+  },
+  {
+    "key": "implementedProfileWindowsX64WithAtLeast24",
+    "source": "Perfil implementado: Windows x64 com pelo menos 24 GB de RAM"
+  },
+  {
+    "key": "nonEmptyFolderWithoutASonarielInstallationLink",
+    "source": "Pasta não vazia sem instalação Sonariel. Vincule-a ou escolha outro destino."
+  },
+  {
+    "key": "insufficientDiskSpaceForIsolatedInstallation",
+    "source": "Espaço insuficiente para instalação isolada"
+  },
+  {
+    "key": "theExistingRecipeDiffersUpgradesAreNotAutomatic",
+    "source": "Receita existente diferente; atualização não é automática"
+  },
+  {
+    "key": "theDitOnlyPatchDoesNotMatchThe",
+    "source": "Patch DiT-only não corresponde à fonte fixada"
+  },
+  {
+    "key": "zipArchiveContainsAnExternalPath",
+    "source": "Arquivo ZIP contém caminho externo"
+  },
+  {
+    "key": "theEngineMustRemainOutsideGit",
+    "source": "O motor deve ficar fora do Git"
+  },
+  {
+    "key": "invalidLitertFamily",
+    "source": "Família LiteRT inválida"
+  },
+  {
+    "key": "authorizeInstallationAndExplicitlyAcceptStabilityCommunityAnd",
+    "source": "Autorize a instalação e aceite explicitamente Stability Community e Gemma antes de baixar"
+  },
+  {
+    "key": "recipeValidatedForWindowsX64WithAtLeast",
+    "source": "Receita validada para Windows x64 com pelo menos 24 GB de RAM"
+  },
+  {
+    "key": "nonEmptyFolderWithoutASonarielLitertInstallation",
+    "source": "Pasta não vazia sem instalação LiteRT Sonariel; preservada"
+  },
+  {
+    "key": "theExistingRecipeDiffersItWillNotBe",
+    "source": "Receita existente diferente; não será substituída"
+  },
+  {
+    "key": "insufficientDiskSpaceForIsolatedLitert",
+    "source": "Espaço insuficiente para LiteRT isolado"
+  },
+  {
+    "key": "waitForTheQueueBeforeDiscardingOrRestoring",
+    "source": "Aguarde a fila antes de descartar ou restaurar arquivos"
+  },
+  {
+    "key": "confirmThePreviewBeforeDiscarding",
+    "source": "Confirme a prévia antes de descartar"
+  },
+  {
+    "key": "previewChangedOrSelectionProtectedReviewAgain",
+    "source": "Prévia alterada ou seleção protegida; revise novamente"
+  },
+  {
+    "key": "theTrashFolderIsNotASafeOwned",
+    "source": "Pasta da lixeira não é um diretório próprio seguro"
+  },
+  {
+    "key": "theRecordIsNotInTrash",
+    "source": "Registro não está na lixeira"
+  },
+  {
+    "key": "originalMissingOrChangedTheRecordRemainsRecoverable",
+    "source": "Original ausente ou alterado; registro permanece recuperável"
+  },
+  {
+    "key": "trashDestinationOccupiedNoFileWillBeOverwritten",
+    "source": "Destino da lixeira ocupado; nenhum arquivo será sobrescrito"
+  },
+  {
+    "key": "invalidRecoveryPaths",
+    "source": "Caminhos de recuperação inválidos"
+  },
+  {
+    "key": "sourceChangedRestoreTheRecordThroughTrash",
+    "source": "Origem mudou; restaure o registro pela lixeira"
+  },
+  {
+    "key": "originalDestinationOccupiedNothingWasOverwritten",
+    "source": "Destino original ocupado; nada foi sobrescrito"
+  },
+  {
+    "key": "theTrashedFileWasModified",
+    "source": "Arquivo da lixeira foi alterado"
+  },
+  {
+    "key": "taskNotFound",
+    "source": "Tarefa não encontrada"
+  },
+  {
+    "key": "audioIsInTrashRestoreBeforeUsing",
+    "source": "Áudio na lixeira; restaure antes de usar"
+  },
+  {
+    "key": "audioNotFound",
+    "source": "Áudio não encontrado"
+  },
+  {
+    "key": "databaseCreatedByANewerSonarielVersionIt",
+    "source": "Banco criado por versão mais nova do Sonariel; não será alterado"
+  },
+  {
+    "key": "presetExceedsTheSizeLimit",
+    "source": "Preset excede limite de tamanho"
+  },
+  {
+    "key": "reverseSwellCannotExceedPreRoll",
+    "source": "Swell reverso não pode ultrapassar o pre-roll"
+  },
+  {
+    "key": "layeredChainsRequireStereoOutput",
+    "source": "Cadeias em camadas exigem saída estéreo"
+  },
+  {
+    "key": "anIndividualLayerTailMustBeAtMost",
+    "source": "Cauda individual de camada deve ser de até seis segundos"
+  },
+  {
+    "key": "selectTheLocalAudacityExeExecutable",
+    "source": "Selecione o executável local Audacity.exe"
+  },
+  {
+    "key": "useALocalAudacityInstallation",
+    "source": "Use uma instalação local do Audacity"
+  },
+  {
+    "key": "authorizeInstallationAndExplicitlyAcceptStabilityCommunityAnd2",
+    "source": "Autorize a instalação e aceite Stability Community e Gemma explicitamente"
+  },
+  {
+    "key": "waitForTheActiveOperation",
+    "source": "Aguarde a operação ativa"
+  },
+  {
+    "key": "unloadEnginesBeforeInstallingAnotherEnvironment",
+    "source": "Descarregue os motores antes de instalar outro ambiente"
+  },
+  {
+    "key": "explicitAcceptanceOfStabilityCommunityAndGemmaIs",
+    "source": "Aceite explícito de Stability Community e Gemma necessário"
+  },
+  {
+    "key": "waitForTheQueueBeforeChangingTheLitert",
+    "source": "Aguarde a fila antes de trocar o ambiente LiteRT"
+  },
+  {
+    "key": "selectPythonSourceAndModelsFromTheIsolated",
+    "source": "Selecione Python, fonte e modelos do ambiente isolado"
+  },
+  {
+    "key": "incompleteLitertEnvironment",
+    "source": "Ambiente LiteRT incompleto"
+  },
+  {
+    "key": "versionsDifferFromTheValidatedLitertCpuRecipe",
+    "source": "Versões fora da receita LiteRT CPU validada"
+  },
+  {
+    "key": "litertAudioEncoderDiffersFromTheRecipe",
+    "source": "Encoder de áudio LiteRT diferente da receita"
+  },
+  {
+    "key": "thisContractAcceptsOnlyStableAudioLitertTurbo",
+    "source": "Este contrato aceita apenas Stable Audio LiteRT; Turbo mantém generate"
+  },
+  {
+    "key": "configureTheChosenEngineAndAcceptItsLicenses",
+    "source": "Configure e aceite as licenças do motor escolhido antes de gerar"
+  },
+  {
+    "key": "voiceInstallationRequiresExplicitAuthorization",
+    "source": "Instalação de voz exige autorização explícita"
+  },
+  {
+    "key": "waitForTheQueueBeforeChangingTheVoice",
+    "source": "Aguarde a fila antes de trocar ambiente de voz"
+  },
+  {
+    "key": "selectTheIsolatedEnvironmentSPythonAndCheckpoint",
+    "source": "Selecione o Python do ambiente isolado e a pasta dos checkpoints"
+  },
+  {
+    "key": "incompleteVoiceEnvironmentUseTheInstallationRecipe",
+    "source": "Ambiente de voz incompleto; use a receita de instalação"
+  },
+  {
+    "key": "versionsDifferFromTheValidatedV3CpuRecipe",
+    "source": "Versões fora da receita V3 CPU validada"
+  },
+  {
+    "key": "languageNotSupportedByV3",
+    "source": "Idioma não suportado pelo V3"
+  },
+  {
+    "key": "theOriginalFileChangedSinceRegistrationRegisterA",
+    "source": "Arquivo original mudou desde o registro; registre uma nova versão"
+  },
+  {
+    "key": "unsupportedLanguage",
+    "source": "Idioma não suportado"
+  },
+  {
+    "key": "selectAJsonPresetNoLargerThan200",
+    "source": "Selecione um preset JSON de até 200 KB"
+  },
+  {
+    "key": "presetNotFound",
+    "source": "Preset não encontrado"
+  },
+  {
+    "key": "nativeFxAcceptsWavConvertOtherFormatsExplicitly",
+    "source": "FX nativo aceita WAV; converta outros formatos explicitamente"
+  },
+  {
+    "key": "destinationMustBeANewFileInAn",
+    "source": "Destino deve ser um arquivo novo em pasta local existente"
+  },
+  {
+    "key": "useALocalDestination",
+    "source": "Use destino local"
+  },
+  {
+    "key": "wavExportRequiresAWavSource",
+    "source": "Exportação WAV exige fonte WAV"
+  },
+  {
+    "key": "exportIntegrityCheckFailed",
+    "source": "Falha de integridade na exportação"
+  },
+  {
+    "key": "filterFrequencyExceeds45OfTheSourceSample",
+    "source": "Frequência do filtro excede 45% do sample rate da fonte"
+  },
+  {
+    "key": "chorusVariationMustBeLessThanSeparation",
+    "source": "Variação do chorus deve ser menor que a separação"
+  },
+  {
+    "key": "sourceAudioRequiresExplicitModeAudio2audioItIs",
+    "source": "Áudio de entrada exige mode=audio2audio explícito; não é referência de estilo"
+  },
+  {
+    "key": "text2audioRetainsTheLocal60SecondLimit",
+    "source": "text2audio mantém limite local de 60 segundos"
+  },
+  {
+    "key": "unsupportedMusicMode",
+    "source": "Modo musical não suportado"
+  },
+  {
+    "key": "voiceReferenceRequiresExplicitAuthorizationAndTheSame",
+    "source": "Referência vocal exige autorização explícita e mesmo projeto"
+  },
+  {
+    "key": "requestKeyAlreadyUsedWithDifferentParameters",
+    "source": "request_key já usada com parâmetros diferentes"
+  },
+  {
+    "key": "theProfileDoesNotBelongToTheSelected",
+    "source": "Perfil não pertence ao projeto/idioma selecionado"
+  },
+  {
+    "key": "prepareTheSameSEncoderAndResamplerThrough",
+    "source": "Prepare encoder SAME-S e resampler pelo setup LiteRT e vincule novamente o ambiente"
+  },
+  {
+    "key": "audio2audioRequiresASourceIdFromTheProject",
+    "source": "audio2audio exige source_id do projeto"
+  },
+  {
+    "key": "theAudioSourceBelongsToAnotherProject",
+    "source": "Fonte de áudio pertence a outro projeto"
+  },
+  {
+    "key": "sourceMustBeAMonoOrStereoWav",
+    "source": "Fonte deve ser WAV mono ou estéreo"
+  },
+  {
+    "key": "audio2audioDurationMustMatchTheFullSourceRegister",
+    "source": "Duração audio2audio deve coincidir com a fonte completa; registre um trecho separado para recortar"
+  },
+  {
+    "key": "initNoiseLevelMustBe001And",
+    "source": "init_noise_level deve ser >=0.01 e <1; 1 ignoraria a fonte"
+  },
+  {
+    "key": "referenceIsNotAuthorized",
+    "source": "Referência sem autorização"
+  },
+  {
+    "key": "voiceRecipeValidatedForWindowsX6424Gb",
+    "source": "Receita de voz validada para Windows x64 / 24 GB"
+  },
+  {
+    "key": "nonEmptyFolderWithoutASonarielVoiceInstallation",
+    "source": "Pasta não vazia sem instalação Sonariel de voz; arquivos preservados"
+  },
+  {
+    "key": "theExistingRecipeDiffersItWillNotBe2",
+    "source": "Receita existente diferente; não será atualizada automaticamente"
+  },
+  {
+    "key": "insufficientDiskSpaceForAnIsolatedVoiceEnvironment",
+    "source": "Espaço insuficiente para ambiente isolado de voz"
+  },
+  {
+    "key": "theCoreDidNotStartCheckLogsCore",
+    "source": "Núcleo não iniciou. Consulte logs/core.log no diretório de dados."
+  },
+  {
+    "key": "coreUnavailable",
+    "source": "Núcleo indisponível"
+  },
+  {
+    "key": "unknownTool",
+    "source": "Unknown tool"
+  },
+  {
+    "key": "sourceAudioChangedAfterEnqueue",
+    "source": "Source audio changed after enqueue"
+  },
+  {
+    "key": "sourceMustContainFiniteMonoStereoAudio",
+    "source": "Source must contain finite mono/stereo audio"
+  },
+  {
+    "key": "sourceDurationChanged",
+    "source": "Source duration changed"
+  },
+  {
+    "key": "codecGridWouldTrimSourceContent",
+    "source": "Codec grid would trim source content"
+  },
+  {
+    "key": "invalidAudio2audioLatentInitialization",
+    "source": "Invalid audio2audio latent initialization"
+  },
+  {
+    "key": "outputAlreadyExists",
+    "source": "Output already exists"
+  },
+  {
+    "key": "explicitStabilityCommunityAndGemmaAcceptanceRequired",
+    "source": "Explicit Stability Community and Gemma acceptance required"
+  },
+  {
+    "key": "pinnedLitertRuntimeChanged",
+    "source": "Pinned LiteRT runtime changed"
+  },
+  {
+    "key": "unsupportedStableAudioMode",
+    "source": "Unsupported Stable Audio mode"
+  },
+  {
+    "key": "unexpectedPytorchImportInLitertWorker",
+    "source": "Unexpected PyTorch import in LiteRT worker"
+  },
+  {
+    "key": "invalidModelOutput",
+    "source": "Invalid model output"
+  },
+  {
+    "key": "sourceAudioChangedDuringGeneration",
+    "source": "Source audio changed during generation"
+  },
+  {
+    "key": "pinnedSourceAudioResamplerIsMissingOrChanged",
+    "source": "Pinned source-audio resampler is missing or changed"
+  },
+  {
+    "key": "resumeEngineStatusQuery",
+    "source": "Retomar consulta ao motor"
+  },
+  {
+    "key": "interruptedBeforeSubmissionWasConfirmed",
+    "source": "Interrompida antes de confirmar envio"
+  },
+  {
+    "key": "waitingForEngine",
+    "source": "Aguardando motor"
+  },
+  {
+    "key": "requestReceived",
+    "source": "Solicitação recebida"
+  },
+  {
+    "key": "cancelledWhileQueued",
+    "source": "Cancelada na fila"
+  },
+  {
+    "key": "prepareInstallation",
+    "source": "Preparar instalação"
+  },
+  {
+    "key": "waitingForExternalEngineToUnload",
+    "source": "Aguardando motor externo descarregar"
+  },
+  {
+    "key": "waitingForMemoryValueValueGibAvailable",
+    "source": "Aguardando memória: {{available}} / {{required}} GiB livres"
+  },
+  {
+    "key": "waitingForValueGibAvailableRam",
+    "source": "Aguardando {{required}} GiB de RAM livre"
+  },
+  {
+    "key": "loadingCpuEngine",
+    "source": "Carregando motor CPU"
+  },
+  {
+    "key": "submittingToEngine",
+    "source": "Enviando ao motor"
+  },
+  {
+    "key": "cpuDitInference",
+    "source": "Inferência DiT em CPU"
+  },
+  {
+    "key": "wavValidated",
+    "source": "WAV validado"
+  },
+  {
+    "key": "audioGeneratedAndValidated",
+    "source": "Áudio gerado e validado"
+  },
+  {
+    "key": "inspectionRequired",
+    "source": "Verificação necessária"
+  },
+  {
+    "key": "localWavValidated",
+    "source": "WAV local validado"
+  },
+  {
+    "key": "localResultPreserved",
+    "source": "Resultado local preservado"
+  },
+  {
+    "key": "localRequestReceived",
+    "source": "Solicitação local recebida"
+  },
+  {
+    "key": "localCoreStartedSharedQueueAvailable",
+    "source": "Núcleo local iniciado; fila única disponível"
+  },
+  {
+    "key": "environmentInspectedAndLinkedWithoutChangingItsFiles",
+    "source": "Ambiente vinculado por inspeção, sem modificar seus arquivos"
+  },
+  {
+    "key": "firstEnvironmentInstalledAndLinked",
+    "source": "Primeiro ambiente instalado e vinculado"
+  },
+  {
+    "key": "v3CpuLoadAndSynthesize",
+    "source": "V3 CPU: carregar e sintetizar"
+  },
+  {
+    "key": "nativeDspRenderWav",
+    "source": "DSP nativo: renderizar WAV"
+  },
+  {
+    "key": "litertCpuLoadAndGenerate",
+    "source": "LiteRT CPU: carregar e gerar"
+  },
+  {
+    "key": "litertCpuStepValueValue",
+    "source": "LiteRT CPU: passo {{current}}/{{total}}"
+  },
+  {
+    "key": "verifyIsolatedLitertInstaller",
+    "source": "Verificar instalador isolado LiteRT"
+  },
+  {
+    "key": "preparePinnedPythonAndLitertCpu",
+    "source": "Preparar Python e LiteRT CPU fixados"
+  },
+  {
+    "key": "verifyPinnedOfficialCodeWithoutRunningTheUpstream",
+    "source": "Verificar código oficial fixado, sem executar instalador upstream"
+  },
+  {
+    "key": "verifyModelValue",
+    "source": "Verificar modelo: {{file}}"
+  },
+  {
+    "key": "verifyIsolatedVoiceInstaller",
+    "source": "Verificar instalador isolado de voz"
+  },
+  {
+    "key": "prepareIsolatedPython31115",
+    "source": "Preparar Python 3.11.15 isolado"
+  },
+  {
+    "key": "installOnlyPinnedCpuDependencies",
+    "source": "Instalar somente dependências CPU fixadas"
+  },
+  {
+    "key": "verifyPinnedSourceValue",
+    "source": "Verificar fonte fixada: {{file}}"
+  },
+  {
+    "key": "copyOrDownloadVerifiedV3Checkpoints",
+    "source": "Copiar ou baixar checkpoints V3 verificados"
+  },
+  {
+    "key": "verifyInstallationRuntime",
+    "source": "Verificar runtime de instalação"
+  },
+  {
+    "key": "prepareIsolatedPython",
+    "source": "Preparar Python isolado"
+  },
+  {
+    "key": "installPinnedCpuDependencies",
+    "source": "Instalar dependências CPU fixadas"
+  },
+  {
+    "key": "obtainValidatedAceStepSource",
+    "source": "Obter fonte ACE-Step validada"
+  },
+  {
+    "key": "applyDitOnlyPatch",
+    "source": "Aplicar correção DiT-only"
+  },
+  {
+    "key": "verifyAndPrepareOnlyDitModels",
+    "source": "Verificar e preparar somente modelos DiT"
+  },
+  {
+    "key": "environmentInstalledAndVerified",
+    "source": "Ambiente instalado e verificado"
+  },
+  {
+    "key": "engineInstalledAndVerifiedValue",
+    "source": "Motor instalado e verificado. {{action}}"
+  },
+  {
+    "key": "protectedReference",
+    "source": "Referência protegida"
+  },
+  {
+    "key": "favoriteSelectedRemoveTheMarkBeforeDiscarding",
+    "source": "Favorita/escolhida: remova a marca antes de descartar"
+  },
+  {
+    "key": "usedAsTheSourceOfAnotherVersion",
+    "source": "Usada como origem de outra versão"
+  },
+  {
+    "key": "usedByAVoiceProfile",
+    "source": "Usada por um perfil vocal"
+  },
+  {
+    "key": "hasARegisteredAudacityEdit",
+    "source": "Possui edição Audacity registrada"
+  },
+  {
+    "key": "missingFileRestoreTheOriginalBeforeDiscarding",
+    "source": "Arquivo ausente: restaure o original antes de descartar"
+  },
+  {
+    "key": "fileSharedWithAnotherRecord",
+    "source": "Arquivo compartilhado com outro registro"
+  },
+  {
+    "key": "fileChangedSinceRegistration",
+    "source": "Arquivo alterado desde o registro"
+  },
+  {
+    "key": "recordDiscardedRecoverablyValue",
+    "source": "Registro descartado de forma recuperável: {{id}}"
+  },
+  {
+    "key": "recordRestoredValue",
+    "source": "Registro restaurado: {{id}}"
+  },
+  {
+    "key": "valueVerified",
+    "source": "{{file}} verificado"
+  },
+  {
+    "key": "valueIntegrityVerified",
+    "source": "{{file}} íntegro"
+  },
+  {
+    "key": "valueReusedWithSha256Verified",
+    "source": "{{file}} reutilizado com SHA-256 verificado"
+  },
+  {
+    "key": "idleCoreExitingForADesktopAuthorizedUpdate",
+    "source": "Núcleo ocioso encerrando para atualização autorizada no desktop"
+  },
+  {
+    "key": "isolatedValidationPending",
+    "source": "Isolated validation pending"
+  },
+  {
+    "key": "prepareSameSAndSoxrThroughLitertSetup",
+    "source": "Prepare encoder SAME-S e soxr pelo setup LiteRT e vincule novamente para usar áudio de entrada"
+  }
+]

@@ -1,8 +1,12 @@
+import { systemMessage } from "./i18n/system-message";
+import i18n, { tr, formatDate, formatNumber } from "./i18n";
+import { useTranslation } from "react-i18next";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { AudioSlider } from "./ui/audio-slider";
 import { SelectControl } from "./ui/select-control";
 import { SidePanel } from "./ui/side-panel";
 import { WorkflowGuide } from "./ui/workflow-guide";
+import { LanguageSettings, useLocaleProfile } from "./ui/language-settings";
 import { UpdateControl } from "./ui/update-control";
 import { PathField } from "./ui/path-field";
 import { StorageWorkspace } from "./storage";
@@ -40,7 +44,7 @@ import {
   formatTime,
   rpc,
   secondsSince,
-  states,
+  stateLabel,
   type Asset,
   type Job,
   type Snapshot,
@@ -55,66 +59,62 @@ type Page =
   | "storage"
   | "environment"
   | "bridges";
-const pages: {
+const getPages = (): {
   id: Page;
   name: string;
   icon: typeof Folder;
   caption: string;
-}[] = [
+}[] => [
   {
     id: "projects",
-    name: "Projetos & sessões",
+    name: tr("workspace", "projectsSessions"),
     icon: Folder,
-    caption: "Seu espaço de produção",
+    caption: tr("workspace", "yourProductionWorkspace"),
   },
   {
     id: "queue",
-    name: "Fila de geração",
+    name: tr("workspace", "generationQueue"),
     icon: Activity,
-    caption: "Execução & monitoramento",
+    caption: tr("workspace", "executionMonitoring"),
   },
   {
     id: "library",
-    name: "Biblioteca & versões",
+    name: tr("workspace", "libraryVersions"),
     icon: AudioLines,
-    caption: "Escuta, comparação & decisão",
+    caption: tr("workspace", "listenCompareDecide"),
   },
   {
     id: "voice",
-    name: "Voice Studio",
+    name: tr("workspace", "voiceStudio"),
     icon: Headphones,
-    caption: "Perfis, interpretação & versões",
+    caption: tr("workspace", "profilesPerformanceVersions"),
   },
   {
     id: "fx",
-    name: "FX & processamento",
+    name: tr("workspace", "fxProcessing"),
     icon: Settings2,
-    caption: "Cadeias nativas & render não destrutivo",
+    caption: tr("workspace", "nativeChainsNonDestructiveRendering"),
   },
   {
     id: "storage",
-    name: "Armazenamento",
+    name: tr("workspace", "storage"),
     icon: Disc3,
-    caption: "Inventário & descarte recuperável",
+    caption: tr("workspace", "inventoryRecoverableDiscard"),
   },
   {
     id: "environment",
-    name: "Ambiente",
+    name: tr("workspace", "environment"),
     icon: Cpu,
-    caption: "Setup & diagnóstico",
+    caption: tr("workspace", "setupDiagnostics"),
   },
   {
     id: "bridges",
-    name: "Audacity & Codex",
+    name: tr("workspace", "audacityCodex"),
     icon: Link2,
-    caption: "Pontes do workflow",
+    caption: tr("workspace", "workflowBridges"),
   },
 ];
-const date = (value: number) =>
-  new Date(value * 1000).toLocaleString("pt-BR", {
-    dateStyle: "short",
-    timeStyle: "short",
-  });
+const date = formatDate;
 
 function Badge({
   children,
@@ -123,6 +123,7 @@ function Badge({
   children: ReactNode;
   tone?: string;
 }) {
+  useTranslation();
   return (
     <span className={`badge ${tone}`}>
       <i />
@@ -141,6 +142,7 @@ function Panel({
   aside?: ReactNode;
   className?: string;
 }) {
+  useTranslation();
   return (
     <section className={`panel ${className}`}>
       <header className="panel-title">
@@ -160,11 +162,12 @@ function Waveform({
   position?: number;
   onSeek?: (ratio: number) => void;
 }) {
+  useTranslation();
   return (
     <div
       className="waveform"
       role={onSeek ? "slider" : "img"}
-      aria-label={`Forma de onda de ${asset.name}`}
+      aria-label={tr("workspace", "waveformForValue", { value0: asset.name })}
       aria-valuenow={onSeek ? Math.round(position * 100) : undefined}
       aria-valuemin={onSeek ? 0 : undefined}
       aria-valuemax={onSeek ? 100 : undefined}
@@ -190,8 +193,11 @@ function Waveform({
 }
 
 export function App() {
+  useTranslation();
+  const pages = getPages();
   const [page, setPage] = useState<Page>("projects");
   const [data, setData] = useState<Snapshot>();
+  const locale = useLocaleProfile(data ? (data.ui_preferences ?? { locale: "pt-BR", existing_installation: true }) : undefined);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
@@ -333,7 +339,7 @@ export function App() {
     if (playing) {
       void element.play().catch((e) => {
         setPlaying(false);
-        setError("Reprodução: " + String(e));
+        setError(tr("workspace", "playback") + String(e));
       });
     } else element.pause();
   }, [playing, source]);
@@ -341,7 +347,7 @@ export function App() {
     const value = (await act(
       "audacity_import",
       { asset_id: asset.id },
-      "Resultado importado em projeto novo do Audacity.",
+      tr("workspace", "resultImportedIntoANewAudacityProject"),
     )) as { edit_id?: string } | undefined;
     if (value?.edit_id) setLastEdit(value.edit_id);
   };
@@ -364,7 +370,7 @@ export function App() {
           </span>
         </div>
         <div className="product-meta">
-          LOCAL AUDIO WORKSPACE{" "}
+          {tr("workspace", "localAudioWorkspace")}{" "}
           <UpdateControl
             workflowBusy={Boolean(
               data?.jobs.some((job) =>
@@ -375,7 +381,7 @@ export function App() {
             )}
           />
         </div>
-        <div className="rail-label">ESPAÇO DE TRABALHO</div>
+        <div className="rail-label">{tr("workspace", "workspace")}</div>
         <nav>
           {pages.map(({ id, name, icon: Icon }) => (
             <button
@@ -391,42 +397,42 @@ export function App() {
           ))}
         </nav>
         <div className="rail-project">
-          <span>PROJETO ATIVO</span>
+          <span>{tr("workspace", "activeProject")}</span>
           <SelectControl
-            label="Projeto ativo"
+            label={tr("workspace", "activeProject2")}
             value={project?.id ?? ""}
             disabled={busy}
             onChange={(value) =>
               void act("project_select", { project_id: value })
             }
-            placeholder="Selecione um projeto"
+            placeholder={tr("workspace", "selectAProject")}
             options={
               data?.projects.map((p) => ({ value: p.id, label: p.name })) ?? []
             }
           />
           <small>
             {project
-              ? `${project.result_count} resultados locais`
-              : "Crie seu primeiro projeto"}
+              ? tr("workspace", "valueLocalResults", { value0: project.result_count })
+              : tr("workspace", "createYourFirstProject")}
           </small>
         </div>
         <div className="rail-bottom">
           <Badge tone={connection ? "ok" : ""}>
-            {connection ? "Núcleo local" : "Conectando núcleo"}
+            {connection ? tr("workspace", "localCore") : tr("workspace", "connectingToCore")}
           </Badge>
           <p>
-            Direção no Codex.
-            <br />
-            Produção sob seu controle.
-          </p>
-          <WorkflowGuide ready={Boolean(data)} />
+            {tr("workspace", "directionInCodex")}<br />
+            {tr("workspace", "productionUnderYourControl")}</p>
+          {locale.ready && <LanguageSettings required={locale.pending} onConfirmed={locale.confirmed}
+            existing={data?.ui_preferences?.existing_installation ?? true} />}
+          <WorkflowGuide ready={Boolean(data) && locale.ready && !locale.pending} />
         </div>
       </aside>
 
       <div className="workspace">
         <header className="topbar">
           <div className="breadcrumb">
-            Workspace <ChevronRight size={12} />
+            {tr("workspace", "workspace2")}{" "}<ChevronRight size={12} />
             <strong>{project?.name ?? "Sonariel"}</strong>
           </div>
           <div className="top-signals">
@@ -435,20 +441,20 @@ export function App() {
               {page === "voice"
                 ? "V3 · CPU"
                 : page === "fx"
-                  ? "DSP · nativo"
+                  ? tr("workspace", "dspNative")
                   : "CPU · DiT-only"}
             </span>
             <span className="mono">
-              RAM {data?.telemetry.available_gib.toFixed(1) ?? "—"}{" "}
-              <small>GiB livres</small>
+              RAM {formatNumber(data?.telemetry.available_gib, 1) ?? "—"}{" "}
+              <small>{tr("workspace", "gibAvailable")}</small>
             </span>
             <Badge tone={data?.codex.tested ? "ok" : ""}>
               MCP{" "}
               {data?.codex.tested
-                ? "testado"
+                ? tr("workspace", "tested")
                 : data?.codex.configured
-                  ? "configurado"
-                  : "não configurado"}
+                  ? tr("workspace", "configured")
+                  : tr("workspace", "notConfigured")}
             </Badge>
           </div>
         </header>
@@ -461,8 +467,8 @@ export function App() {
             <div className="heading-actions">
               <button
                 className="icon-button"
-                title="Atualizar estado"
-                aria-label="Atualizar estado"
+                title={tr("workspace", "refreshState")}
+                aria-label={tr("workspace", "refreshState")}
                 aria-busy={refreshing}
                 disabled={refreshing}
                 onClick={() => void refresh()}
@@ -478,25 +484,23 @@ export function App() {
                     setContext("");
                   }}
                 >
-                  <Plus size={16} /> Novo projeto
-                </button>
+                  <Plus size={16} /> {tr("workspace", "newProject")}</button>
               )}
               {page === "library" && (
                 <button
                   className="primary"
                   onClick={() => setShowRegister(!showRegister)}
                 >
-                  <Plus size={16} /> Registrar arquivo
-                </button>
+                  <Plus size={16} /> {tr("workspace", "registerFile")}</button>
               )}
             </div>
           </div>
           {error && (
             <div className="message error" role="alert">
-              <span>{error}</span>
+              <span>{systemMessage(error)}</span>
               <button
                 className="icon-button"
-                aria-label="Fechar erro"
+                aria-label={tr("workspace", "dismissError")}
                 onClick={() => setError("")}
               >
                 <X size={15} />
@@ -505,10 +509,10 @@ export function App() {
           )}
           {notice && (
             <div className="message" role="status">
-              <span>{notice}</span>
+              <span>{systemMessage(notice)}</span>
               <button
                 className="icon-button"
-                aria-label="Fechar aviso"
+                aria-label={tr("workspace", "dismissNotification")}
                 onClick={() => setNotice("")}
               >
                 <X size={15} />
@@ -517,8 +521,7 @@ export function App() {
           )}
           {!data ? (
             <div className="loading-state">
-              <Loader2 className="spin" /> Conectando ao núcleo local…
-            </div>
+              <Loader2 className="spin" /> {tr("workspace", "connectingToTheLocalCore")}</div>
           ) : (
             <>
               {page === "storage" && <StorageWorkspace data={data} act={act} busy={busy} />}
@@ -556,7 +559,7 @@ export function App() {
               {page === "projects" && (
                 <>
                   {projectForm && (
-                    <Panel title="Novo projeto">
+                    <Panel title={tr("workspace", "newProject")}>
                       <form
                         className="form-grid"
                         onSubmit={(event) => {
@@ -564,84 +567,74 @@ export function App() {
                           void act(
                             "project_create",
                             { name: projectName, context },
-                            "Projeto criado.",
+                            tr("workspace", "projectCreated"),
                           ).then((value) => {
                             if (value) setProjectForm(false);
                           });
                         }}
                       >
                         <label>
-                          Nome do projeto
-                          <input
+                          {tr("workspace", "projectName")}<input
                             required
                             value={projectName}
                             onChange={(e) => setProjectName(e.target.value)}
-                            placeholder="Nome da produção"
+                            placeholder={tr("workspace", "productionName")}
                           />
                         </label>
                         <label className="full">
-                          Contexto musical salvo
-                          <textarea
+                          {tr("workspace", "savedMusicContext")}<textarea
                             value={context}
                             onChange={(e) => setContext(e.target.value)}
-                            placeholder="Objetivo, função emocional, decisões e limites que o Codex deve consultar."
+                            placeholder={tr("workspace", "purposeEmotionalRoleDecisionsAndConstraintsForCodex")}
                           />
                         </label>
                         <button className="primary" disabled={busy}>
-                          Criar projeto
-                        </button>
+                          {tr("workspace", "createProject")}</button>
                       </form>
                     </Panel>
                   )}
                   <div className="overview-bar">
                     <div>
-                      <span className="signal-label">WORKFLOW LOCAL</span>
-                      <h2>Do contexto à próxima decisão.</h2>
+                      <span className="signal-label">{tr("workspace", "localWorkflow")}</span>
+                      <h2>{tr("workspace", "fromContextToYourNextDecision")}</h2>
                       <p>
-                        Organize sessões, acompanhe a execução e escute cada
-                        versão.
-                        <br />A direção musical acontece na sua conversa com o
-                        Codex.
-                      </p>
+                        {tr("workspace", "organizeSessionsFollowExecutionAndListenToEach")}<br />{tr("workspace", "musicDirectionHappensInYourConversationWithCodex")}</p>
                       <button
                         className="outline"
                         onClick={() => setPage("library")}
                       >
-                        Abrir biblioteca <ChevronRight size={15} />
+                        {tr("workspace", "openLibrary")}{" "}<ChevronRight size={15} />
                       </button>
                     </div>
                     <div className="overview-readout">
                       <AudioLines size={58} strokeWidth={1} />
                       <dl>
-                        <dt>Motor</dt>
+                        <dt>{tr("workspace", "engine")}</dt>
                         <dd>
-                          {states[data.engine.state] ?? data.engine.state}
+                          {stateLabel(data.engine.state) ?? data.engine.state}
                         </dd>
-                        <dt>Modo validado</dt>
+                        <dt>{tr("workspace", "validatedProfile")}</dt>
                         <dd>CPU / Turbo</dd>
-                        <dt>Fila persistente</dt>
-                        <dd>{queued.length} aguardando</dd>
+                        <dt>{tr("workspace", "persistentQueue")}</dt>
+                        <dd>{queued.length} {tr("workspace", "waiting")}</dd>
                       </dl>
                     </div>
                   </div>
                   <div className="two-columns">
                     <Panel
-                      title="Projetos"
+                      title={tr("workspace", "projects")}
                       aside={
                         <span className="mono muted">
-                          {data.projects.length} locais
-                        </span>
+                          {data.projects.length} {tr("workspace", "local")}</span>
                       }
                     >
                       <div className="project-list">
                         {data.projects.length === 0 && (
                           <div className="empty">
                             <Folder size={30} />
-                            <h3>Abra um espaço para sua música</h3>
+                            <h3>{tr("workspace", "openAWorkspaceForYourAudio")}</h3>
                             <p>
-                              Crie um projeto para salvar contexto, sessões e
-                              resultados.
-                            </p>
+                              {tr("workspace", "createAProjectToSaveContextSessionsAnd")}</p>
                           </div>
                         )}
                         {data.projects.map((p) => (
@@ -658,7 +651,7 @@ export function App() {
                             <div>
                               <h3>{p.name}</h3>
                               <p>
-                                {p.result_count} resultados · {date(p.created)}
+                                {p.result_count} {tr("workspace", "results")}{" "}{date(p.created)}
                               </p>
                             </div>
                             <ChevronRight size={18} />
@@ -667,8 +660,8 @@ export function App() {
                       </div>
                     </Panel>
                     <Panel
-                      title={project ? "Sessões de produção" : "Sessões"}
-                      aside={<Badge>Contexto compartilhado</Badge>}
+                      title={project ? tr("workspace", "productionSessions") : tr("workspace", "sessions")}
+                      aside={<Badge>{tr("workspace", "sharedContext")}</Badge>}
                     >
                       {project ? (
                         <>
@@ -676,7 +669,7 @@ export function App() {
                             <h3>{project.name}</h3>
                             <p className="context-preview">
                               {project.context ||
-                                "Nenhum contexto musical salvo. O Codex pode registrá-lo explicitamente."}
+                                tr("workspace", "noMusicContextSavedCodexCanRecordIt")}
                             </p>
                           </div>
                           <div className="session-list">
@@ -703,33 +696,32 @@ export function App() {
                             }}
                           >
                             <input
-                              aria-label="Nome da nova sessão"
+                              aria-label={tr("workspace", "newSessionName")}
                               required
-                              placeholder="Nome da nova sessão"
+                              placeholder={tr("workspace", "newSessionName")}
                               value={sessionName}
                               onChange={(e) => setSessionName(e.target.value)}
                             />
                             <button className="outline" disabled={busy}>
-                              <Plus size={16} /> Criar sessão
-                            </button>
+                              <Plus size={16} /> {tr("workspace", "createSession")}</button>
                           </form>
                         </>
                       ) : (
                         <div className="empty">
-                          <p>Selecione um projeto para organizar sessões.</p>
+                          <p>{tr("workspace", "selectAProjectToOrganizeSessions")}</p>
                         </div>
                       )}
                     </Panel>
                   </div>
                   {chosen && (
                     <Panel
-                      title="Escolha atual"
-                      aside={<Badge tone="ok">Selecionada</Badge>}
+                      title={tr("workspace", "currentSelection")}
+                      aside={<Badge tone="ok">{tr("workspace", "selected")}</Badge>}
                     >
                       <div className="chosen-row">
                         <button
                           className="play-disc"
-                          aria-label="Ouvir escolha atual"
+                          aria-label={tr("workspace", "playCurrentSelection")}
                           onClick={() => {
                             selectAudio(chosen);
                             setPlaying(true);
@@ -739,13 +731,13 @@ export function App() {
                         </button>
                         <div>
                           <h3>{chosen.name}</h3>
-                          <p>{chosen.notes || "Sem observações registradas"}</p>
+                          <p>{chosen.notes || tr("workspace", "noNotesRecorded")}</p>
                         </div>
                         <button
                           className="outline"
                           onClick={() => openDetail(chosen)}
                         >
-                          Consultar versão <ChevronRight size={15} />
+                          {tr("workspace", "viewVersion")}{" "}<ChevronRight size={15} />
                         </button>
                       </div>
                     </Panel>
@@ -758,45 +750,42 @@ export function App() {
                   <div className="memory-strip">
                     <Cpu size={24} />
                     <div>
-                      <strong>Memória do sistema</strong>
+                      <strong>{tr("workspace", "systemMemory")}</strong>
                       <p>
-                        Uma geração por vez · batch 1 · modelo carregado sob
-                        demanda
-                      </p>
+                        {tr("workspace", "oneGenerationAtATimeBatch1Model")}</p>
                     </div>
                     <div className="memory-values">
                       <b>
-                        {data.telemetry.available_gib.toFixed(1)}{" "}
+                        {formatNumber(data.telemetry.available_gib, 1)}{" "}
                         <small>
-                          / {data.telemetry.total_gib.toFixed(1)} GiB livres
-                        </small>
+                          / {formatNumber(data.telemetry.total_gib, 1)} {tr("workspace", "gibAvailable")}</small>
                       </b>
                       <meter
                         min="0"
                         max="100"
                         value={data.telemetry.used_percent}
-                        aria-label="Memória RAM utilizada"
+                        aria-label={tr("workspace", "ramUsage")}
                       />
-                      <span>{data.telemetry.used_percent}% utilizada</span>
+                      <span>{data.telemetry.used_percent}{tr("workspace", "used")}</span>
                     </div>
                   </div>
                   <div className="two-columns wide-left">
                     <div>
                       <Panel
-                        title="Pipeline de geração"
+                        title={tr("workspace", "generationPipeline")}
                         aside={
                           <Badge tone={activeJob ? "working" : ""}>
-                            {activeJob ? "Em execução" : "Em espera"}
+                            {activeJob ? tr("workspace", "running") : tr("workspace", "waiting2")}
                           </Badge>
                         }
                         className="engine-panel"
                       >
                         <div className="pipeline">
                           {[
-                            "Fila",
-                            "Carregamento",
-                            "Inferência",
-                            "Validação",
+                            tr("workspace", "queue"),
+                            tr("workspace", "loading"),
+                            tr("workspace", "inference"),
+                            tr("workspace", "validation"),
                           ].map((step, i) => (
                             <span
                               key={step}
@@ -821,49 +810,41 @@ export function App() {
                           <div className="empty engine-empty">
                             <AudioLines size={45} />
                             <h3>
-                              Motor{" "}
-                              {states[data.engine.state]?.toLowerCase() ??
+                              {tr("workspace", "engine")}{" "}
+                              {stateLabel(data.engine.state)?.toLowerCase() ??
                                 data.engine.state}
                             </h3>
                             <p>
-                              Peça uma geração ao Codex. A tarefa aparece aqui
-                              assim que for recebida.
-                            </p>
+                              {tr("workspace", "askCodexForAGenerationTheTaskAppears")}</p>
                             <span className="mono">
-                              ACE-STEP 1.5 · TURBO · 8 PASSOS / ODE
-                            </span>
+                              {tr("workspace", "aceStep15Turbo8StepsOde")}</span>
                           </div>
                         )}
                         <div className="panel-footer">
                           <span className="mono muted">
-                            {data.engine.rss_gib.toFixed(2)} GiB no processo do
-                            motor
-                          </span>
+                            {formatNumber(data.engine.rss_gib, 2)} {tr("workspace", "gibInTheEngineProcess")}</span>
                           <button
                             className="outline"
                             disabled={
                               busy || !!activeJob || !data.engine.managed
                             }
                             onClick={() =>
-                              void act("engine_stop", {}, "Motor descarregado.")
+                              void act("engine_stop", {}, tr("workspace", "engineUnloaded"))
                             }
                           >
-                            <Square size={12} /> Descarregar motor
-                          </button>
+                            <Square size={12} /> {tr("workspace", "unloadEngine")}</button>
                         </div>
                       </Panel>
                       <Panel
-                        title="Fila de espera"
+                        title={tr("workspace", "waitingQueue")}
                         aside={
                           <span className="mono muted">
-                            FIFO · {queued.length} tarefas
-                          </span>
+                            {tr("workspace", "fifo")}{" "}{queued.length} {tr("workspace", "tasks")}</span>
                         }
                       >
                         {queued.length === 0 ? (
                           <div className="empty compact">
-                            Nenhuma tarefa aguardando.
-                          </div>
+                            {tr("workspace", "noTasksWaiting")}</div>
                         ) : (
                           queued.map((job) => (
                             <div className="queue-row" key={job.id}>
@@ -875,11 +856,11 @@ export function App() {
                                       job.params.text ??
                                       (job.params.recipe as { name?: string })
                                         ?.name ??
-                                      "Processamento local",
+                                      tr("workspace", "localProcessing"),
                                   ).slice(0, 75)}
                                 </strong>
                                 <p>
-                                  {job.stage} · seed {String(job.params.seed)}
+                                  {systemMessage(job.stage)} {tr("workspace", "seed")}{" "}{String(job.params.seed)}
                                 </p>
                               </div>
                               <button
@@ -889,13 +870,12 @@ export function App() {
                                   void act("job_cancel", { job_id: job.id })
                                 }
                               >
-                                Cancelar espera
-                              </button>
+                                {tr("workspace", "cancelWaitingTask")}</button>
                             </div>
                           ))
                         )}
                       </Panel>
-                      <Panel title="Histórico de execução">
+                      <Panel title={tr("workspace", "executionHistory")}>
                         {data.jobs
                           .filter(
                             (j) =>
@@ -918,7 +898,7 @@ export function App() {
                                         : ""
                                   }
                                 >
-                                  {states[job.state]}
+                                  {stateLabel(job.state)}
                                 </Badge>
                                 <span className="mono">
                                   {job.id.slice(0, 10)}
@@ -931,13 +911,12 @@ export function App() {
                           ))}
                         {data.jobs.length === 0 && (
                           <div className="empty compact">
-                            O histórico será criado pelas tarefas reais.
-                          </div>
+                            {tr("workspace", "historyWillBeCreatedByRealTasks")}</div>
                         )}
                       </Panel>
                     </div>
                     <div>
-                      <Panel title="Conectores">
+                      <Panel title={tr("workspace", "connectors")}>
                         <div className="connector">
                           <Cpu size={19} />
                           <div>
@@ -945,7 +924,7 @@ export function App() {
                             <p className="mono">127.0.0.1:8001</p>
                           </div>
                           <Badge tone={data.engine.managed ? "ok" : ""}>
-                            {states[data.engine.state]}
+                            {stateLabel(data.engine.state)}
                           </Badge>
                         </div>
                         <div className="connector">
@@ -958,8 +937,8 @@ export function App() {
                             tone={data.audacity.pipe_available ? "ok" : ""}
                           >
                             {data.audacity.pipe_available
-                              ? "Disponível"
-                              : "Inativo"}
+                              ? tr("workspace", "available")
+                              : tr("workspace", "inactive")}
                           </Badge>
                         </div>
                       </Panel>
@@ -975,25 +954,24 @@ export function App() {
                     <label className="search">
                       <Search size={17} />
                       <input
-                        aria-label="Pesquisar resultados"
+                        aria-label={tr("workspace", "searchResults")}
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Pesquisar resultados…"
+                        placeholder={tr("workspace", "searchResults2")}
                       />
                     </label>
                     <button
                       className={favorites ? "outline selected" : "outline"}
                       onClick={() => setFavorites(!favorites)}
                     >
-                      <Star size={15} /> Favoritas
-                    </button>
-                    <span className="muted">{assets.length} versões</span>
+                      <Star size={15} /> {tr("workspace", "favorites")}</button>
+                    <span className="muted">{assets.length} {tr("workspace", "versions")}</span>
                     <span className="toolbar-end mono">
-                      Comparação {compare.length}/2
+                      {tr("workspace", "comparison")}{" "}{compare.length}/2
                     </span>
                   </div>
                   {showRegister && (
-                    <Panel title="Catalogar arquivo local">
+                    <Panel title={tr("workspace", "registerALocalFile")}>
                       <form
                         className="form-grid"
                         onSubmit={(e) => {
@@ -1008,53 +986,49 @@ export function App() {
                               path: registerPath,
                               name: registerName,
                             },
-                            "Arquivo registrado, original preservado.",
+                            tr("workspace", "fileRegisteredOriginalPreserved"),
                           ).then((value) => {
                             if (value) setShowRegister(false);
                           });
                         }}
                       >
                         <label>
-                          Tipo
-                          <SelectControl
-                            label="Tipo de arquivo"
+                          {tr("workspace", "type")}<SelectControl
+                            label={tr("workspace", "fileType")}
                             value={registerType}
                             onChange={setRegisterType}
                             options={[
-                              { value: "result", label: "Resultado existente" },
+                              { value: "result", label: tr("workspace", "existingResult") },
                               {
                                 value: "reference",
-                                label: "Referência musical",
+                                label: tr("workspace", "musicReference"),
                               },
                             ]}
                           />
                         </label>
                         <label>
-                          Nome
-                          <input
+                          {tr("workspace", "name")}<input
                             required
                             value={registerName}
                             onChange={(e) => setRegisterName(e.target.value)}
                           />
                         </label>
-                        <PathField className="full" label="Caminho local absoluto" kind="audio"
+                        <PathField className="full" label={tr("workspace", "absoluteLocalPath")} kind="audio"
                           required value={registerPath} onChange={setRegisterPath} disabled={busy} />
                         <button className="primary" disabled={busy || !project}>
-                          Registrar arquivo
-                        </button>
+                          {tr("workspace", "registerFile")}</button>
                       </form>
                     </Panel>
                   )}
                   {compare.length > 0 && (
                     <Panel
-                      title="Comparação de candidatos"
+                      title={tr("workspace", "candidateComparison")}
                       aside={
                         <button
                           className="text-button"
                           onClick={() => setCompare([])}
                         >
-                          Limpar comparação
-                        </button>
+                          {tr("workspace", "clearComparison")}</button>
                       }
                     >
                       <div className="comparison">
@@ -1075,7 +1049,7 @@ export function App() {
                                       setPlaying(true);
                                     }}
                                   >
-                                    <Headphones size={15} /> Ouvir{" "}
+                                    <Headphones size={15} /> {tr("workspace", "play")}{" "}
                                     {index === 0 ? "A" : "B"}
                                   </button>
                                 </div>
@@ -1089,7 +1063,7 @@ export function App() {
                                   </span>
                                   <span>{asset.metadata.subtype}</span>
                                   <span>
-                                    RMS {asset.metadata.rms.toFixed(3)}
+                                    RMS {formatNumber(asset.metadata.rms, 3)}
                                   </span>
                                 </div>
                               </div>
@@ -1099,7 +1073,7 @@ export function App() {
                         {compare.length === 1 && (
                           <div className="comparison-placeholder">
                             <ArrowLeftRight size={24} />
-                            <p>Marque outro candidato para comparar.</p>
+                            <p>{tr("workspace", "selectAnotherCandidateToCompare")}</p>
                           </div>
                         )}
                       </div>
@@ -1114,10 +1088,10 @@ export function App() {
                         <div className="version-top">
                           <span className="mono muted">
                             {asset.kind === "export"
-                              ? "EDIÇÃO"
+                              ? tr("workspace", "edit")
                               : asset.kind === "imported"
-                                ? "IMPORTADO"
-                                : "GERAÇÃO"}{" "}
+                                ? tr("workspace", "imported")
+                                : tr("workspace", "generation")}{" "}
                             / {asset.id.slice(0, 6)}
                           </span>
                           <button
@@ -1184,16 +1158,15 @@ export function App() {
                               checked={compare.includes(asset.id)}
                               onChange={() => toggleCompare(asset.id)}
                             />{" "}
-                            Comparar
-                          </label>
+                            {tr("workspace", "compare")}</label>
                           {!!asset.selected && (
-                            <Badge tone="ok">Selecionada</Badge>
+                            <Badge tone="ok">{tr("workspace", "selected")}</Badge>
                           )}
                           <button
                             className="text-button"
                             onClick={() => openDetail(asset)}
                           >
-                            Detalhes <ChevronRight size={14} />
+                            {tr("workspace", "details")}{" "}<ChevronRight size={14} />
                           </button>
                         </div>
                       </article>
@@ -1202,12 +1175,10 @@ export function App() {
                   {assets.length === 0 && (
                     <div className="empty library-empty">
                       <AudioLines size={48} />
-                      <h2>Sua próxima escuta começa aqui</h2>
+                      <h2>{tr("workspace", "yourNextListeningSessionStartsHere")}</h2>
                       <p>
-                        Os resultados pedidos ao Codex aparecem automaticamente.
-                        <br />
-                        Você também pode registrar arquivos que já produziu.
-                      </p>
+                        {tr("workspace", "resultsRequestedThroughCodexAppearAutomatically")}<br />
+                        {tr("workspace", "youCanAlsoRegisterFilesYouHaveAlready")}</p>
                     </div>
                   )}
                 </>
@@ -1221,20 +1192,18 @@ export function App() {
                     <div>
                       <h2>WINDOWS x64 / CPU</h2>
                       <p>
-                        Receita versionada · DiT-only · Turbo · uma geração por
-                        vez
-                      </p>
+                        {tr("workspace", "versionedRecipeDitOnlyTurboOneGenerationAt")}</p>
                     </div>
                     <Badge tone={data.environment?.compatible ? "ok" : ""}>
                       {data.environment?.compatible
-                        ? "Ambiente validado"
-                        : "Configuração necessária"}
+                        ? tr("workspace", "environmentValidated")
+                        : tr("workspace", "setupRequired")}
                     </Badge>
                   </div>
                   <div className="two-columns">
                     <Panel
-                      title="Vincular ambiente existente"
-                      aside={<Badge>Sem reinstalação</Badge>}
+                      title={tr("workspace", "linkAnExistingEnvironment")}
+                      aside={<Badge>{tr("workspace", "noReinstallation")}</Badge>}
                     >
                       <form
                         className="form-stack"
@@ -1243,14 +1212,12 @@ export function App() {
                           void act(
                             "environment_link",
                             { root, audacity_path: audacityPath },
-                            "Diagnóstico concluído.",
+                            tr("workspace", "diagnosticsCompleted"),
                           );
                         }}
                       >
                         <p className="muted">
-                          Inspecione versões, componentes e o patch DiT-only
-                          antes de vincular.
-                        </p>
+                          {tr("workspace", "inspectVersionsComponentsAndTheDitOnlyPatch")}</p>
                         <button
                           type="button"
                           className="outline"
@@ -1262,8 +1229,7 @@ export function App() {
                               .catch((e) => setError(String(e)));
                           }}
                         >
-                          <Search size={15} /> Detectar instalações
-                        </button>
+                          <Search size={15} /> {tr("workspace", "findInstallations")}</button>
                         {detected.map((item) => (
                           <button
                             type="button"
@@ -1275,28 +1241,24 @@ export function App() {
                             <ChevronRight size={14} />
                           </button>
                         ))}
-                        <PathField label="Pasta do ambiente" kind="directory" required
+                        <PathField label={tr("workspace", "environmentFolder")} kind="directory" required
                           value={root} onChange={setRoot} disabled={busy}
-                          placeholder={data.environment?.root ?? "Pasta com .venv e ACE-Step-1.5"} />
-                        <PathField label="Executável do Audacity" kind="executable" required
+                          placeholder={data.environment?.root ?? tr("workspace", "folderContainingVenvAndAceStep15")} />
+                        <PathField label={tr("workspace", "audacityExecutable")} kind="executable" required
                           value={audacityPath} onChange={setAudacityPath} disabled={busy}
-                          placeholder={data.environment?.audacity ?? "Caminho completo para Audacity.exe"} />
+                          placeholder={data.environment?.audacity ?? tr("workspace", "fullPathToAudacityExe")} />
                         <button className="primary" disabled={busy}>
-                          Inspecionar e vincular
-                        </button>
+                          {tr("workspace", "inspectAndLink")}</button>
                       </form>
                     </Panel>
                     <Panel
-                      title="Instalar ambiente novo"
-                      aside={<Badge>Receita CPU / v1</Badge>}
+                      title={tr("workspace", "installANewEnvironment")}
+                      aside={<Badge>{tr("workspace", "cpuRecipeV1")}</Badge>}
                     >
                       <div className="form-stack">
                         <p className="muted">
-                          Python, dependências CPU, modelos necessários e
-                          Audacity portátil. Downloads verificados, instalação
-                          retomável.
-                        </p>
-                        <PathField label="Destino da instalação" kind="directory"
+                          {tr("workspace", "pythonCpuDependenciesRequiredModelsAndPortableAudacity")}</p>
+                        <PathField label={tr("workspace", "installationDestination")} kind="directory"
                           value={destination} onChange={setDestination} disabled={busy}
                           placeholder={`${data.data_home}\\engine`} />
                         <button
@@ -1311,11 +1273,10 @@ export function App() {
                               .catch((e) => setError(String(e)));
                           }}
                         >
-                          Verificar plano de instalação
-                        </button>
+                          {tr("workspace", "reviewInstallationPlan")}</button>
                         {setupPlan && (
                           <div className="installation-plan">
-                            <strong>Plano de instalação</strong>
+                            <strong>{tr("workspace", "installationPlan")}</strong>
                             <p>{String(setupPlan.destination)}</p>
                             <ul>
                               {(setupPlan.components as string[]).map(
@@ -1325,8 +1286,7 @@ export function App() {
                               )}
                             </ul>
                             <p>
-                              Espaço mínimo: 16 GiB · download aproximado: 7 GiB
-                            </p>
+                              {tr("workspace", "minimumDiskSpace16GibEstimatedDownload7")}</p>
                             <button
                               className="primary"
                               disabled={
@@ -1341,20 +1301,19 @@ export function App() {
                                     destination: setupPlan.destination,
                                     authorized: true,
                                   },
-                                  "Instalação iniciada. Acompanhe as etapas abaixo.",
+                                  tr("workspace", "installationStartedFollowTheStagesBelow"),
                                 )
                               }
                             >
-                              Autorizar e instalar componentes
-                            </button>
+                              {tr("workspace", "authorizeAndInstallComponents")}</button>
                           </div>
                         )}
                         {data.setup && (
                           <div className="message">
                             <Loader2 size={16} />
                             <span>
-                              {states[data.setup.state] ?? data.setup.state}:{" "}
-                              {data.setup.stage}
+                              {stateLabel(data.setup.state) ?? data.setup.state}:{" "}
+                              {systemMessage(data.setup.stage)}
                             </span>
                           </div>
                         )}
@@ -1362,11 +1321,10 @@ export function App() {
                     </Panel>
                   </div>
                   <Panel
-                    title="Inventário e verificações"
+                    title={tr("workspace", "inventoryAndChecks")}
                     aside={
                       <span className="mono muted">
-                        Versões validadas, sem atualização automática
-                      </span>
+                        {tr("workspace", "validatedVersionsNoAutomaticUpgrades")}</span>
                     }
                   >
                     {data.environment ? (
@@ -1402,7 +1360,7 @@ export function App() {
                                 <Check size={15} />
                                 <span>{key.replaceAll("_", " ")}</span>
                                 <Badge tone={passed ? "ok" : "error"}>
-                                  {passed ? "Verificado" : "Falhou"}
+                                  {passed ? tr("workspace", "verified") : tr("workspace", "failed")}
                                 </Badge>
                               </div>
                             ),
@@ -1414,31 +1372,26 @@ export function App() {
                               <AudioLines size={17} />
                               <code>{model.name}</code>
                               <span>
-                                {(model.bytes / 2 ** 30).toFixed(2)} GiB
+                                {formatNumber((model.bytes / 2 ** 30), 2)} GiB
                               </span>
                               <Badge tone={model.present ? "ok" : "error"}>
-                                {model.present ? "Presente" : "Ausente"}
+                                {model.present ? tr("workspace", "present") : tr("workspace", "missing")}
                               </Badge>
                             </div>
                           ))}
                         </div>
                         <div className="panel-footer mono muted">
-                          GPU: detecção de hardware disponível no sistema;
-                          aceleração ainda não implementada.
-                        </div>
+                          {tr("workspace", "gpuHardwareDetectionIsAvailableAccelerationIsNot")}</div>
                       </>
                     ) : (
                       <div className="empty compact">
-                        Nenhum ambiente vinculado. Escolha um dos caminhos
-                        acima.
-                      </div>
+                        {tr("workspace", "noEnvironmentLinkedChooseOneOfTheOptions")}</div>
                     )}
                   </Panel>
-                  <Panel title="Preferências do motor">
+                  <Panel title={tr("workspace", "enginePreferences")}>
                     <div className="form-stack">
                       <label>
-                        Descarregar modelo após ociosidade (minutos)
-                        <input
+                        {tr("workspace", "unloadIdleModelAfterMinutes")}<input
                           type="number"
                           min="1"
                           max="60"
@@ -1453,9 +1406,7 @@ export function App() {
                         />
                       </label>
                       <p className="muted">
-                        Não há interrupção automática de inferência. A
-                        preferência se aplica ao motor gerenciado e ocioso.
-                      </p>
+                        {tr("workspace", "activeInferenceIsNotInterruptedAutomaticallyThisPreference")}</p>
                     </div>
                   </Panel>
                 </>
@@ -1467,56 +1418,53 @@ export function App() {
                     <span>
                       <Terminal size={24} />
                       <strong>Codex</strong>
-                      <small>Direção criativa</small>
+                      <small>{tr("workspace", "creativeDirection")}</small>
                     </span>
                     <ChevronRight />
                     <span>
                       <AudioLines size={24} />
                       <strong>Sonariel</strong>
-                      <small>Estado & fila local</small>
+                      <small>{tr("workspace", "localStateQueue")}</small>
                     </span>
                     <ChevronRight />
                     <span>
                       <Cpu size={24} />
-                      <strong>Motores & FX</strong>
-                      <small>Áudio em CPU</small>
+                      <strong>{tr("workspace", "enginesFx")}</strong>
+                      <small>{tr("workspace", "cpuAudio")}</small>
                     </span>
                     <ChevronRight />
                     <span>
                       <Headphones size={24} />
                       <strong>Audacity</strong>
-                      <small>Edição & exportação</small>
+                      <small>{tr("workspace", "editingExport")}</small>
                     </span>
                   </div>
                   <div className="two-columns">
                     <Panel
-                      title="Codex MCP / stdio"
+                      title={tr("workspace", "codexMcpStdio")}
                       aside={
                         <Badge tone={data.codex.tested ? "ok" : ""}>
                           {data.codex.tested
-                            ? "Handshake testado"
+                            ? tr("workspace", "handshakeTested")
                             : data.codex.configured
-                              ? "Configurado"
-                              : "Não configurado"}
+                              ? tr("workspace", "configured2")
+                              : tr("workspace", "notConfigured2")}
                         </Badge>
                       }
                     >
                       <div className="form-stack">
                         <p>
-                          Uma solicitação no Codex entra diretamente nesta fila.
-                          Ferramentas consultam o mesmo banco de dados da
-                          interface.
-                        </p>
+                          {tr("workspace", "aRequestInCodexEntersThisQueueDirectly")}</p>
                         <dl className="property-list">
-                          <dt>Transporte</dt>
+                          <dt>{tr("workspace", "transport")}</dt>
                           <dd>stdio local</dd>
-                          <dt>Estado persistente</dt>
-                          <dd>SQLite compartilhado</dd>
-                          <dt>Último teste</dt>
+                          <dt>{tr("workspace", "persistentState")}</dt>
+                          <dd>{tr("workspace", "sharedSqlite")}</dd>
+                          <dt>{tr("workspace", "lastTest")}</dt>
                           <dd>
                             {data.codex.last_handshake
                               ? `${date(data.codex.last_handshake)} · ${data.codex.client}`
-                              : "Nenhum handshake registrado"}
+                              : tr("workspace", "noHandshakeRecorded")}
                           </dd>
                         </dl>
                         <button
@@ -1526,18 +1474,13 @@ export function App() {
                             void act(
                               "codex_register",
                               {},
-                              "MCP registrado com backup. Recarregue o cliente Codex para disponibilizar as ferramentas.",
+                              tr("workspace", "mcpRegisteredWithABackupReloadTheCodex"),
                             )
                           }
                         >
-                          <Link2 size={16} /> Configurar conexão Codex
-                        </button>
+                          <Link2 size={16} /> {tr("workspace", "configureCodexConnection")}</button>
                         <p className="muted">
-                          A configuração preserva outros servidores. Reinicie ou
-                          recarregue o cliente para carregar novas ferramentas.
-                          O teste de protocolo é distinto da conexão desta
-                          conversa.
-                        </p>
+                          {tr("workspace", "configurationPreservesOtherServersRestartOrReloadThe")}</p>
                         <code className="code-block">
                           sonariel_environment_status
                           <br />
@@ -1545,29 +1488,25 @@ export function App() {
                           <br />
                           sonariel_generate → job_id
                           <br />
-                          sonariel_job_get → resultado
-                        </code>
+                          {tr("workspace", "sonarielJobGetResult")}</code>
                       </div>
                     </Panel>
                     <Panel
-                      title="Audacity / mod-script-pipe"
+                      title={tr("workspace", "audacityModScriptPipe")}
                       aside={
                         <Badge tone={data.audacity.pipe_available ? "ok" : ""}>
                           {data.audacity.pipe_available
-                            ? "Pipe disponível"
-                            : "Pipe indisponível"}
+                            ? tr("workspace", "pipeAvailable")
+                            : tr("workspace", "pipeUnavailable")}
                         </Badge>
                       }
                     >
                       <div className="form-stack">
                         <p>
-                          Resultados são importados em projetos novos e
-                          identificados. Exportações são registradas como
-                          versões relacionadas.
-                        </p>
-                        <PathField label="Executável do Audacity (independente dos motores)" kind="executable"
+                          {tr("workspace", "resultsAreImportedIntoNewIdentifiedProjectsExports")}</p>
+                        <PathField label={tr("workspace", "audacityExecutableIndependentOfEngines")} kind="executable"
                           value={audacityPath} onChange={setAudacityPath} disabled={busy}
-                          placeholder="Caminho absoluto para Audacity.exe" />
+                          placeholder={tr("workspace", "absolutePathToAudacityExe")} />
                         <button
                           className="outline"
                           disabled={busy || !audacityPath}
@@ -1575,12 +1514,11 @@ export function App() {
                             void act(
                               "audacity_configure",
                               { executable: audacityPath },
-                              "Caminho salvo; módulos e preferências preservados.",
+                              tr("workspace", "pathSavedModulesAndPreferencesPreserved"),
                             )
                           }
                         >
-                          Salvar caminho do Audacity
-                        </button>
+                          {tr("workspace", "saveAudacityPath")}</button>
                         <button
                           className="outline"
                           disabled={busy}
@@ -1588,20 +1526,19 @@ export function App() {
                             void act(
                               "audacity_probe",
                               {},
-                              "Leitura do pipe confirmada.",
+                              tr("workspace", "pipeReadConfirmed"),
                             )
                           }
                         >
-                          <RefreshCw size={16} /> Testar conexão de leitura
-                        </button>
+                          <RefreshCw size={16} /> {tr("workspace", "testReadConnection")}</button>
                         <dl className="property-list">
-                          <dt>Aplicativo</dt>
+                          <dt>{tr("workspace", "application")}</dt>
                           <dd>
-                            {data.audacity.running ? "Aberto" : "Fechado"}
+                            {data.audacity.running ? tr("workspace", "open") : tr("workspace", "closed")}
                           </dd>
-                          <dt>Resultado no player</dt>
+                          <dt>{tr("workspace", "resultInPlayer")}</dt>
                           <dd>
-                            {active?.name ?? "Selecione um áudio na biblioteca"}
+                            {active?.name ?? tr("workspace", "selectAudioInTheLibrary")}
                           </dd>
                         </dl>
                         <button
@@ -1609,12 +1546,10 @@ export function App() {
                           disabled={!active || busy}
                           onClick={() => active && void sendToAudacity(active)}
                         >
-                          <ArrowDownToLine size={16} /> Abrir resultado no
-                          Audacity
-                        </button>
+                          <ArrowDownToLine size={16} /> {tr("workspace", "openResultInAudacity")}</button>
                         {selectedEdit && (
                           <div className="installation-plan">
-                            <strong>Edição registrada</strong>
+                            <strong>{tr("workspace", "registeredEdit")}</strong>
                             <code>{selectedEdit.project_path}</code>
                             <button
                               className="outline"
@@ -1627,12 +1562,11 @@ export function App() {
                                     fade_in: 0,
                                     fade_out: 0,
                                   },
-                                  "Cópia exportada e registrada na biblioteca.",
+                                  tr("workspace", "copyExportedAndRegisteredInTheLibrary"),
                                 )
                               }
                             >
-                              Exportar cópia da edição atual
-                            </button>
+                              {tr("workspace", "exportACopyOfTheCurrentEdit")}</button>
                           </div>
                         )}
                       </div>
@@ -1652,17 +1586,17 @@ export function App() {
             <AudioLines size={24} />
           </div>
           <div>
-            <strong>{active?.name ?? "Selecione um resultado"}</strong>
+            <strong>{active?.name ?? tr("workspace", "selectAResult")}</strong>
             <span>
               {active
-                ? `${active.metadata.sample_rate / 1000} kHz · ${active.metadata.subtype} · arquivo local`
-                : "O player acompanha você em todas as áreas"}
+                ? tr("workspace", "valueKhzValueLocalFile", { value0: active.metadata.sample_rate / 1000, value1: active.metadata.subtype })
+                : tr("workspace", "thePlayerFollowsYouAcrossTheWorkspace")}
             </span>
           </div>
           {active && (
             <button
               className="icon-button"
-              aria-label="Detalhes da faixa em reprodução"
+              aria-label={tr("workspace", "detailsOfThePlayingTrack")}
               onClick={() => openDetail(active)}
             >
               <Settings2 size={16} />
@@ -1673,7 +1607,7 @@ export function App() {
           <div className="transport-buttons">
             <button
               className="icon-button"
-              aria-label="Voltar ao início"
+              aria-label={tr("workspace", "returnToStart")}
               disabled={!active}
               onClick={() => {
                 if (audio.current) audio.current.currentTime = 0;
@@ -1683,7 +1617,7 @@ export function App() {
             </button>
             <button
               className="transport-play"
-              aria-label={playing ? "Pausar áudio" : "Reproduzir áudio"}
+              aria-label={playing ? tr("workspace", "pauseAudio") : tr("workspace", "playAudio")}
               disabled={!active}
               onClick={() => setPlaying(!playing)}
             >
@@ -1695,7 +1629,7 @@ export function App() {
             </button>
             <button
               className="icon-button"
-              aria-label="Próximo candidato"
+              aria-label={tr("workspace", "nextCandidate")}
               disabled={!active || compare.length < 2}
               onClick={() => {
                 const next = data?.assets.find(
@@ -1713,14 +1647,14 @@ export function App() {
           <div className="seek-row">
             <span>{formatTime(position)}</span>
             <AudioSlider
-              label="Posição de reprodução"
+              label={tr("workspace", "playbackPosition")}
               min={0}
               max={active?.metadata.duration ?? 1}
               step={0.05}
               value={position}
               disabled={!active}
               formatValue={(value) =>
-                `${formatTime(value)} de ${formatTime(active?.metadata.duration ?? 0)}`
+                tr("workspace", "valueOfValue", { value0: formatTime(value), value1: formatTime(active?.metadata.duration ?? 0) })
               }
               onChange={(value) => {
                 if (audio.current) audio.current.currentTime = value;
@@ -1733,7 +1667,7 @@ export function App() {
         <div className="player-output">
           <Volume2 size={17} />
           <AudioSlider
-            label="Volume"
+            label={tr("workspace", "volume")}
             value={volume}
             formatValue={(value) => `${Math.round(value * 100)}%`}
             onChange={(value) => {
@@ -1741,7 +1675,7 @@ export function App() {
               if (audio.current) audio.current.volume = value;
             }}
           />
-          <span className="mono">LOCAL OUT</span>
+          <span className="mono">{tr("workspace", "localOut")}</span>
         </div>
         <audio
           ref={audio}
@@ -1753,7 +1687,7 @@ export function App() {
           onEnded={() => setPlaying(false)}
           onError={() => {
             if (source)
-              setError("Não foi possível ler o arquivo de áudio local.");
+              setError(tr("workspace", "theLocalAudioFileCouldNotBeRead"));
           }}
           preload="metadata"
         />
@@ -1762,7 +1696,7 @@ export function App() {
       <SidePanel
         open={detailOpen}
         onClose={() => setDetailOpen(false)}
-        title={detail?.name ?? "Detalhes da versão"}
+        title={detail?.name ?? tr("workspace", "versionDetails")}
         returnFocus={detailReturnFocus}
       >
         {detail && (
@@ -1770,20 +1704,19 @@ export function App() {
             <p className="mono muted">{detail.id}</p>
             <Waveform asset={detail} />
             <dl className="property-list">
-              <dt>Duração</dt>
-              <dd>{detail.metadata.duration.toFixed(3)} s</dd>
-              <dt>Formato</dt>
+              <dt>{tr("workspace", "duration")}</dt>
+              <dd>{formatNumber(detail.metadata.duration, 3)} s</dd>
+              <dt>{tr("workspace", "format")}</dt>
               <dd>
                 {detail.metadata.sample_rate} Hz · {detail.metadata.subtype}
               </dd>
-              <dt>Versão anterior</dt>
-              <dd>{detail.parent_id ?? "Versão inicial"}</dd>
-              <dt>Arquivo</dt>
+              <dt>{tr("workspace", "previousVersion")}</dt>
+              <dd>{detail.parent_id ?? tr("workspace", "initialVersion")}</dd>
+              <dt>{tr("workspace", "file")}</dt>
               <dd className="file-path">{detail.path}</dd>
             </dl>
             <label>
-              Observações
-              <textarea
+              {tr("workspace", "notes")}<textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={4}
@@ -1802,14 +1735,13 @@ export function App() {
                       selected: true,
                       notes,
                     },
-                    "Seleção e observações salvas.",
+                    tr("workspace", "selectionAndNotesSaved"),
                   ).then((value) => {
                     if (value) setDetail(value as Asset);
                   })
                 }
               >
-                <Check size={16} /> Selecionar versão
-              </button>
+                <Check size={16} /> {tr("workspace", "selectVersion")}</button>
               <button
                 className="outline"
                 disabled={busy}
@@ -1822,24 +1754,21 @@ export function App() {
                       selected: !!detail.selected,
                       notes,
                     },
-                    "Observações salvas.",
+                    tr("workspace", "notesSaved"),
                   )
                 }
               >
-                Salvar notas
-              </button>
+                {tr("workspace", "saveNotes")}</button>
             </div>
             <button
               className="outline full-width"
               disabled={busy}
               onClick={() => void sendToAudacity(detail)}
             >
-              <ArrowDownToLine size={16} /> Abrir no Audacity
-            </button>
-            <h3>Prompt e parâmetros recebidos</h3>
+              <ArrowDownToLine size={16} /> {tr("workspace", "openInAudacity")}</button>
+            <h3>{tr("workspace", "receivedPromptAndParameters")}</h3>
             <p className="muted">
-              Somente leitura. A direção musical é feita pelo Codex.
-            </p>
+              {tr("workspace", "readOnlyMusicDirectionTakesPlaceInCodex")}</p>
             <pre>
               {JSON.stringify(detail.metadata.parameters ?? {}, null, 2)}
             </pre>
@@ -1851,26 +1780,27 @@ export function App() {
 }
 
 function JobPanel({ job }: { job: Job }) {
+  useTranslation();
   const engine = String(job.params._engine ?? "acestep-v15-turbo");
   const duration = job.params.audio_duration ?? job.params.duration;
   const fields = [
     [
-      "Duração",
-      duration === undefined ? "Conforme fonte / síntese" : `${duration} s`,
+      tr("workspace", "duration"),
+      duration === undefined ? tr("workspace", "fromSourceSynthesis") : `${duration} s`,
     ],
-    ["Seed", String(job.params.seed ?? "Não aplicável")],
+    ["Seed", String(job.params.seed ?? tr("workspace", "notApplicable"))],
     [
-      "Modo",
+      tr("workspace", "mode"),
       String(
         job.params.task_type ??
           job.params.mode ??
-          (engine === "native-fx" ? "DSP nativo" : "Texto para voz"),
+          (engine === "native-fx" ? tr("workspace", "nativeDsp") : tr("workspace", "speechText")),
       ),
     ],
-    ["Modelo", engine],
+    [tr("workspace", "model"), engine],
     ...(job.params.mode === "audio2audio" ? [
-      ["Fonte", String(job.params.source_id ?? "Não informada")],
-      ["Perturbação da fonte (σ)", String(job.params.init_noise_level)],
+      [tr("workspace", "source"), String(job.params.source_id ?? tr("workspace", "notProvided"))],
+      [tr("workspace", "sourcePerturbation"), String(job.params.init_noise_level)],
     ] : []),
   ];
   return (
@@ -1878,7 +1808,7 @@ function JobPanel({ job }: { job: Job }) {
       <div className="job-meta">
         <span className="mono">JOB / {job.id.slice(0, 12)}</span>
         <Badge tone={job.state === "completed" ? "ok" : "working"}>
-          {job.stage}
+          {systemMessage(job.stage)}
         </Badge>
       </div>
       <div className="job-clock">
@@ -1890,17 +1820,16 @@ function JobPanel({ job }: { job: Job }) {
               : secondsSince(job.started),
           )}
         </strong>
-        <span>tempo decorrido</span>
+        <span>{tr("workspace", "elapsedTime")}</span>
       </div>
       <p className="readonly-label">
-        PARÂMETROS DA SOLICITAÇÃO · SOMENTE LEITURA
-      </p>
+        {tr("workspace", "requestParametersReadOnly")}</p>
       <p className="prompt-text">
         {String(
           job.params.prompt ??
             job.params.text ??
             (job.params.recipe as { name?: string })?.name ??
-            "Processamento local",
+            tr("workspace", "localProcessing"),
         )}
       </p>
       <div className="inventory job-inventory">
@@ -1913,21 +1842,22 @@ function JobPanel({ job }: { job: Job }) {
       </div>
       {job.metrics.load_seconds !== undefined && (
         <div className="data-line">
-          <span>Carga: {job.metrics.load_seconds.toFixed(2)} s</span>
+          <span>{tr("workspace", "loading2")}{" "}{formatNumber(job.metrics.load_seconds, 2)} s</span>
           <span>
-            Inferência: {job.metrics.inference_seconds?.toFixed(2) ?? "—"} s
+            {tr("workspace", "inference2")}{" "}{formatNumber(job.metrics.inference_seconds, 2) ?? "—"} s
           </span>
-          <span>Pico: {job.metrics.peak_rss_gib?.toFixed(2)} GiB</span>
+          <span>{tr("workspace", "peak")}{" "}{formatNumber(job.metrics.peak_rss_gib, 2)} GiB</span>
         </div>
       )}
-      {job.error && <p className="error-text">{job.error}</p>}
+      {job.error && <p className="error-text">{systemMessage(job.error)}</p>}
     </div>
   );
 }
 function EventLog({ data }: { data: Snapshot }) {
+  useTranslation();
   return (
     <Panel
-      title="Registro de operações"
+      title={tr("workspace", "operationLog")}
       aside={<Terminal size={16} />}
       className="log-panel"
     >
@@ -1935,7 +1865,7 @@ function EventLog({ data }: { data: Snapshot }) {
         {data.events.slice(0, 20).map((event) => (
           <div key={event.id}>
             <time>
-              {new Date(event.time * 1000).toLocaleTimeString("pt-BR")}
+              {new Date(event.time * 1000).toLocaleTimeString(i18n.resolvedLanguage)}
             </time>
             <span
               className={
@@ -1944,7 +1874,7 @@ function EventLog({ data }: { data: Snapshot }) {
             >
               {event.kind}
             </span>
-            <p>{event.message}</p>
+            <p>{systemMessage(event.message)}</p>
           </div>
         ))}
       </div>

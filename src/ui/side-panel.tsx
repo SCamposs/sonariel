@@ -1,3 +1,5 @@
+import { tr } from "../i18n";
+import { useTranslation } from "react-i18next";
 import { useRef, type ReactNode, type RefObject } from "react";
 import { Dialog } from "@base-ui/react/dialog";
 import { X } from "lucide-react";
@@ -17,6 +19,7 @@ export function SidePanel({
   children,
   returnFocus,
 }: SidePanelProps) {
+  useTranslation();
   const closeButton = useRef<HTMLButtonElement>(null);
   return (
     <Dialog.Root
@@ -33,19 +36,18 @@ export function SidePanel({
           finalFocus={returnFocus}
         >
           <header>
-            <span className="signal-label">DETALHES DA VERSÃO</span>
+            <span className="signal-label">{tr("common", "versionDetails")}</span>
             <Dialog.Close
               ref={closeButton}
               className="icon-button"
-              aria-label="Fechar detalhes"
+              aria-label={tr("common", "closeDetails")}
             >
               <X size={20} />
             </Dialog.Close>
           </header>
           <Dialog.Title>{title}</Dialog.Title>
           <Dialog.Description className="visually-hidden">
-            Parâmetros, histórico e observações da versão de áudio.
-          </Dialog.Description>
+            {tr("common", "parametersHistoryAndNotesForTheAudioVersion")}</Dialog.Description>
           {children}
         </Dialog.Popup>
       </Dialog.Portal>

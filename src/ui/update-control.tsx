@@ -1,3 +1,6 @@
+import { systemMessage } from "../i18n/system-message";
+import i18n, { tr } from "../i18n";
+import { useTranslation } from "react-i18next";
 import { lazy, Suspense, useRef, useState } from "react";
 import { Dialog } from "@base-ui/react/dialog";
 import { ArrowDownToLine, Loader2, RefreshCw, X } from "lucide-react";
@@ -8,6 +11,7 @@ import "./update-control.css";
 const ReleaseNotes = lazy(() => import("./release-notes").then((module) => ({ default: module.ReleaseNotes })));
 
 export function UpdateControl({ workflowBusy }: { workflowBusy: boolean }) {
+  useTranslation();
   const update = useUpdates();
   const [open, setOpen] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -28,10 +32,10 @@ export function UpdateControl({ workflowBusy }: { workflowBusy: boolean }) {
         onClick={() => setOpen(true)}
         aria-label={
           update.available
-            ? `Atualização ${update.available.version} disponível`
-            : `Versão ${APP_VERSION}, atualizações`
+            ? tr("updates", "updateValueAvailable", { value0: update.available.version })
+            : tr("updates", "versionValueUpdates", { value0: APP_VERSION })
         }
-        title="Versão e atualizações"
+        title={tr("updates", "versionAndUpdates")}
       >
         {APP_VERSION}
         {update.available && <i className="update-dot" aria-hidden="true" />}
@@ -50,11 +54,11 @@ export function UpdateControl({ workflowBusy }: { workflowBusy: boolean }) {
             finalFocus={trigger}
           >
             <header className="guide-header">
-              <Dialog.Title>Versão & atualizações</Dialog.Title>
+              <Dialog.Title>{tr("updates", "versionUpdates")}</Dialog.Title>
               <Dialog.Close
                 ref={close}
                 className="icon-button"
-                aria-label="Fechar atualizações"
+                aria-label={tr("updates", "closeUpdates")}
                 disabled={update.installing}
               >
                 <X size={19} />
@@ -64,44 +68,39 @@ export function UpdateControl({ workflowBusy }: { workflowBusy: boolean }) {
               <span className="mono">SONARIEL / {APP_VERSION}</span>
               <h2>
                 {update.available
-                  ? `Versão ${update.available.version} disponível`
+                  ? tr("updates", "versionValueAvailable", { value0: update.available.version })
                   : update.checkedAt && !update.error
-                    ? "Você está na versão atual"
-                    : "Atualizações do aplicativo"}
+                    ? tr("updates", "youAreUpToDate")
+                    : tr("updates", "applicationUpdates")}
               </h2>
               <Dialog.Description>
-                As consultas usam as releases oficiais no GitHub. Nenhum áudio,
-                prompt ou projeto é enviado.
-              </Dialog.Description>
+                {tr("updates", "checksUseOfficialGithubReleasesNoAudioPrompt")}</Dialog.Description>
               {!update.supported ? (
                 <p className="muted">
-                  A atualização automática está disponível no aplicativo desktop
-                  instalado.
-                </p>
+                  {tr("updates", "automaticUpdatesAreAvailableInTheInstalledDesktop")}</p>
               ) : (
                 <>
                   <label>
-                    Verificação de versão
-                    <SelectControl
-                      label="Verificação de versão"
+                    {tr("updates", "versionChecks")}<SelectControl
+                      label={tr("updates", "versionChecks")}
                       value={update.automatic ? "automatic" : "manual"}
                       disabled={update.installing}
                       onChange={(value) =>
                         update.changeAutomatic(value === "automatic")
                       }
                       options={[
-                        { value: "automatic", label: "Ao abrir e a cada hora" },
+                        { value: "automatic", label: tr("updates", "atStartupAndEveryHour") },
                         {
                           value: "manual",
-                          label: "Somente quando eu solicitar",
+                          label: tr("updates", "onlyWhenIRequestIt"),
                         },
                       ]}
                     />
                   </label>
                   {update.available?.notes && (
                     <div className="update-notes">
-                      <h3>O que mudou</h3>
-                      <Suspense fallback={<p>Carregando notas…</p>}>
+                      <h3>{tr("updates", "whatSChanged")}</h3>
+                      <Suspense fallback={<p>{tr("updates", "loadingNotes")}</p>}>
                         <ReleaseNotes notes={update.available.notes} />
                       </Suspense>
                     </div>
@@ -110,32 +109,27 @@ export function UpdateControl({ workflowBusy }: { workflowBusy: boolean }) {
                     <p role="status">
                       <Loader2 size={16} className="spin" />{" "}
                       {update.progress?.phase === "installing"
-                        ? "Instalando. O aplicativo será reaberto automaticamente…"
-                        : `Baixando e verificando a assinatura${percent !== undefined ? ` · ${percent}%` : "…"}`}
+                        ? tr("updates", "installingTheAppWillReopenAutomatically")
+                        : tr("updates", "downloadingAndVerifyingSignaturevalue", { value0: percent !== undefined ? ` · ${percent}%` : "…" })}
                     </p>
                   ) : (
                     <p className="muted">
                       {update.checkedAt
-                        ? `Última verificação: ${update.checkedAt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}.`
-                        : "Nenhuma verificação concluída nesta sessão."}
+                        ? tr("updates", "lastCheckValue", { value0: update.checkedAt.toLocaleTimeString(i18n.resolvedLanguage, { hour: "2-digit", minute: "2-digit" }) })
+                        : tr("updates", "noCheckCompletedInThisSession")}
                     </p>
                   )}
                   {update.error && (
                     <p className="update-error" role="alert">
-                      {update.error}
+                      {systemMessage(update.error)}
                     </p>
                   )}
                   {workflowBusy && (
                     <p className="muted">
-                      Aguarde a fila e a instalação do ambiente terminarem antes
-                      de atualizar.
-                    </p>
+                      {tr("updates", "waitForTheQueueAndEnvironmentInstallationTo")}</p>
                   )}
                   <p className="update-safety">
-                    A atualização só começa com sua confirmação. Feche conexões
-                    MCP do Sonariel antes de instalar; projetos e áudios são
-                    preservados.
-                  </p>
+                    {tr("updates", "updatingStartsOnlyWithYourConfirmationCloseSonariel")}</p>
                 </>
               )}
             </div>
@@ -151,7 +145,7 @@ export function UpdateControl({ workflowBusy }: { workflowBusy: boolean }) {
                   size={16}
                   className={update.checking ? "spin" : ""}
                 />
-                {update.checking ? "Verificando…" : "Verificar agora"}
+                {update.checking ? tr("updates", "checking") : tr("updates", "checkNow")}
               </button>
               {update.available && (
                 <button
@@ -162,8 +156,7 @@ export function UpdateControl({ workflowBusy }: { workflowBusy: boolean }) {
                   onClick={() => void update.install()}
                 >
                   <ArrowDownToLine size={16} />
-                  Atualizar e reiniciar
-                </button>
+                  {tr("updates", "updateAndRestart")}</button>
               )}
             </footer>
           </Dialog.Popup>

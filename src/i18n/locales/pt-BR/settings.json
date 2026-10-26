@@ -1,0 +1,13 @@
+{
+  "title": "Configurações",
+  "language": "Idioma do aplicativo",
+  "choose": "Escolha seu idioma",
+  "firstUse": "Escolha um idioma antes do guia de uso. Você pode alterá-lo depois em Configurações na sidebar.",
+  "existing": "Seus projetos e seu tutorial foram preservados. Escolha um idioma aqui quando quiser.",
+  "continue": "Continuar",
+  "close": "Fechar configurações",
+  "saved": "Idioma salvo. A mudança é imediata, sem reiniciar nem interromper tarefas.",
+  "saving": "Salvando idioma…",
+  "saveFailed": "Não foi possível salvar o idioma. Tente novamente; seus projetos não foram alterados.",
+  "sessionOnly": "A interface mudou nesta sessão, mas não foi possível salvar a preferência."
+}

@@ -1,0 +1,20 @@
+{
+  "waiting": "Waiting",
+  "loading": "Loading",
+  "submitting": "Submitting",
+  "generating": "Generating",
+  "completed": "Completed",
+  "interrupted": "Interrupted",
+  "cancelled": "Cancelled",
+  "unloaded": "Unloaded",
+  "ready": "Ready",
+  "failed": "Failed",
+  "running": "Running",
+  "versionDetails": "VERSION DETAILS",
+  "closeDetails": "Close details",
+  "parametersHistoryAndNotesForTheAudioVersion": "Parameters, history and notes for the audio version.",
+  "closePreview": "Close preview",
+  "keepFiles": "Keep files",
+  "confirmRecoverableDiscard": "Confirm recoverable discard",
+  "select": "Select"
+}

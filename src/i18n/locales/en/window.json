@@ -1,0 +1,14 @@
+{
+  "sonarielTitleBar": "Sonariel title bar",
+  "localAudioWorkspace": "LOCAL AUDIO WORKSPACE",
+  "windowControlFailed": "Window control failed",
+  "windowControls": "Window controls",
+  "minimizeWindow": "Minimize window",
+  "minimize": "Minimize",
+  "restoreWindow": "Restore window",
+  "maximizeWindow": "Maximize window",
+  "restore": "Restore",
+  "maximize": "Maximize",
+  "closeWindow": "Close window",
+  "close": "Close"
+}

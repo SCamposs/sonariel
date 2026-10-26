@@ -1,3 +1,6 @@
+import { systemMessage } from "../i18n/system-message";
+import { tr } from "../i18n";
+import { useTranslation } from "react-i18next";
 import { useEffect, useState, type MouseEvent } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { AudioLines, Copy, Minus, Square, X } from "lucide-react";
@@ -5,6 +8,7 @@ import "./window-titlebar.css";
 
 /** Narrow desktop adapter: never pretends browser preview controls operated a window. */
 export function WindowTitlebar() {
+  useTranslation();
   const native = "__TAURI_INTERNALS__" in window;
   const [maximized, setMaximized] = useState(false);
   const [error, setError] = useState("");
@@ -58,28 +62,27 @@ export function WindowTitlebar() {
   return (
     <header
       className="window-titlebar"
-      aria-label="Barra de título do Sonariel"
+      aria-label={tr("window", "sonarielTitleBar")}
     >
       <div className="window-drag-region" onMouseDown={drag}>
         <AudioLines size={14} aria-hidden="true" />
         <span className="window-title">Sonariel</span>
-        <span className="window-title-context">LOCAL AUDIO WORKSPACE</span>
+        <span className="window-title-context">{tr("window", "localAudioWorkspace")}</span>
       </div>
       {error && (
-        <span className="window-control-error" role="alert" title={error}>
-          Falha no controle da janela
-        </span>
+        <span className="window-control-error" role="alert" title={systemMessage(error)}>
+          {tr("window", "windowControlFailed")}</span>
       )}
       <div
         className="window-controls"
         role="group"
-        aria-label="Controles da janela"
+        aria-label={tr("window", "windowControls")}
       >
         <button
           className="window-button"
           disabled={!native}
-          aria-label="Minimizar janela"
-          title="Minimizar"
+          aria-label={tr("window", "minimizeWindow")}
+          title={tr("window", "minimize")}
           onClick={() => void operate("minimize")}
         >
           <Minus size={14} />
@@ -87,8 +90,8 @@ export function WindowTitlebar() {
         <button
           className="window-button"
           disabled={!native}
-          aria-label={maximized ? "Restaurar janela" : "Maximizar janela"}
-          title={maximized ? "Restaurar" : "Maximizar"}
+          aria-label={maximized ? tr("window", "restoreWindow") : tr("window", "maximizeWindow")}
+          title={maximized ? tr("window", "restore") : tr("window", "maximize")}
           onClick={() => void operate("toggleMaximize")}
         >
           {maximized ? <Copy size={12} /> : <Square size={12} />}
@@ -96,8 +99,8 @@ export function WindowTitlebar() {
         <button
           className="window-button window-close"
           disabled={!native}
-          aria-label="Fechar janela"
-          title="Fechar"
+          aria-label={tr("window", "closeWindow")}
+          title={tr("window", "close")}
           onClick={() => void operate("close")}
         >
           <X size={15} />

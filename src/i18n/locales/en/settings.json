@@ -1,0 +1,13 @@
+{
+  "title": "Settings",
+  "language": "Application language",
+  "choose": "Choose your language",
+  "firstUse": "Choose a language before the workflow guide. You can change it later in Settings in the sidebar.",
+  "existing": "Your projects and workflow guide are preserved. Choose a language here whenever you want.",
+  "continue": "Continue",
+  "close": "Close settings",
+  "saved": "Language saved. Changes apply immediately without restarting or interrupting tasks.",
+  "saving": "Saving language…",
+  "saveFailed": "The language could not be saved. Try again; your projects have not changed.",
+  "sessionOnly": "The interface changed for this session, but the preference could not be saved."
+}

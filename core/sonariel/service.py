@@ -97,7 +97,7 @@ class Service(Studio, Storage):
 
     def rpc_snapshot(self):
         projects = self.rpc_projects_list()
-        return {"projects": projects, "sessions": self.store.rows("SELECT * FROM sessions ORDER BY created DESC"), "jobs": self.rpc_queue_list(), "assets": self.rpc_results_list(), "events": self.store.rows("SELECT * FROM events ORDER BY id DESC LIMIT 80"), "selected_project": self.store.setting("selected_project"), "environment": self.store.setting("environment"), "engine": {"state": self.engine.status, "managed": bool(self.engine.owned_process()), "rss_gib": round(self.engine.rss(), 3), "load_seconds": self.engine.last_load_seconds}, "telemetry": telemetry(), "audacity": audacity.status(), "setup": self.store.setting("setup_status"), "codex": self.store.setting("codex", {"configured": False, "tested": False}), "preferences": self.store.setting("preferences", {"idle_minutes": 5}), "data_home": str(self.store.home), "edits": self.store.rows("SELECT * FROM edits ORDER BY created DESC"), "engines": self.rpc_engines_list(), "voice_environment": self.store.setting("voice_environment")}
+        return {"projects": projects, "sessions": self.store.rows("SELECT * FROM sessions ORDER BY created DESC"), "jobs": self.rpc_queue_list(), "assets": self.rpc_results_list(), "events": self.store.rows("SELECT * FROM events ORDER BY id DESC LIMIT 80"), "selected_project": self.store.setting("selected_project"), "environment": self.store.setting("environment"), "engine": {"state": self.engine.status, "managed": bool(self.engine.owned_process()), "rss_gib": round(self.engine.rss(), 3), "load_seconds": self.engine.last_load_seconds}, "telemetry": telemetry(), "audacity": audacity.status(), "setup": self.store.setting("setup_status"), "codex": self.store.setting("codex", {"configured": False, "tested": False}), "preferences": self.store.setting("preferences", {"idle_minutes": 5}), "ui_preferences": self.store.setting("ui_preferences"), "data_home": str(self.store.home), "edits": self.store.rows("SELECT * FROM edits ORDER BY created DESC"), "engines": self.rpc_engines_list(), "voice_environment": self.store.setting("voice_environment")}
 
     def rpc_environment_status(self):
         return {"environment": self.store.setting("environment"), "hardware": {**telemetry(), "graphics": graphics()}, "detected": discover(), "recipe": recipe(), "supported_modes": ["text2music", "cover"], "other_modes": "Not enabled by this adapter; never substituted", "active_inference_cancel_supported": False, "gpu_acceleration_supported": False}
@@ -245,6 +245,11 @@ class Service(Studio, Storage):
     def rpc_preferences_save(self, idle_minutes: int):
         value = {"idle_minutes": idle_minutes}
         self.store.set("preferences", value)
+        return value
+
+    def rpc_ui_preferences_save(self, locale: str):
+        value = {**self.store.setting("ui_preferences"), "locale": locale}
+        self.store.set("ui_preferences", value)
         return value
 
     def rpc_audacity_probe(self):
@@ -525,4 +530,5 @@ METHODS = {
     "mcp_heartbeat": tool("Registrar handshake efetivamente concluído.", {"client": S, "protocol": S}, ["client", "protocol"]),
 }
 METHODS.update(studio_methods(tool,S,ID,B))
+METHODS["ui_preferences_save"] = tool("Save only the application's display language; never changes generation parameters or active tasks.", {"locale": {"type": "string", "enum": ["en", "pt-BR"]}}, ["locale"])
 METHODS.update(storage_methods(tool,ID,B))

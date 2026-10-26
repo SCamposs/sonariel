@@ -1,3 +1,6 @@
+import { systemMessage } from "./i18n/system-message";
+import { tr } from "./i18n";
+import { useTranslation } from "react-i18next";
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowDown,
@@ -7,7 +10,7 @@ import {
   SlidersHorizontal,
   Trash2,
 } from "lucide-react";
-import { rpc, type Asset, type Snapshot, formatTime, states } from "./api";
+import { rpc, type Asset, type Snapshot, formatTime, stateLabel } from "./api";
 import { AudioSlider } from "./ui/audio-slider";
 import { PathField } from "./ui/path-field";
 import { SelectControl } from "./ui/select-control";
@@ -75,6 +78,7 @@ export function MusicEngines({
   busy,
   act,
 }: Pick<StudioProps, "data" | "busy" | "act">) {
+  useTranslation();
   const [family, setFamily] = useState("sm-music");
   const [destination, setDestination] = useState("");
   const [python, setPython] = useState("");
@@ -97,15 +101,12 @@ export function MusicEngines({
   return (
     <section className="panel">
       <header className="panel-title">
-        <h2>Music Engines</h2>
-        <span className="badge">PADRÃO · TURBO</span>
+        <h2>{tr("studio", "musicEngines")}</h2>
+        <span className="badge">{tr("studio", "defaultTurbo")}</span>
       </header>
       <div className="studio-body">
         <p className="muted">
-          Ambientes independentes; uma tarefa por vez na mesma fila. A escolha
-          de motor é explícita em cada solicitação ao Codex, sem trocar o padrão
-          musical.
-        </p>
+          {tr("studio", "independentEnvironmentsOneTaskAtATimeIn")}</p>
         <div className="studio-results">
           {data.engines
             ?.filter((e) => e.category === "music")
@@ -119,39 +120,31 @@ export function MusicEngines({
                   {engine.id.startsWith("stable-audio") && (
                     <p className="muted">
                       {engine.audio_input_ready
-                        ? "Texto até 60 s · áudio de entrada até 120 s, preservando a duração da fonte."
-                        : "Texto até 60 s. Áudio de entrada requer encoder SAME-S e resampler; revise o setup LiteRT e vincule novamente."}
+                        ? tr("studio", "textUpTo60SSourceAudioUp")
+                        : tr("studio", "textUpTo60SSourceAudioRequires")}
                     </p>
                   )}
                 </div>
                 <span className={`badge ${engine.installed ? "mint" : ""}`}>
                   {engine.tested
-                    ? "TESTADO LOCALMENTE"
+                    ? tr("studio", "testedLocally")
                     : engine.installed
-                      ? "VINCULADO"
+                      ? tr("studio", "linked")
                       : engine.id.endsWith("sft")
-                        ? "VALIDAÇÃO PENDENTE"
-                        : "CONFIGURAR"}
+                        ? tr("studio", "validationPending")
+                        : tr("studio", "setUp")}
                 </span>
               </div>
             ))}
         </div>
         <details className="fx-layer">
-          <summary>Configurar Stable Audio 3 · LiteRT CPU experimental</summary>
+          <summary>{tr("studio", "setUpStableAudio3ExperimentalLitertCpu")}</summary>
           <p>
-            Powered by Stability AI · texto ou variação de áudio · DiT e codec w8a8. Sem
-            garantia de BPM ou tonalidade exatos. A qualidade musical ainda
-            depende de escuta.
-          </p>
+            {tr("studio", "poweredByStabilityAiTextOrAudioVariation")}</p>
           <p className="muted">
-            O setup inclui encoder SAME-S (~61 MiB) e resampler soxr para WAVs
-            mono/estéreo. Registre a fonte em Referências e peça ao Codex
-            mode=audio2audio com seu source_id. Isso usa o conteúdo da fonte,
-            não apenas seu estilo. init_noise_level menor preserva mais a fonte;
-            não garante identidade musical nem direitos para distribuição.
-          </p>
+            {tr("studio", "setupIncludesTheSameSEncoder61Mib")}</p>
           <SelectControl
-            label="Família Stable Audio"
+            label={tr("studio", "stableAudioFamily")}
             value={family}
             onChange={changeFamily}
             options={[
@@ -173,20 +166,16 @@ export function MusicEngines({
               target="_blank"
               rel="noreferrer"
             >
-              Termos Gemma
-            </a>
-            . Condições próprias; o aceite não substitui registro ou autorização
-            comercial.
-          </p>
+              {tr("studio", "gemmaTerms")}</a>
+            {tr("studio", "separateConditionsApplyAcceptanceDoesNotReplaceCommercial")}</p>
           <label className="check-label">
             <input
               type="checkbox"
               checked={accepted}
               onChange={(e) => setAccepted(e.target.checked)}
             />{" "}
-            Li e aceito Stability Community e os termos Gemma para este uso.
-          </label>
-          <PathField label="Nova pasta dedicada fora do Git" kind="directory" disabled={busy}
+            {tr("studio", "iHaveReadAndAcceptStabilityCommunityAnd")}</label>
+          <PathField label={tr("studio", "newDedicatedFolderOutsideGit")} kind="directory" disabled={busy}
               value={destination}
               onChange={(value) => {
                 setDestination(value);
@@ -199,22 +188,18 @@ export function MusicEngines({
             disabled={busy || !destination}
             onClick={() => void review()}
           >
-            Revisar receita LiteRT
-          </button>
+            {tr("studio", "reviewLitertRecipe")}</button>
           {plan && (
             <div className="form-stack">
               <p className="muted">
-                Python 3.11.15 · LiteRT 2.2.0 · dependências com hashes · cerca
-                de 8 GiB em disco. Sem CUDA ou scripts de instalação upstream.
-              </p>
+                {tr("studio", "python31115Litert220")}</p>
               <label className="check-label">
                 <input
                   type="checkbox"
                   checked={authorized}
                   onChange={(e) => setAuthorized(e.target.checked)}
                 />{" "}
-                Autorizo baixar e instalar nessa pasta.
-              </label>
+                {tr("studio", "iAuthorizeDownloadingAndInstallingInThisFolder")}</label>
               <button
                 className="primary"
                 disabled={
@@ -233,21 +218,20 @@ export function MusicEngines({
                       authorized,
                       accepted_licenses: accepted,
                     },
-                    "Setup LiteRT iniciado; acompanhe o diagnóstico.",
+                    tr("studio", "litertSetupStartedFollowDiagnostics"),
                   )
                 }
               >
-                Instalar LiteRT CPU
-              </button>
+                {tr("studio", "installLitertCpu")}</button>
             </div>
           )}
           <details className="fx-layer">
-            <summary>Ou vincular instalação existente, sem reinstalar</summary>
-            <PathField label="Python isolado" kind="executable" disabled={busy}
-              value={python} onChange={setPython} placeholder="Caminho absoluto para Scripts/python.exe" />
-            <PathField label="Fonte oficial fixada" kind="directory" disabled={busy}
+            <summary>{tr("studio", "orLinkAnExistingInstallationWithoutReinstalling")}</summary>
+            <PathField label={tr("studio", "isolatedPython")} kind="executable" disabled={busy}
+              value={python} onChange={setPython} placeholder={tr("studio", "absolutePathToScriptsPythonExe")} />
+            <PathField label={tr("studio", "pinnedOfficialSource")} kind="directory" disabled={busy}
               value={source} onChange={setSource} />
-            <PathField label="Pasta dos modelos" kind="directory" disabled={busy}
+            <PathField label={tr("studio", "modelFolder")} kind="directory" disabled={busy}
               value={models} onChange={setModels} />
             <button
               className="outline"
@@ -262,12 +246,11 @@ export function MusicEngines({
                     families: [family],
                     accepted_licenses: accepted,
                   },
-                  "LiteRT CPU verificado e vinculado.",
+                  tr("studio", "litertCpuVerifiedAndLinked"),
                 )
               }
             >
-              Verificar e vincular LiteRT
-            </button>
+              {tr("studio", "verifyAndLinkLitert")}</button>
           </details>
         </details>
       </div>
@@ -297,46 +280,46 @@ const defaults: Record<string, Effect> = {
     rate_hz: 0.25,
   },
 };
-const labels: Record<string, string> = {
-  gain: "Ganho",
-  fade: "Entrada e saída",
-  highpass: "Passa-altas",
-  lowpass: "Passa-baixas",
-  bell: "Equalização paramétrica",
+const getLabels = (): Record<string, string> => ({
+  gain: tr("studio", "gain"),
+  fade: tr("studio", "fadeInAndOut"),
+  highpass: tr("studio", "highPass"),
+  lowpass: tr("studio", "lowPass"),
+  bell: tr("studio", "parametricEq"),
   reverb: "Reverb",
   delay: "Delay",
   chorus: "Chorus",
-  db: "Ganho (dB)",
-  hz: "Frequência (Hz)",
+  db: tr("studio", "gainDb"),
+  hz: tr("studio", "frequencyHz"),
   q: "Q",
-  in_ms: "Entrada (ms)",
-  out_ms: "Saída (ms)",
-  room_m: "Sala (m)",
-  rt60_s: "Decaimento (s)",
-  damping: "Amortecimento",
-  predelay_ms: "Pré-delay (ms)",
-  ms: "Tempo (ms)",
-  feedback: "Realimentação",
+  in_ms: tr("studio", "fadeInMs"),
+  out_ms: tr("studio", "fadeOutMs"),
+  room_m: tr("studio", "roomM"),
+  rt60_s: tr("studio", "decayS"),
+  damping: tr("studio", "damping"),
+  predelay_ms: tr("studio", "predelayMs"),
+  ms: tr("studio", "timeMs"),
+  feedback: tr("studio", "feedback"),
   seed: "Seed",
-  separation_ms: "Separação (ms)",
-  variation_ms: "Variação (ms)",
-  rate_hz: "Modulação (Hz)",
+  separation_ms: tr("studio", "separationMs"),
+  variation_ms: tr("studio", "variationMs"),
+  rate_hz: tr("studio", "modulationHz"),
   pitch_st: "Pitch (st)",
-  formant_st: "Formantes (st)",
-  time_ratio: "Duração (razão)",
-  delay_ms: "Microatraso (ms)",
-  gain_db: "Ganho (dB)",
-  pan: "Panorama",
+  formant_st: tr("studio", "formantsSt"),
+  time_ratio: tr("studio", "durationRatio"),
+  delay_ms: tr("studio", "microdelayMs"),
+  gain_db: tr("studio", "gainDb"),
+  pan: tr("studio", "pan"),
   ring_hz: "Ring (Hz)",
-  ring_depth_start: "Modulação inicial",
-  ring_depth_end: "Modulação final",
-  dry_db: "Fonte seca (dB)",
+  ring_depth_start: tr("studio", "initialModulation"),
+  ring_depth_end: tr("studio", "finalModulation"),
+  dry_db: tr("studio", "drySourceDb"),
   lead_ms: "Pre-roll (ms)",
-  reverse_swell_ms: "Swell reverso (ms)",
+  reverse_swell_ms: tr("studio", "reverseSwellMs"),
   reverse_swell_db: "Swell (dB)",
-  target_lufs: "Alvo (LUFS)",
-  ceiling_dbtp: "Teto (dBTP)",
-};
+  target_lufs: tr("studio", "targetLufs"),
+  ceiling_dbtp: tr("studio", "ceilingDbtp"),
+});
 const limits: Record<string, [number, number, number]> = {
   db: [-60, 18, 0.1],
   hz: [10, 20000, 1],
@@ -370,7 +353,7 @@ const limits: Record<string, [number, number, number]> = {
   ceiling_dbtp: [-6, -0.5, 0.1],
 };
 const newChain = (): Chain => ({
-  name: "Nova cadeia",
+  name: tr("studio", "newChain"),
   schema_version: 1,
   output_channels: 2,
   tail_seconds: 2,
@@ -391,10 +374,10 @@ const newLayer = (index: number): Layer => ({
   ring_depth_start: 0,
   ring_depth_end: 0,
   seed: 42,
-  chain: { ...newChain(), name: `Camada ${index}`, tail_seconds: 0 },
+  chain: { ...newChain(), name: tr("studio", "layerValue", { value0: index }), tail_seconds: 0 },
 });
 const newLayered = (): Layered => ({
-  name: "Nova cadeia em camadas",
+  name: tr("studio", "newLayeredChain"),
   schema_version: 1,
   bypass: false,
   wet: 1,
@@ -419,7 +402,9 @@ function NumberField({
   onChange: (v: number) => void;
   disabled?: boolean;
 }) {
+  useTranslation();
   const range = limits[name] ?? [-60, 60, 0.1];
+  const labels = getLabels();
   return (
     <label>
       {labels[name] ?? name}
@@ -446,7 +431,9 @@ function ChainEditor({
   value: Chain;
   onChange: (c: Chain) => void;
 }) {
+  useTranslation();
   const [kind, setKind] = useState("gain");
+  const labels = getLabels();
   const wetBackup = useRef(new WeakMap<Effect, number>());
   const update = (index: number, stage: Stage) =>
     onChange({
@@ -470,11 +457,9 @@ function ChainEditor({
             checked={value.bypass}
             onChange={(e) => onChange({ ...value, bypass: e.target.checked })}
           />
-          Bypass da cadeia
-        </label>
+          {tr("studio", "chainBypass")}</label>
         <label>
-          Cauda (s)
-          <input
+          {tr("studio", "tailS")}<input
             type="number"
             min={0}
             max={10}
@@ -493,7 +478,7 @@ function ChainEditor({
               <label className="check">
                 <input
                   type="checkbox"
-                  aria-label={`Ativar ${labels[stage.effect.type]} ${index + 1}`}
+                  aria-label={tr("studio", "enableValueValue", { value0: labels[stage.effect.type], value1: index + 1 })}
                   checked={stage.wet > 0}
                   onChange={(e) => {
                     if (!e.target.checked)
@@ -513,7 +498,7 @@ function ChainEditor({
               <div className="studio-actions">
                 <button
                   className="icon-button"
-                  aria-label={`Subir efeito ${index + 1}`}
+                  aria-label={tr("studio", "moveEffectValueUp", { value0: index + 1 })}
                   disabled={index === 0}
                   onClick={() => move(index, -1)}
                 >
@@ -521,7 +506,7 @@ function ChainEditor({
                 </button>
                 <button
                   className="icon-button"
-                  aria-label={`Descer efeito ${index + 1}`}
+                  aria-label={tr("studio", "moveEffectValueDown", { value0: index + 1 })}
                   disabled={index === value.chain.length - 1}
                   onClick={() => move(index, 1)}
                 >
@@ -529,7 +514,7 @@ function ChainEditor({
                 </button>
                 <button
                   className="icon-button"
-                  aria-label={`Remover efeito ${index + 1}`}
+                  aria-label={tr("studio", "removeEffectValue", { value0: index + 1 })}
                   onClick={() =>
                     onChange({
                       ...value,
@@ -561,10 +546,10 @@ function ChainEditor({
             </div>
             <div className="studio-mix">
               <span>
-                Dry / wet <output>{Math.round(stage.wet * 100)}%</output>
+                {tr("studio", "dryWet")}{" "}<output>{Math.round(stage.wet * 100)}%</output>
               </span>
               <AudioSlider
-                label={`Mistura do efeito ${index + 1}`}
+                label={tr("studio", "effectValueMix", { value0: index + 1 })}
                 value={stage.wet}
                 onChange={(wet) => update(index, { ...stage, wet })}
               />
@@ -574,7 +559,7 @@ function ChainEditor({
       </ol>
       <div className="studio-toolbar">
         <SelectControl
-          label="Efeito para adicionar"
+          label={tr("studio", "effectToAdd")}
           value={kind}
           onChange={setKind}
           options={Object.keys(defaults).map((value) => ({
@@ -596,8 +581,7 @@ function ChainEditor({
           }
         >
           <Plus size={15} />
-          Adicionar efeito
-        </button>
+          {tr("studio", "addEffect")}</button>
       </div>
     </div>
   );
@@ -611,6 +595,7 @@ export function FxStudio({
   edit,
   initialAssetId,
 }: StudioProps & { initialAssetId?: string }) {
+  useTranslation();
   const [assetId, setAssetId] = useState(initialAssetId ?? "");
   const [recipe, setRecipe] = useState<Recipe>(newChain);
   const [presets, setPresets] = useState<SavedPreset[]>([]);
@@ -685,8 +670,8 @@ export function FxStudio({
           preview,
         },
         preview
-          ? "Prévia na fila: até dez segundos da fonte."
-          : "Render na fila; original preservado.",
+          ? tr("studio", "previewQueuedUpToTenSecondsOfThe")
+          : tr("studio", "renderQueuedOriginalPreserved"),
       );
   };
   const pickPreset = (id: string) => {
@@ -698,19 +683,18 @@ export function FxStudio({
     <div className="studio-workspace fx-workspace">
       {loadError && (
         <p className="message error" role="alert">
-          {loadError}
+          {systemMessage(loadError)}
         </p>
       )}
       <section className="panel">
         <header className="panel-title">
-          <h2>Fonte & versões</h2>
-          <span className="mono muted">DSP NATIVO · SEM IA</span>
+          <h2>{tr("studio", "sourceVersions")}</h2>
+          <span className="mono muted">{tr("studio", "nativeDspNoAi")}</span>
         </header>
         <div className="studio-body">
           <label>
-            WAV do projeto
-            <SelectControl
-              label="WAV para processamento"
+            {tr("studio", "projectWav")}<SelectControl
+              label={tr("studio", "wavToProcess")}
               value={selected?.id ?? ""}
               onChange={setAssetId}
               options={sources.map((a) => ({ value: a.id, label: a.name }))}
@@ -718,16 +702,13 @@ export function FxStudio({
           </label>
           {!sources.length && (
             <p className="muted">
-              Registre um WAV na Biblioteca ou gere um áudio pelo Codex para
-              começar.
-            </p>
+              {tr("studio", "registerAWavInTheLibraryOrGenerate")}</p>
           )}
           {selected && (
             <div className="studio-toolbar">
               <button className="outline" onClick={() => listen(selected)}>
                 <Headphones size={15} />
-                Ouvir original
-              </button>
+                {tr("studio", "playOriginal")}</button>
               <span className="mono muted">
                 {formatTime(selected.metadata.duration)} ·{" "}
                 {selected.metadata.sample_rate / 1000} kHz
@@ -741,13 +722,12 @@ export function FxStudio({
                   <strong>{a.name}</strong>
                   <small className="mono muted">
                     {formatTime(a.metadata.duration)} ·{" "}
-                    {a.kind === "preview" ? "prévia" : "versão"}
+                    {a.kind === "preview" ? tr("studio", "preview") : tr("studio", "version")}
                   </small>
                 </div>
                 <div className="studio-actions">
                   <button className="outline" onClick={() => listen(a)}>
-                    Ouvir versão
-                  </button>
+                    {tr("studio", "playVersion")}</button>
                   <button
                     className="outline"
                     disabled={busy || a.kind === "preview"}
@@ -760,11 +740,11 @@ export function FxStudio({
                           selected: true,
                           notes: a.notes,
                         },
-                        "Versão preferida registrada.",
+                        tr("studio", "preferredVersionRecorded"),
                       )
                     }
                   >
-                    {a.selected ? "Selecionada" : "Preferir"}
+                    {a.selected ? tr("studio", "selected") : tr("studio", "prefer")}
                   </button>
                   <button
                     className="text-button"
@@ -778,7 +758,7 @@ export function FxStudio({
             ))}
           </div>
           <SelectControl
-            label="Versão para exportar"
+            label={tr("studio", "versionToExport")}
             value={exportAsset?.id ?? ""}
             onChange={setExportId}
             options={exportCandidates.map((a) => ({
@@ -786,8 +766,8 @@ export function FxStudio({
               label: a.name,
             }))}
           />
-          <PathField label="Destino do novo WAV" kind="wav-save" disabled={busy}
-            placeholder="Caminho absoluto de um arquivo novo" value={exportPath} onChange={setExportPath} />
+          <PathField label={tr("studio", "newWavDestination")} kind="wav-save" disabled={busy}
+            placeholder={tr("studio", "absolutePathForANewFile")} value={exportPath} onChange={setExportPath} />
           <button
             className="outline"
             disabled={busy || !exportAsset || !exportPath}
@@ -795,36 +775,33 @@ export function FxStudio({
               void act(
                 "result_export",
                 { asset_id: exportAsset!.id, destination: exportPath },
-                "Cópia WAV exportada e verificada.",
+                tr("studio", "wavCopyExportedAndVerified"),
               )
             }
           >
-            Exportar WAV
-          </button>
+            {tr("studio", "exportWav")}</button>
         </div>
       </section>
       <section className="panel">
         <header className="panel-title">
-          <h2>Cadeia de processamento</h2>
-          <span className="mono muted">ORIGINAL IMUTÁVEL</span>
+          <h2>{tr("studio", "processingChain")}</h2>
+          <span className="mono muted">{tr("studio", "immutableOriginal")}</span>
         </header>
         <div className="studio-body">
           <div className="studio-two">
             <label>
-              Preset salvo
-              <SelectControl
-                label="Preset DSP"
+              {tr("studio", "savedPreset")}<SelectControl
+                label={tr("studio", "dspPreset")}
                 value={presetId}
                 onChange={pickPreset}
                 options={presets.map((p) => ({
                   value: p.id,
-                  label: `${p.name} · ${p.project_id ? "projeto" : "global"}`,
+                  label: `${p.name} · ${p.project_id ? tr("studio", "project") : "global"}`,
                 }))}
               />
             </label>
             <label>
-              Nome da revisão
-              <input
+              {tr("studio", "revisionName")}<input
                 value={recipe.name}
                 onChange={(e) => setRecipe({ ...recipe, name: e.target.value })}
               />
@@ -833,10 +810,7 @@ export function FxStudio({
           {isLayered(recipe) ? (
             <>
               <p className="muted">
-                Cadeia em camadas. Pitch, formantes e modulação são
-                experimentais para novos materiais. Alterar parâmetros cria uma
-                nova interpretação.
-              </p>
+                {tr("studio", "layeredChainPitchFormantsAndModulationAreExperimental")}</p>
               <div className="fx-fields">
                 {(
                   [
@@ -858,11 +832,11 @@ export function FxStudio({
               </div>
               <div className="studio-mix">
                 <span>
-                  Mistura global{" "}
+                  {tr("studio", "globalMix")}{" "}
                   <output>{Math.round(recipe.wet * 100)}%</output>
                 </span>
                 <AudioSlider
-                  label="Mistura global da cadeia"
+                  label={tr("studio", "globalChainMix")}
                   value={recipe.wet}
                   onChange={(wet) => setRecipe({ ...recipe, wet })}
                 />
@@ -875,12 +849,11 @@ export function FxStudio({
                     setRecipe({ ...recipe, bypass: e.target.checked })
                   }
                 />
-                Bypass global
-              </label>
+                {tr("studio", "globalBypass")}</label>
               {recipe.layers.map((layer, index) => (
                 <details className="fx-layer" key={index}>
                   <summary>
-                    {layer.id} · camada {index + 1}
+                    {layer.id} {tr("studio", "layer")}{" "}{index + 1}
                   </summary>
                   <label className="check">
                     <input
@@ -897,8 +870,7 @@ export function FxStudio({
                         })
                       }
                     />
-                    Ativar camada
-                  </label>
+                    {tr("studio", "enableLayer")}</label>
                   <div className="fx-fields">
                     {Object.entries(layer)
                       .filter(([, v]) => typeof v === "number")
@@ -938,8 +910,7 @@ export function FxStudio({
                       })
                     }
                   >
-                    Remover camada
-                  </button>
+                    {tr("studio", "removeLayer")}</button>
                 </details>
               ))}
               <button
@@ -956,10 +927,9 @@ export function FxStudio({
                 }
               >
                 <Plus size={15} />
-                Adicionar camada
-              </button>
+                {tr("studio", "addLayer")}</button>
               <details className="fx-layer" open>
-                <summary>Master · após mistura das camadas</summary>
+                <summary>{tr("studio", "masterAfterLayerMixing")}</summary>
                 <ChainEditor
                   value={recipe.master}
                   onChange={(master) => setRecipe({ ...recipe, master })}
@@ -975,21 +945,17 @@ export function FxStudio({
               disabled={busy || !selected}
               onClick={() => render(true)}
             >
-              Renderizar prévia (até 10 s)
-            </button>
+              {tr("studio", "renderPreviewUpTo10S")}</button>
             <button
               className="primary"
               disabled={busy || !selected}
               onClick={() => render(false)}
             >
               <SlidersHorizontal size={15} />
-              Renderizar versão completa
-            </button>
+              {tr("studio", "renderFullVersion")}</button>
           </div>
           <p className="muted">
-            Ajustes não iniciam renderizações. Ouça a prévia antes de processar
-            um arquivo longo; acompanhe a execução na fila.
-          </p>
+            {tr("studio", "adjustmentsDoNotStartRenderingListenToA")}</p>
           <div className="studio-toolbar">
             <label className="check">
               <input
@@ -997,8 +963,7 @@ export function FxStudio({
                 checked={privatePreset}
                 onChange={(e) => setPrivatePreset(e.target.checked)}
               />
-              Salvar apenas neste projeto
-            </label>
+              {tr("studio", "saveInThisProjectOnly")}</label>
             <button
               className="outline"
               disabled={busy || !recipe.name || (privatePreset && !projectId)}
@@ -1012,12 +977,11 @@ export function FxStudio({
                       ? { project_id: projectId }
                       : {}),
                   },
-                  "Nova revisão de preset salva.",
+                  tr("studio", "newPresetRevisionSaved"),
                 ).then(reload)
               }
             >
-              Salvar nova revisão
-            </button>
+              {tr("studio", "saveNewRevision")}</button>
             <button
               className="text-button"
               onClick={() => {
@@ -1025,8 +989,7 @@ export function FxStudio({
                 setPresetId("");
               }}
             >
-              Nova cadeia vazia
-            </button>
+              {tr("studio", "newEmptyChain")}</button>
             <button
               className="text-button"
               onClick={() => {
@@ -1034,12 +997,11 @@ export function FxStudio({
                 setPresetId("");
               }}
             >
-              Nova cadeia em camadas
-            </button>
+              {tr("studio", "newLayeredChain")}</button>
           </div>
           <details className="fx-layer">
-            <summary>Importar / compartilhar preset JSON</summary>
-            <PathField label="Caminho JSON local" kind="preset" disabled={busy}
+            <summary>{tr("studio", "importShareJsonPreset")}</summary>
+            <PathField label={tr("studio", "localJsonPath")} kind="preset" disabled={busy}
               value={filePath} onChange={setFilePath} />
             <div className="studio-toolbar">
               <button
@@ -1054,12 +1016,11 @@ export function FxStudio({
                         ? { project_id: projectId }
                         : {}),
                     },
-                    "Preset importado.",
+                    tr("studio", "presetImported"),
                   ).then(reload)
                 }
               >
-                Importar JSON
-              </button>
+                {tr("studio", "importJson")}</button>
               <button
                 className="outline"
                 disabled={busy || !filePath || !presetId}
@@ -1067,12 +1028,11 @@ export function FxStudio({
                   void act(
                     "fx_preset_export",
                     { preset_id: presetId, destination: filePath },
-                    "Preset exportado sem sobrescrita.",
+                    tr("studio", "presetExportedWithoutOverwriting"),
                   )
                 }
               >
-                Exportar preset salvo
-              </button>
+                {tr("studio", "exportSavedPreset")}</button>
             </div>
           </details>
         </div>
@@ -1089,6 +1049,7 @@ export function VoiceStudio({
   edit,
   openFx,
 }: StudioProps & { openFx: (asset: Asset) => void }) {
+  useTranslation();
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loadError, setLoadError] = useState("");
   const [name, setName] = useState("");
@@ -1130,7 +1091,7 @@ export function VoiceStudio({
     if (reference) {
       const saved = (await act("reference_register", {
         project_id: projectId,
-        name: `Referência · ${name}`,
+        name: tr("studio", "referenceValue", { value0: name }),
         path: reference,
       })) as Asset | undefined;
       if (!saved) return;
@@ -1144,7 +1105,7 @@ export function VoiceStudio({
         language,
         ...(referenceId ? { reference_id: referenceId, authorized } : {}),
       },
-      "Perfil salvo. Identidade entre falas ainda requer avaliação.",
+      tr("studio", "profileSavedIdentityAcrossUtterancesStillRequiresAssessment"),
     )) as Profile | undefined;
     if (saved) {
       setProfiles((p) => [...p, saved]);
@@ -1157,33 +1118,29 @@ export function VoiceStudio({
     <div className="studio-workspace">
       {loadError && (
         <p className="message error" role="alert">
-          {loadError}
+          {systemMessage(loadError)}
         </p>
       )}
       <section className="panel">
         <header className="panel-title">
-          <h2>Motor vocal</h2>
+          <h2>{tr("studio", "voiceEngine")}</h2>
           <span className={`badge ${engine?.installed ? "mint" : ""}`}>
-            {engine?.installed ? "VINCULADO" : "CONFIGURAR"}
+            {engine?.installed ? tr("studio", "linked") : tr("studio", "setUp")}
           </span>
         </header>
         <div className="studio-body">
           <div>
             <h3>Chatterbox Multilingual V3</h3>
             <p className="muted">
-              CPU · uma geração por vez · marca d’água oficial preservada
-            </p>
+              {tr("studio", "cpuOneGenerationAtATimeOfficialWatermark")}</p>
           </div>
           <p>
-            Peça a geração ao Codex com idioma, texto exato, seed e perfil
-            opcional. Grafias estilizadas são enviadas sem correção automática
-            ou adição de conteúdo.
-          </p>
+            {tr("studio", "askCodexToGenerateWithLanguageExactText")}</p>
           <details className="fx-layer" open={!engine?.installed}>
-            <summary>Vincular ambiente isolado existente</summary>
-            <PathField label="Python do ambiente" kind="executable" disabled={busy}
-              value={python} onChange={setPython} placeholder="Caminho absoluto para Scripts/python.exe" />
-            <PathField label="Pasta dos checkpoints" kind="directory" disabled={busy}
+            <summary>{tr("studio", "linkAnExistingIsolatedEnvironment")}</summary>
+            <PathField label={tr("studio", "environmentPython")} kind="executable" disabled={busy}
+              value={python} onChange={setPython} placeholder={tr("studio", "absolutePathToScriptsPythonExe")} />
+            <PathField label={tr("studio", "checkpointFolder")} kind="directory" disabled={busy}
               value={models} onChange={setModels} />
             <button
               className="outline"
@@ -1192,16 +1149,15 @@ export function VoiceStudio({
                 void act(
                   "voice_environment_link",
                   { python_path: python, models },
-                  "Ambiente V3 verificado e vinculado, sem alterações.",
+                  tr("studio", "v3EnvironmentVerifiedAndLinkedWithoutModifications"),
                 )
               }
             >
-              Verificar e vincular V3
-            </button>
+              {tr("studio", "verifyAndLinkV3")}</button>
           </details>
           <details className="fx-layer">
-            <summary>Instalar V3 CPU em pasta dedicada</summary>
-            <PathField label="Nova pasta fora de repositórios" kind="directory" disabled={busy}
+            <summary>{tr("studio", "installV3CpuInADedicatedFolder")}</summary>
+            <PathField label={tr("studio", "newFolderOutsideRepositories")} kind="directory" disabled={busy}
                 value={destination}
                 onChange={(value) => {
                   setDestination(value);
@@ -1209,7 +1165,7 @@ export function VoiceStudio({
                   setInstallAuthorized(false);
                 }}
               />
-            <PathField label="Cache local de checkpoints (opcional)" kind="directory" disabled={busy}
+            <PathField label={tr("studio", "localCheckpointCacheOptional")} kind="directory" disabled={busy}
               value={models} onChange={setModels} />
             <button
               className="outline"
@@ -1220,29 +1176,20 @@ export function VoiceStudio({
                 })
               }
             >
-              Revisar receita de voz
-            </button>
+              {tr("studio", "reviewVoiceRecipe")}</button>
             {plan && (
               <>
                 <p>
-                  Python 3.11.15, PyTorch CPU 2.6.0, V3 e PerTh fixados. Pelo
-                  menos 14 GiB de disco. Código e pesos MIT; dependências têm
-                  avisos próprios.
-                </p>
+                  {tr("studio", "pinnedPython31115PytorchCpu2")}</p>
                 <p className="muted">
-                  Receita headless: não instala a UI Gradio nem os
-                  pré-processadores opcionais chinês/japonês. Os idiomas
-                  declarados pelo modelo não representam caminhos todos
-                  testados.
-                </p>
+                  {tr("studio", "headlessRecipeDoesNotInstallTheGradioUi")}</p>
                 <label className="check">
                   <input
                     type="checkbox"
                     checked={installAuthorized}
                     onChange={(e) => setInstallAuthorized(e.target.checked)}
                   />
-                  Autorizo a instalação isolada nesta pasta
-                </label>
+                  {tr("studio", "iAuthorizeIsolatedInstallationInThisFolder")}</label>
                 <button
                   className="primary"
                   disabled={
@@ -1254,39 +1201,36 @@ export function VoiceStudio({
                     void act(
                       "voice_setup_install",
                       { destination, authorized: true, model_cache: models },
-                      "Instalação de voz iniciada; acompanhe o diagnóstico.",
+                      tr("studio", "voiceInstallationStartedFollowDiagnostics"),
                     )
                   }
                 >
-                  Instalar ambiente V3
-                </button>
+                  {tr("studio", "installV3Environment")}</button>
               </>
             )}
             {data.setup && (
               <p className="mono muted" role="status">
-                {states[data.setup.state] ?? data.setup.state}:{" "}
-                {data.setup.stage}
+                {stateLabel(data.setup.state) ?? data.setup.state}:{" "}
+                {systemMessage(data.setup.stage)}
               </p>
             )}
           </details>
           {jobs[0] && (
             <div className="studio-request">
               <div className="studio-toolbar">
-                <strong>Última solicitação</strong>
+                <strong>{tr("studio", "latestRequest")}</strong>
                 <span className="mono muted">
-                  {states[jobs[0].state]} · {jobs[0].stage}
+                  {stateLabel(jobs[0].state)} · {systemMessage(jobs[0].stage)}
                 </span>
               </div>
               <label>
-                Texto original / exibido
-                <textarea
+                {tr("studio", "originalDisplayedText")}<textarea
                   readOnly
                   value={String(jobs[0].params.original_text ?? "")}
                 />
               </label>
               <label>
-                Texto solicitado ao TTS
-                <textarea readOnly value={String(jobs[0].params.text ?? "")} />
+                {tr("studio", "textSubmittedToTts")}<textarea readOnly value={String(jobs[0].params.text ?? "")} />
               </label>
               <pre>
                 {JSON.stringify(
@@ -1305,12 +1249,12 @@ export function VoiceStudio({
       </section>
       <section className="panel">
         <header className="panel-title">
-          <h2>Perfis do projeto</h2>
-          <span className="mono muted">{profiles.length} PERFIS</span>
+          <h2>{tr("studio", "projectProfiles")}</h2>
+          <span className="mono muted">{profiles.length} {tr("studio", "profiles")}</span>
         </header>
         <div className="studio-body">
           {!projectId ? (
-            <p>Selecione um projeto para organizar as vozes.</p>
+            <p>{tr("studio", "selectAProjectToOrganizeVoices")}</p>
           ) : (
             <>
               <div className="studio-results">
@@ -1320,8 +1264,8 @@ export function VoiceStudio({
                     <span className="mono muted">
                       {p.language} ·{" "}
                       {p.reference_id
-                        ? "referência autorizada"
-                        : "voz padrão do motor"}{" "}
+                        ? tr("studio", "authorizedReference")
+                        : tr("studio", "engineDefaultVoice")}{" "}
                       · {p.id.slice(0, 8)}
                     </span>
                   </div>
@@ -1329,16 +1273,14 @@ export function VoiceStudio({
               </div>
               <div className="studio-two">
                 <label>
-                  Nome do perfil
-                  <input
+                  {tr("studio", "profileName")}<input
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                   />
                 </label>
                 <label>
-                  Idioma explícito
-                  <SelectControl
-                    label="Idioma do perfil vocal"
+                  {tr("studio", "explicitLanguage")}<SelectControl
+                    label={tr("studio", "voiceProfileLanguage")}
                     value={language}
                     onChange={setLanguage}
                     options={Object.entries(engine?.languages ?? {}).map(
@@ -1350,16 +1292,15 @@ export function VoiceStudio({
                   />
                 </label>
               </div>
-              <PathField label="Referência vocal própria/autorizada (opcional)" kind="audio" disabled={busy}
-                value={reference} onChange={setReference} placeholder="Caminho local do áudio" />
+              <PathField label={tr("studio", "yourOwnAuthorizedVoiceReferenceOptional")} kind="audio" disabled={busy}
+                value={reference} onChange={setReference} placeholder={tr("studio", "localAudioPath")} />
               <label className="check">
                 <input
                   type="checkbox"
                   checked={authorized}
                   onChange={(e) => setAuthorized(e.target.checked)}
                 />
-                Tenho autorização para utilizar esta referência vocal
-              </label>
+                {tr("studio", "iAmAuthorizedToUseThisVoiceReference")}</label>
               <button
                 className="outline"
                 disabled={
@@ -1367,28 +1308,22 @@ export function VoiceStudio({
                 }
                 onClick={() => void saveProfile()}
               >
-                Salvar perfil vocal
-              </button>
+                {tr("studio", "saveVoiceProfile")}</button>
               <p className="muted">
-                O perfil registra idioma e referência. Consistência de
-                identidade e pronúncia não são garantidas sem escuta
-                comparativa.
-              </p>
+                {tr("studio", "aProfileRecordsLanguageAndReferenceIdentityAnd")}</p>
             </>
           )}
         </div>
       </section>
       <section className="panel">
         <header className="panel-title">
-          <h2>Interpretações & comparação</h2>
-          <span className="mono muted">{results.length} RESULTADOS</span>
+          <h2>{tr("studio", "performancesComparison")}</h2>
+          <span className="mono muted">{results.length} {tr("studio", "results")}</span>
         </header>
         <div className="studio-body">
           {!results.length && (
             <p className="muted">
-              As interpretações solicitadas pelo Codex aparecerão aqui.
-              Compare-as no player e preserve a versão preferida.
-            </p>
+              {tr("studio", "performancesRequestedThroughCodexWillAppearHereCompare")}</p>
           )}
           <div className="studio-results">
             {results.map((asset) => (
@@ -1403,8 +1338,7 @@ export function VoiceStudio({
                 </div>
                 <div className="studio-actions">
                   <button className="outline" onClick={() => listen(asset)}>
-                    Ouvir
-                  </button>
+                    {tr("studio", "play")}</button>
                   <button
                     className="outline"
                     disabled={busy}
@@ -1417,11 +1351,10 @@ export function VoiceStudio({
                       })
                     }
                   >
-                    {asset.selected ? "Preferida" : "Preferir"}
+                    {asset.selected ? tr("studio", "preferred") : tr("studio", "prefer")}
                   </button>
                   <button className="outline" onClick={() => openFx(asset)}>
-                    Abrir em FX
-                  </button>
+                    {tr("studio", "openInFx")}</button>
                   <button className="text-button" onClick={() => edit(asset)}>
                     Audacity
                   </button>
@@ -1430,9 +1363,7 @@ export function VoiceStudio({
             ))}
           </div>
           <p className="muted">
-            Use Biblioteca & versões para comparação A/B, notas e exportações.
-            Efeitos criam versões novas; o áudio-base permanece intacto.
-          </p>
+            {tr("studio", "useLibraryVersionsForABComparisonNotes")}</p>
         </div>
       </section>
     </div>

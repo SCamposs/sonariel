@@ -1,3 +1,5 @@
+import { tr } from "../i18n";
+import { useTranslation } from "react-i18next";
 import { Select } from "@base-ui/react/select";
 import { Check, ChevronDown } from "lucide-react";
 
@@ -19,10 +21,11 @@ export function SelectControl({
   value,
   options,
   onChange,
-  placeholder = "Selecione",
+  placeholder = tr("common", "select"),
   disabled,
   name,
 }: SelectControlProps) {
+  useTranslation();
   return (
     <Select.Root
       items={options}

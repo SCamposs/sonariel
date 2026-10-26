@@ -1,3 +1,4 @@
+import { tr } from "./i18n";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Channel, invoke } from "@tauri-apps/api/core";
 import packageInfo from "../package.json";
@@ -64,7 +65,7 @@ export function useUpdates(transport = desktop) {
     } catch {
       if (mounted.current)
         setError(
-          "Não foi possível consultar as releases. Confira sua conexão e tente novamente.",
+          tr("updates", "couldNotCheckReleasesCheckYourConnectionAnd"),
         );
     } finally {
       inFlight.current = false;

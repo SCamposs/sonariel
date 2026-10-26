@@ -1,3 +1,4 @@
+import { tr } from "./i18n";
 import { invoke } from "@tauri-apps/api/core";
 
 export async function rpc<T = unknown>(
@@ -73,6 +74,7 @@ export type Job = {
   };
 };
 export type Snapshot = {
+  ui_preferences?: { locale: "en" | "pt-BR" | null; existing_installation: boolean };
   engines?: EngineInfo[];
   voice_environment?: { python: string; models: string } | null;
   projects: Project[];
@@ -151,19 +153,22 @@ export type EngineInfo = {
   blocked_reason?: string;
 };
 
-export const states: Record<string, string> = {
-  queued: "Aguardando",
-  loading: "Carregando",
-  submitted: "Enviando",
-  generating: "Gerando",
-  completed: "Concluída",
-  interrupted: "Interrompida",
-  cancelled: "Cancelada",
-  stopped: "Descarregado",
-  ready: "Pronto",
-  error: "Falha",
-  running: "Em execução",
-};
+export function stateLabel(state: string): string {
+  const states: Record<string, string> = {
+  queued: tr("common", "waiting"),
+  loading: tr("common", "loading"),
+  submitted: tr("common", "submitting"),
+  generating: tr("common", "generating"),
+  completed: tr("common", "completed"),
+  interrupted: tr("common", "interrupted"),
+  cancelled: tr("common", "cancelled"),
+  stopped: tr("common", "unloaded"),
+  ready: tr("common", "ready"),
+  error: tr("common", "failed"),
+  running: tr("common", "running"),
+  };
+  return states[state] ?? state;
+}
 export function formatTime(seconds: number) {
   if (!Number.isFinite(seconds)) return "0:00";
   return `${Math.floor(seconds / 60)}:${Math.floor(seconds % 60)

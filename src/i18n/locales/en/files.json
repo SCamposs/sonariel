@@ -1,0 +1,11 @@
+{
+  "windowsExecutable": "Windows executable",
+  "audio": "Audio",
+  "wavAudio": "WAV audio",
+  "jsonPreset": "JSON preset",
+  "couldNotOpenTheFilePickerValue": "Could not open the file picker: {{value0}}",
+  "saveAs": "Save as",
+  "select": "Select",
+  "theNativePickerIsAvailableInTheDesktop": "The native picker is available in the desktop app; paste a path in this preview.",
+  "chooseADestinationForANewJsonPreset": "Choose a destination for a new JSON preset"
+}
