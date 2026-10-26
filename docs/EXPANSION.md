@@ -1,5 +1,7 @@
 # Audio engines expansion (0.3.0)
 
+> Historical implementation/validation report. The current distributed release is v0.3.2: Stable source audio was added in v0.3.1 and the Turbo cold-start admission gate changed from 16 to 12 GiB in v0.3.2. Measurements below retain their original conditions. Use the [engine guide](ENGINES.md) for current capabilities and thresholds.
+
 The historical 0.3.0 evidence below describes text-only Stable Audio integration.
 Version 0.3.1 adds explicit source audio; see [STABLE_AUDIO_INPUT.md](STABLE_AUDIO_INPUT.md)
 for the new setup, queue/MCP contract and separate live validation.
