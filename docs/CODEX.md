@@ -46,3 +46,16 @@ Official contracts consulted:
 - https://developers.openai.com/codex/skills
 - https://manual.audacityteam.org/man/scripting.html
 - https://v2.tauri.app/
+
+## Phase 2 source contracts (unreleased)
+
+The development core exposes 55 tools. Reload the MCP client after deliberately connecting an isolated development runtime; the installed stable server is not replaced automatically. Full parameter schemas remain available through `tools/list`.
+
+- `ui_preferences_save(locale)`: EN (`en`) or Brazilian Portuguese (`pt-BR`); no engine/job changes.
+- `fx_loop_render(asset_id, request_key, start_seconds, end_seconds, crossfade_ms, preview, repetitions)`: creates a derived WAV. Preview repeats 2–4 **complete edited cycles**, up to ten minutes, unlike the ordinary ten-second FX preview. Final output is one cycle. Listen before choosing the region; crossfade shortens the period and does not align bars automatically. Never change request keys after an uncertain submission.
+- `result_export_batch(asset_ids, directory, naming, collisions, manifest, include_prompts, include_references)`: copies 1–200 selected WAVs. Naming fields: `{index}`, `{name}`, `{id}`, `{model}`, `{seed}`. Collision modes `rename` and `skip` never overwrite. Each item reports success/failure. Optional portable JSON omits paths, runtime context and credentials; prompts and references require separate explicit inclusion. Unknown metadata remains absent/null. Inspect `manifest_error` separately from successful WAV copies.
+- `music_presets_list`, `music_preset_save`, `music_preset_favorite`: capture compatible music-result parameters or an explicit engine configuration; revisions/duplicates preserve earlier settings. DSP and voice retain separate presets/profiles.
+- `music_preset_prepare`: `reuse` reviews settings only; `repeat` preserves saved parameters; `variation` requires an explicitly different seed. Engine-incompatible settings and foreign-project conditioning fail closed.
+- `music_preset_generate`: requires `repeat`/`variation`, the matching review token, `confirmed=true`, and a request key. A genuinely new request needs a new key; recovery of an accepted request uses its existing key/job. Results retain preset ID/revision/intent lineage. Reusing a seed does not guarantee identical audio across model revisions or environments.
+
+The desktop exposes preset capture, favorite, revision/duplicate and review. Creative parameter/prompt changes and generation remain directed through Codex/MCP. No generic shell or arbitrary Audacity execution tool was added. See [Phase 2 validation](PHASE2.md) before using these contracts.

@@ -2,6 +2,8 @@
 
 # Sonariel
 
+**Desenvolvimento na main:** interface em inglês/pt-BR, escolha de idioma antes do tutorial, loops não destrutivos, exportação WAV em lote e presets musicais versionados estão disponíveis ao compilar o código. Essas mudanças ainda não fazem parte do download v0.3.2. Use um perfil de prévia isolado: [validação e instruções da Fase 2](docs/PHASE2.md).
+
 **Produção de áudio local, com direção pelo seu agente de IA conectado.**
 
 O Sonariel é um aplicativo desktop source-available para Windows que reúne geração musical, síntese de voz multilíngue, DSP nativo e organização de projetos e versões. Dê a direção pelo agente conectado via MCP; use o app para acompanhar a execução, ouvir, comparar, processar e organizar os resultados.

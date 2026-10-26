@@ -17,6 +17,8 @@ Descarte/restauração aguardam a fila terminar. Projetos, parâmetros, históri
 
 ## Migração
 
+Na main de desenvolvimento (Fase 2, ainda sem release), o schema 4 adiciona presets musicais e seu histórico de uso, com backup consistente de schemas 1–3. Áudios usados como condicionamento de presets musicais também ficam protegidos do descarte. Use um perfil de prévia separado; a versão estável não abre o banco mais novo. [Instruções e evidências](PHASE2.md).
+
 O schema 3 acrescenta `asset_trash`, sem recriar as tabelas existentes. Antes de migrar schemas 1/2, o app produz um backup SQLite consistente em `backups`. Versões anteriores não devem abrir um banco já migrado; use o backup com suporte técnico caso precise retornar.
 
 MCP: `storage_list` é inventário, `storage_preview` devolve a prévia e seu token, `storage_discard` exige token e confirmação, e `storage_restore` recupera um registro. Não forneça confirmação de descarte ao Codex sem escolher os itens. Nenhuma limpeza de produção foi executada para validar esta funcionalidade.

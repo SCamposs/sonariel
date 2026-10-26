@@ -4,6 +4,8 @@
 
 Current distributed release: [v0.3.2](https://github.com/SCamposs/sonariel/releases/tag/v0.3.2). The desktop UI remains in Brazilian Portuguese. The two top-level READMEs describe the same capabilities; not every supporting document has been translated.
 
+Source builds on main now include EN/pt-BR UI and the Phase 2 production tools. They have not been published as a release. [Phase 2: evidence, screenshots, limitations and isolated preview](PHASE2.md).
+
 ## Start here
 
 | Document | Purpose | Language |

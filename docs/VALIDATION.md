@@ -2,6 +2,10 @@
 
 This file records real execution separately from implementation coverage. No musical references, audio, private logs or machine-specific paths belong in this repository.
 
+## Phase 2 source development — 26 October 2026
+
+English/pt-BR internationalization and native loop/batch export/music preset contracts are implemented on main, without a new distributed release. The final Python suite passed 104 tests. Frontend 60 tests, typecheck, production build and 28 Rust workspace tests passed. Packaged MCP validation exercised real synthetic WAV → native loop → verified batch copies and preset persistence/review, with no AI inference. Native desktop language/tutorial/keyboard/persistence and captures were checked separately. Small-window native acceptance and human loop-seam listening remain unconfirmed; issue #3 stays open for the latter. See [Phase 2 evidence and preview instructions](PHASE2.md). Historical release evidence below retains its original scope.
+
 ## v0.3.2 checks
 
 - Python: 82 tests passed. Storage coverage includes managed music/voice/FX/preview/export roundtrips, unchanged external files, protected favorites/references/lineage/voice/Audacity dependencies, stale previews, missing confirmation, occupied restore targets, interrupted moves, tampered trash and consistent migration backups.
