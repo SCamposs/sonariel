@@ -1,91 +1,113 @@
+[English](README.md) | [Português (Brasil)](README.pt-BR.md)
+
 # Sonariel
 
-Um aplicativo desktop para criar músicas e vozes com IA local, processar WAVs com efeitos nativos e organizar projetos, sessões e versões. A direção criativa acontece na conversa com o Codex; o Sonariel acompanha a execução e preserva suas escolhas.
+**Local audio production, directed by your connected AI agent.**
 
-> **0.3.2** acrescenta seletores nativos de arquivos/pastas e inventário central com descarte recuperável, além de ajustes na navegação e atualização. Consulte [armazenamento e seus limites](docs/STORAGE.md) e [as notas da release](docs/releases/v0.3.2.md).
+Sonariel is a source-available Windows desktop application that brings music generation, multilingual voice synthesis, native DSP, and project/version management into one workflow. Direct the work through an MCP-connected agent; use the desktop to follow execution, listen, compare, process, and organize the results.
 
-## Baixar para Windows
+[Download for Windows](https://github.com/SCamposs/sonariel/releases/latest) · [Quick start](docs/QUICK_START.md) · [Documentation](docs/README.md) · [Changelog](CHANGELOG.md)
 
-[Baixe a versão mais recente nas Releases](https://github.com/SCamposs/sonariel/releases/latest).
+![Sonariel v0.3.2 project workspace with an isolated demonstration project, sessions, and a preserved audio selection](docs/images/projects.webp)
 
-Escolha `Sonariel_<versão>_x64-setup.exe`. Não é necessário instalar Node, Rust ou Python para usar o aplicativo. Os modelos e o ambiente de geração são preparados separadamente pelo próprio Sonariel, após sua autorização.
+*Real v0.3.2 desktop captures. The interface is currently in Brazilian Portuguese. The isolated showcase uses an imported synthetic sound study and real native DSP renders, not AI-generated music or production material. [Capture details](docs/SHOWCASE.md).*
 
-- Windows x64 e WebView2 (o instalador oferece o componente quando necessário).
-- O padrão musical permanece **CPU, ACE-Step Turbo e DiT-only**. A versão 0.3 acrescenta Stable Audio 3 Small-Music/Medium via LiteRT CPU, Chatterbox Multilingual V3 e DSP nativo independente. SFT está pendente, não é anunciado como motor operacional. Não há aceleração por GPU neste perfil.
-- O **ACE-Step** exige 12 GiB livres para começar a carregar, ou 4 GiB com o motor gerenciado já carregado. Esse limite não garante memória suficiente até o fim: um teste curto anterior chegou a cerca de 14 GiB no processo e quase esgotou a RAM física disponível. Voz, LiteRT e FX têm limites próprios. A fila executa um pedido por vez, sem carregar modelos ao abrir a interface.
-- Internet é necessária para downloads iniciais e atualizações. A geração é local; o Sonariel não envia áudio e prompts a serviços de geração na nuvem.
+## From a request to a usable version
 
-O instalador ainda não tem assinatura de editor Windows/Authenticode. A assinatura criptográfica dos pacotes de atualização é uma proteção diferente e não remove avisos do Windows sobre editor desconhecido.
+- **Generate locally:** ACE-Step music, experimental Stable Audio variations, and multilingual Chatterbox V3 voice synthesis.
+- **Process non-destructively:** ordered or layered native DSP, explicit short previews, reusable presets, and new WAV versions without overwriting the source.
+- **Keep the context:** projects, sessions, parameters, seeds, source relationships, favorites, and production notes.
+- **Listen and decide:** persistent playback, two-version comparison, waveforms, and result details.
+- **See the work:** one persistent queue shared by desktop and MCP, real job stages, memory readings, and per-engine setup.
+- **Control the files:** registered-audio inventory, protected references, recoverable discard, verified WAV exports, and optional Audacity handoff.
 
-## Primeiro uso
+### Inside the workspace
 
-1. Abra o Sonariel e percorra o tutorial opcional. Você pode reabri-lo em **Instruções do workflow**, no fim da sidebar.
-2. Em **Ambiente**, vincule uma instalação compatível existente ou revise e autorize uma instalação isolada. Vincular não reinstala nem modifica seu ambiente anterior.
-3. Em **Projetos & sessões**, crie um projeto e registre a intenção musical. Confira o projeto ativo antes de gerar.
-4. Em **Audacity & Codex**, escolha **Configurar conexão Codex**. O app faz backup da configuração e preserva as outras conexões. Recarregue o cliente Codex para carregar as ferramentas MCP.
-5. Na conversa com o Codex, peça uma geração pelo Sonariel com direção, duração, BPM, tonalidade e compasso explícitos. Acompanhe o pedido na **Fila de geração**.
-6. Escute e compare em **Biblioteca & versões**, registre suas preferências e só então leve a candidata escolhida para o Audacity.
+![Side-by-side comparison of the synthetic source and a processed version, with measured waveforms and playback controls](docs/images/comparison.webp)
 
-Para a ponte com o Audacity, habilite `mod-script-pipe` e reinicie o editor. O app usa projetos identificados do Sonariel, sem editar um projeto alheio aberto. O original de áudio é preservado ao criar versões editadas.
+<details>
+<summary>Native FX workspace</summary>
 
-**Voice Studio** organiza idiomas/perfis e interpretações solicitadas ao Codex. **FX & processamento** aceita qualquer WAV registrado: adicione/reordene efeitos, ajuste parâmetros, peça uma prévia curta e renderize uma versão completa somente quando desejar. Originais não são sobrescritos. A biblioteca permite comparar duas versões. O setup é independente por motor; Stable Audio exige aceite individual de seus termos, e seus pesos não acompanham o app.
+![Native FX workspace showing the original source, processed versions and an editable effect chain](docs/images/fx.webp)
 
-Para variar uma gravação pelo Stable Audio, prepare o encoder de entrada pelo setup LiteRT, vincule novamente o ambiente e registre o WAV em **Referências**. Peça ao Codex `music_generate` com `mode="audio2audio"`, `source_id`, duração integral da fonte (5–120 s) e `init_noise_level` entre 0,01 e menos de 1. Valores menores perturbam menos a fonte; não são uma porcentagem garantida de semelhança. O áudio entra como conteúdo, não só como referência de estilo. Sem `source_id`, o modo padrão continua sendo texto, limitado a 60 s. Não há garantia de cópia idêntica nem liberação de direitos sobre a gravação usada.
+</details>
 
-## Atualizações
+These views show a real imported-audio → DSP → version comparison workflow. They do not imply that an AI model was loaded for the screenshots. See the [queue capture and recording proposal](docs/SHOWCASE.md) for more context.
 
-Clique no número da versão, abaixo do nome Sonariel na sidebar, para abrir **Versão & atualizações**. Uma bolinha âmbar nesse botão indica uma versão nova.
+## Agent integration, not a second chat window
 
-Por padrão, o app consulta as releases oficiais ao abrir e a cada hora. Selecione **Somente quando eu solicitar** para desativar essas consultas e use **Verificar agora** quando quiser. Nenhuma instalação começa sem você escolher **Atualizar e reiniciar**.
+The connected agent handles creative direction and calls Sonariel's MCP tools. Sonariel manages execution and persistent production state; it is not an autonomous agent with its own language model.
 
-O pacote é baixado e sua assinatura é verificada antes da instalação. Aguarde a fila e o setup terminarem e feche conexões MCP do Sonariel antes de atualizar; esses processos podem manter arquivos do aplicativo em uso. No Windows, o instalador fecha e reabre o app. Projetos e áudios ficam fora da pasta do programa.
+Codex is the integration exercised in this project. The server uses MCP over local stdio and is designed for interoperability, but Claude Code, Cursor, Copilot, and other clients are **not claimed as tested integrations**. [MCP setup and contracts](docs/CODEX.md).
 
-Quem usa a versão 0.1 precisa instalar a 0.2 uma vez manualmente para receber o atualizador.
+Audio-engine inference runs on your computer. The connected agent's model is separate and may use a remote service; local audio generation does not make Codex or another agent local. Consider what you share with that client separately from Sonariel's audio processing.
 
-## Dados e privacidade
+## Engines and requirements
 
-Em **Armazenamento**, consulte os áudios catalogados, seus caminhos e tamanhos. O descarte exige prévia e confirmação: WAVs gerenciados vão para uma lixeira recuperável, e arquivos externos têm apenas seu registro ocultado. Nada é limpo automaticamente. A lixeira mantém os bytes, portanto não libera espaço em disco; não há exclusão permanente nesta versão. [Saiba como descartar e restaurar](docs/STORAGE.md).
+The distributed profile is **Windows x64, CPU, one task at a time**. GPU inference is not supported by these adapters. Opening the desktop or MCP connection does not load the models.
 
-Dados locais ficam por padrão em `%USERPROFILE%\.sonariel`; `SONARIEL_HOME` pode selecionar outro diretório. Projetos, áudio, backups, ambientes, modelos e logs não fazem parte deste repositório. O tutorial e a preferência de atualizações ficam no perfil local do WebView.
+| Engine | Implemented role | Available RAM required to start |
+| --- | --- | --- |
+| ACE-Step 1.5 Turbo | Baseline music generation and source-guided cover, DiT-only | 12 GiB cold / 4 GiB with the managed model resident |
+| Stable Audio 3 Small-Music / Medium | Experimental LiteRT CPU music; text-to-audio and explicit source-audio variation | 5 / 6 GiB |
+| Chatterbox Multilingual V3 | Experimental multilingual speech and optional authorized reference profiles | 7.5 GiB |
+| Native DSP | WAV processing, chains, layers, previews, presets, and export | 3 GiB |
 
-O núcleo escuta somente em loopback, com autenticação local. Abrir o aplicativo ou o MCP não carrega modelos. O Sonariel não contém telemetria de uso. As consultas opcionais de atualização acessam o GitHub, que recebe os dados normais de uma conexão HTTP; elas não enviam áudio, prompts ou o banco de projetos. Downloads de componentes usam suas fontes oficiais.
+These are **queue admission thresholds, not guarantees of sufficient memory**. ACE-Step has exceeded 14 GiB process RAM in local runs; longer audio and other applications affect headroom. The ACE setup recipe also requires at least 23 GiB total system RAM. SFT is listed as pending, not an operational engine. See [engine capabilities, limits, and terms](docs/ENGINES.md) and the [validation record](docs/VALIDATION.md).
 
-## Licença
+## Download and install
 
-O código próprio usa a [Sonariel Source Available License 1.0](LICENSE):
+1. Open the [official releases](https://github.com/SCamposs/sonariel/releases/latest) and download `Sonariel_<version>_x64-setup.exe`. The current stable release is [v0.3.2](https://github.com/SCamposs/sonariel/releases/tag/v0.3.2).
+2. Install the desktop app. End users do **not** need Node.js, Rust, or a development Python installation. WebView2 is required; the installer offers its bootstrap component when needed.
+3. Prepare a compatible engine separately through the app. Model weights are not bundled. Downloads require internet, disk space, and your authorization; external model terms still apply.
 
-- Você pode usar o app para criar músicas, vendê-las, licenciá-las e realizar trabalhos criativos pagos.
-- Pode estudar, modificar e redistribuir gratuitamente o código/app, mantendo a licença e os avisos.
-- Não pode vender o Sonariel, versões modificadas ou acesso a ele como serviço pago sem autorização separada.
+The installer does **not** have a Windows Authenticode publisher signature, so Windows may show an unknown-publisher warning. Updater packages have a separate cryptographic signature; that does not remove Windows publisher warnings. Updates are optional and installation requires confirmation. [Installation and update details](docs/QUICK_START.md#installation-and-updates).
 
-É **código disponível, não uma licença open source aprovada pela OSI**. A licença não transfere direitos sobre modelos ou referências e não garante que um áudio gerado esteja livre de direitos de terceiros. As [dependências têm suas próprias licenças](THIRD_PARTY_NOTICES.md).
+## Quick start
 
-## Desenvolvimento
+1. Open Sonariel and use the optional first-use guide. Reopen it through **Instruções do workflow** in the sidebar.
+2. In **Ambiente**, review an engine's setup plan or link a compatible existing installation. Each engine has its own isolated environment.
+3. In **Audacity & Codex**, choose **Configurar conexão Codex**, then reload the Codex MCP connection. A compatible MCP client is required for agent-directed generation; a working protocol handshake is distinct from client configuration.
+4. Create/select a project in **Projetos & sessões** and save its production context.
+5. Ask the agent for one short generation with explicit model, seed, and duration. For ACE-Step, also provide BPM, key, and time signature. For example:
 
-Desktop Tauri 2 + React/TypeScript com núcleo Python leve. Requer Node 22.12+, Rust/MSVC e Python 3.12 para desenvolvimento, não para o usuário final.
+   > Use Sonariel to generate one 15-second instrumental in the selected project with ACE-Step Turbo, seed 4137, 72 BPM, D minor, 4/4, batch size 1. A quiet original synthesizer study, no vocals or drums. Follow the existing CPU/DiT-only profile; do not enable the LM or Flash Attention. Submit once and report the job ID.
 
-```powershell
-uv venv --python 3.12 .venv
-uv pip install --python .venv/Scripts/python.exe -e '.[dev]'
-npm.cmd ci
-& .venv/Scripts/python.exe -m pytest -q
-npm.cmd test
-npm.cmd run typecheck
-npm.cmd run dev
+6. Follow **Fila de geração**. Low-memory waiting is a real queue state; do not repeatedly resubmit the request. There is no active-inference cancellation in this profile.
+7. Listen in **Biblioteca & versões**, compare versions, and request an explicit preview in **FX & processamento** before a full render. Export a WAV or optionally hand a version to Audacity.
+
+No model is required to import a WAV and use native FX. The [full quick start](docs/QUICK_START.md) explains the UI labels, setup choices, memory limits, and optional Audacity configuration.
+
+## One core, two clients
+
+```mermaid
+flowchart LR
+    Agent[Connected AI agent] -->|MCP / stdio| Core[Sonariel Core: queue + SQLite]
+    Desktop[Desktop workspace] <--> Core
+    Core --> Engines[Music / Voice / Native DSP]
+    Engines --> Core
+    Core --> Results[Library / Versions / Export]
+    Results -. optional .-> Audacity[Audacity]
 ```
 
-`npm run dev` é uma superfície local de verificação. O produto distribuído é o desktop Tauri. `scripts/build.ps1` prepara um instalador de desenvolvimento sem assinatura de atualização; releases oficiais usam o fluxo assinado em [docs/RELEASING.md](docs/RELEASING.md).
+The desktop and MCP client share the same lightweight core and persistent state. Heavy engines run separately, dependencies are installed in isolated environments, and new renders preserve their source. Core RPC is loopback-only with local authentication. There is no arbitrary shell executor or unrestricted Audacity command tool. [Architecture and process boundaries](docs/ARCHITECTURE.md).
 
-Para testar um build local sem substituir o app instalado, execute `scripts/build.ps1` e depois `scripts/run-preview.ps1`. O segundo comando prepara uma cópia executável em `%USERPROFILE%\SonarielPreview\0.3.2` e usa `%USERPROFILE%\.sonariel-preview`, separado do perfil estável. O instalador de desenvolvimento não é instalado automaticamente. Não conecte o Codex de produção ao preview por engano: ele tem banco e núcleo próprios.
+## Data, licensing, and limitations
 
-## Documentação e limitações
+Project data defaults to `%USERPROFILE%\.sonariel`; `SONARIEL_HOME` selects a separate profile. Models, audio, references, databases, and private presets stay outside this repository. Sonariel has no usage telemetry; optional update checks contact GitHub, and setup downloads use external official sources. The connected agent has its own data-handling policy.
 
-- [Arquitetura e limites entre processos](docs/ARCHITECTURE.md)
-- [Setup e integridade](docs/SETUP.md)
-- [Codex/MCP](docs/CODEX.md)
-- [Recuperação](docs/RECOVERY.md)
-- [Validação: o que foi realmente testado](docs/VALIDATION.md)
-- [Expansão de música, voz e FX](docs/EXPANSION.md)
-- [Componentes de interação](src/ui/README.md)
+Recoverable discard is not permanent deletion and **does not free disk space**. External files are never moved/deleted by that operation, and only registered files appear in the inventory. [Storage behavior](docs/STORAGE.md).
 
-Não há cancelamento de inferência ativa; só pedidos ainda não enviados ao motor podem ser cancelados. O teste em uma máquina não garante o mesmo desempenho ou consumo de RAM em outra. Consulte a validação antes de usar o app em uma produção importante.
+Sonariel's own code and documentation use the [Sonariel Source Available License 1.0](LICENSE), **not an OSI-approved open-source license**. You can use the app free of charge, study/modify it, and redistribute it for free under its terms. Selling Sonariel, modified versions, or paid access to operate it requires separate permission.
+
+The app license imposes no royalty or noncommercial restriction on your output. Commercial use of an audio result still depends on model terms and rights in references/source material; exclusive rights, copyrightability, and freedom from third-party claims are not guaranteed. Official generator watermarks are not deliberately disabled. Review [third-party notices](THIRD_PARTY_NOTICES.md) and the [engine guide](docs/ENGINES.md).
+
+## Documentation and contributing
+
+- [Documentation index](docs/README.md): current guides, languages, and historical validation records.
+- [Quick start](docs/QUICK_START.md): installation, agent connection, and a first workflow.
+- [Engine guide](docs/ENGINES.md): capabilities, RAM thresholds, and model-license boundaries.
+- [Contributing](CONTRIBUTING.md): Windows development setup, tests, and privacy safeguards.
+- [Issues](https://github.com/SCamposs/sonariel/issues): report reproducible problems or propose improvements.
+
+Contributions should preserve local execution, explicit operations, and non-destructive versioning. Development uses Tauri 2, React/TypeScript, Python 3.12, and native Rust/C++ DSP; those build tools are not end-user prerequisites. Read [CONTRIBUTING.md](CONTRIBUTING.md) before setting up a development profile.
