@@ -1561,3 +1561,9 @@ input[type="checkbox"] {
     scroll-behavior: auto !important;
   }
 }
+.batch-export {
+  margin-bottom: 20px;
+}
+.version-actions {
+  flex-wrap: wrap;
+}

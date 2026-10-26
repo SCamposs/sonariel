@@ -1,5 +1,6 @@
 {
   "title": "Settings",
+  "description": "Choose your interface language. Changes apply immediately without restarting or interrupting tasks.",
   "language": "Application language",
   "choose": "Choose your language",
   "firstUse": "Choose a language before the workflow guide. You can change it later in Settings in the sidebar.",

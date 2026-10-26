@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use sonariel_transform as essence;
 use sonariel_dsp_core as fx;
 use std::{fs, path::Path, time::Instant};
+mod loop_render;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -248,6 +249,9 @@ fn main() -> Result<()> {
     );
     let raw = fs::read(&args[3])?;
     let value: serde_json::Value = serde_json::from_slice(&raw)?;
+    if value.get("operation").and_then(|v| v.as_str()) == Some("loop") {
+        return loop_render::render(input, output, &raw);
+    }
     if value.get("layers").is_none() {
         return fx::cli();
     }

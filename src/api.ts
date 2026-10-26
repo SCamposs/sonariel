@@ -52,6 +52,7 @@ export type Asset = {
     rms: number;
     subtype: string;
     parameters?: Record<string, unknown>;
+    music_preset?: { preset_id: string; family_id: string; revision: number; engine_id: string; intent: string; source_asset_id: string | null };
     sha256: string;
   };
 };

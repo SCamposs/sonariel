@@ -1,5 +1,5 @@
 import { systemMessage } from "./i18n/system-message";
-import { tr } from "./i18n";
+import { tr, languageName } from "./i18n";
 import { useTranslation } from "react-i18next";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -15,6 +15,7 @@ import { AudioSlider } from "./ui/audio-slider";
 import { PathField } from "./ui/path-field";
 import { SelectControl } from "./ui/select-control";
 import "./studio.css";
+import { LoopStudio } from "./loop-studio";
 
 type Action = (
   method: string,
@@ -1037,6 +1038,7 @@ export function FxStudio({
           </details>
         </div>
       </section>
+      <LoopStudio source={selected} busy={busy} act={act} />
     </div>
   );
 }
@@ -1284,9 +1286,9 @@ export function VoiceStudio({
                     value={language}
                     onChange={setLanguage}
                     options={Object.entries(engine?.languages ?? {}).map(
-                      ([value, label]) => ({
+                      ([value]) => ({
                         value,
-                        label: `${label} (${value})`,
+                        label: `${languageName(value)} (${value})`,
                       }),
                     )}
                   />

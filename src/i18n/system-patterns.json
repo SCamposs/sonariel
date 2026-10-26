@@ -834,5 +834,249 @@
   {
     "key": "prepareSameSAndSoxrThroughLitertSetup",
     "source": "Prepare encoder SAME-S e soxr pelo setup LiteRT e vincule novamente para usar áudio de entrada"
+  },
+  {
+    "key": "audacityRejectedValueValue2",
+    "source": "Audacity recusou {{value1}}: {{value2}}"
+  },
+  {
+    "key": "processingFailedCheckValue",
+    "source": "Processamento falhou; consulte {{value1}}"
+  },
+  {
+    "key": "musicPresetNotFound",
+    "source": "Music preset not found"
+  },
+  {
+    "key": "unsupportedMusicPresetEngine",
+    "source": "Unsupported music preset engine"
+  },
+  {
+    "key": "presetResultBelongsToAnotherProject",
+    "source": "Preset result belongs to another project"
+  },
+  {
+    "key": "presetRevisionBelongsToAnotherProject",
+    "source": "Preset revision belongs to another project"
+  },
+  {
+    "key": "provideAMusicResultOrExplicitEngineAnd",
+    "source": "Provide a music result or explicit engine and parameters"
+  },
+  {
+    "key": "doNotChangeEnginesWithinAPresetFamily",
+    "source": "Do not change engines within a preset family"
+  },
+  {
+    "key": "aVariationRequiresAnExplicitlyDifferentSeed",
+    "source": "A variation requires an explicitly different seed"
+  },
+  {
+    "key": "repeatPreservesTheSavedConfigurationChooseVariationFor",
+    "source": "Repeat preserves the saved configuration; choose variation for changed settings"
+  },
+  {
+    "key": "reviewAndExplicitlyConfirmThePresetBeforeGenerating",
+    "source": "Review and explicitly confirm the preset before generating"
+  },
+  {
+    "key": "presetReviewChangedReviewTheActualValuesAgain",
+    "source": "Preset review changed; review the actual values again"
+  },
+  {
+    "key": "text2musicRequiresNoSourceIdAndCoverStrength",
+    "source": "text2music requires no source_id and cover_strength=1"
+  },
+  {
+    "key": "text2audioRequiresNoSourceAndAtMost60",
+    "source": "text2audio requires no source and at most 60 seconds"
+  },
+  {
+    "key": "sourceGuidedPresetRequiresAnExplicitSourceId",
+    "source": "Source-guided preset requires an explicit source_id"
+  },
+  {
+    "key": "presetDurationMustMatchTheFullSelectedSource",
+    "source": "Preset duration must match the full selected source"
+  },
+  {
+    "key": "resultIsOutsideTheValidatedTurboPresetProfile",
+    "source": "Result is outside the validated Turbo preset profile"
+  },
+  {
+    "key": "chooseAMusicGenerationResultDspAndVoice",
+    "source": "Choose a music generation result; DSP and voice presets are separate"
+  },
+  {
+    "key": "chooseResultCaptureOrExplicitConfigurationNotBoth",
+    "source": "Choose result capture or explicit configuration, not both"
+  },
+  {
+    "key": "requestKeyAlreadyUsedWithDifferentPresetParameters",
+    "source": "request_key already used with different preset parameters"
+  },
+  {
+    "key": "presetConditioningBelongsToAnotherProjectSelectAn",
+    "source": "Preset conditioning belongs to another project; select an explicit replacement"
+  },
+  {
+    "key": "resultIsOutsideTheValidatedStableAudioPreset",
+    "source": "Result is outside the validated Stable Audio preset profile"
+  },
+  {
+    "key": "presetConditioningSourceIsNoLongerRegistered",
+    "source": "Preset conditioning source is no longer registered"
+  },
+  {
+    "key": "invalidExportNamingPattern",
+    "source": "Invalid export naming pattern"
+  },
+  {
+    "key": "useOnlyNameIdModelSeedIndexIn",
+    "source": "Use only {name}, {id}, {model}, {seed}, {index} in the naming pattern"
+  },
+  {
+    "key": "chooseAnExistingLocalExportFolder",
+    "source": "Choose an existing local export folder"
+  },
+  {
+    "key": "loopSourceMustBeAMonoOrStereo",
+    "source": "Loop source must be a mono or stereo WAV"
+  },
+  {
+    "key": "loopRegionMustFitTheSourceAndContain",
+    "source": "Loop region must fit the source and contain at least 0.1 seconds"
+  },
+  {
+    "key": "crossfadeMustFitHalfTheRegionAndContain",
+    "source": "Crossfade must fit half the region and contain at least two frames"
+  },
+  {
+    "key": "loopPreviewOutputLimitIsTenMinutesShorten",
+    "source": "Loop preview/output limit is ten minutes; shorten the region or reduce repetitions"
+  },
+  {
+    "key": "invalidExportNamingPlaceholder",
+    "source": "Invalid export naming placeholder"
+  },
+  {
+    "key": "tooManyCollisions",
+    "source": "Too many collisions"
+  },
+  {
+    "key": "invalidSha256IntegrityValue",
+    "source": "Integridade SHA-256 inválida: {{value1}}"
+  },
+  {
+    "key": "finalVerificationFailedValue",
+    "source": "Verificação final falhou: {{value1}}"
+  },
+  {
+    "key": "litertSourceMissingOrChangedValue",
+    "source": "Fonte LiteRT ausente ou diferente: {{value1}}"
+  },
+  {
+    "key": "litertCheckpointMissingOrChangedValue",
+    "source": "Checkpoint LiteRT ausente ou diferente: {{value1}}"
+  },
+  {
+    "key": "checkpointMissingOrChangedValue",
+    "source": "Checkpoint ausente ou diferente: {{value1}}"
+  },
+  {
+    "key": "installedSourceChangedItWillNotBeOverwritten",
+    "source": "Fonte instalada mudou; não será sobrescrita: {{value1}}"
+  },
+  {
+    "key": "pinnedSourceChangedValue",
+    "source": "Pinned source changed: {{value1}}"
+  },
+  {
+    "key": "checkpointChangedValue",
+    "source": "Checkpoint changed: {{value1}}"
+  },
+  {
+    "key": "prepareIsolatedLitert",
+    "source": "Preparar LiteRT isolado"
+  },
+  {
+    "key": "litertCpuInstalledAndLinked",
+    "source": "LiteRT CPU instalado e vinculado"
+  },
+  {
+    "key": "prepareVoiceEnvironment",
+    "source": "Preparar ambiente de voz"
+  },
+  {
+    "key": "v3CpuInstalledVerifiedAndLinked",
+    "source": "V3 CPU instalado, verificado e vinculado"
+  },
+  {
+    "key": "litertCpuTokenizePrompt",
+    "source": "LiteRT CPU: tokenizar prompt"
+  },
+  {
+    "key": "litertCpuLoadT5gemma",
+    "source": "LiteRT CPU: carregar T5Gemma"
+  },
+  {
+    "key": "litertCpuEncodeText",
+    "source": "LiteRT CPU: codificar texto"
+  },
+  {
+    "key": "litertCpuReadFullSource",
+    "source": "LiteRT CPU: ler fonte completa"
+  },
+  {
+    "key": "litertCpuLoadAudioEncoder",
+    "source": "LiteRT CPU: carregar encoder de áudio"
+  },
+  {
+    "key": "litertCpuEncodeSourceLatents",
+    "source": "LiteRT CPU: codificar fonte em latentes"
+  },
+  {
+    "key": "litertCpuLoadDit",
+    "source": "LiteRT CPU: carregar DiT"
+  },
+  {
+    "key": "litertCpuSampleAudio",
+    "source": "LiteRT CPU: amostrar áudio"
+  },
+  {
+    "key": "litertCpuLoadDecoder",
+    "source": "LiteRT CPU: carregar decoder"
+  },
+  {
+    "key": "litertCpuDecodeWav",
+    "source": "LiteRT CPU: decodificar WAV"
+  },
+  {
+    "key": "waitingForLocalAdapter",
+    "source": "Aguardando adaptador local"
+  },
+  {
+    "key": "memorySafetyLimitReachedOnlyThisJobS",
+    "source": "Limite de segurança de memória atingido; somente o processo deste job foi interrompido"
+  },
+  {
+    "key": "localAdapterExceededIts30MinuteTimeout",
+    "source": "Tempo limite de 30 minutos no adaptador local"
+  },
+  {
+    "key": "v3CpuEnvironmentLinkedByInspectionExistingFiles",
+    "source": "Ambiente V3 CPU vinculado por inspeção; arquivos existentes preservados"
+  },
+  {
+    "key": "litertCpuLinkedByVersionsAndHashesLicense",
+    "source": "LiteRT CPU vinculado por versões e hashes; aceite de licenças registrado localmente"
+  },
+  {
+    "key": "audacityIsOpenSaveYourProjectsAndClose",
+    "source": "Audacity está aberto. Feche-o após salvar seus projetos para preparar mod-script-pipe com segurança."
+  },
+  {
+    "key": "usedAsConditioningByMusicPreset",
+    "source": "Used as conditioning by a music preset"
   }
 ]

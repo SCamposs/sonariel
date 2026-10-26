@@ -34,6 +34,7 @@ export function LanguageSettings({ required, onConfirmed, existing }: {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [finishing, setFinishing] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
   const select = useRef<HTMLDivElement>(null);
   async function save(locale: AppLocale) {
@@ -42,22 +43,24 @@ export function LanguageSettings({ required, onConfirmed, existing }: {
     try {
       await rpc("ui_preferences_save", { locale });
       setSaved(true);
-      if (required) onConfirmed();
+      if (required) setFinishing(true);
     } catch { setError(true); }
     finally { setSaving(false); }
   }
   return <>
-    <button ref={trigger} className="text-button" onClick={() => setOpen(true)}>
+    <button ref={trigger} className="text-button" title="Language / Idioma" onClick={() => { setFinishing(false); setSaved(false); setError(false); setOpen(true); }}>
       <Languages size={15} /> {t("title")}
     </button>
-    <Dialog.Root open={required || open} onOpenChange={(next) => { if (!required && !saving) setOpen(next); }}>
+    <Dialog.Root open={(required && !finishing) || open}
+      onOpenChange={(next) => { if (!required && !saving) setOpen(next); }}
+      onOpenChangeComplete={(next) => { if (!next && finishing) onConfirmed(); }}>
       <Dialog.Portal><Dialog.Backdrop className="ui-panel-backdrop" />
         <Dialog.Popup className="workflow-guide language-settings" finalFocus={trigger} initialFocus={select}>
           <header className="guide-header"><Dialog.Title>{t(required ? "choose" : "title")}</Dialog.Title>
             {!required && <Dialog.Close className="icon-button" aria-label={t("close")} disabled={saving}><X size={18} /></Dialog.Close>}
           </header>
           <div className="language-settings-body" ref={select} tabIndex={-1}>
-            <Dialog.Description>{t(required ? "firstUse" : existing ? "existing" : "saved")}</Dialog.Description>
+            <Dialog.Description>{t(required ? "firstUse" : existing ? "existing" : "description")}</Dialog.Description>
             <label>{t("language")}
               <SelectControl label={t("language")} value={i18n.resolvedLanguage ?? "en"} disabled={saving}
                 options={[{ value: "en", label: "English" }, { value: "pt-BR", label: "Português (Brasil)" }]}

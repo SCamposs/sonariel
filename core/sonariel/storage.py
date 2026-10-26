@@ -67,6 +67,8 @@ class Storage:
                 reason = 'Usada como origem de outra versão'
             elif self.store.rows('SELECT id FROM voice_profiles WHERE reference_id=?', (key,)):
                 reason = 'Usada por um perfil vocal'
+            elif self.store.rows("SELECT id FROM music_presets WHERE json_extract(params,'$.source_id')=? OR json_extract(params,'$.reference_id')=?", (key, key)):
+                reason = 'Used as conditioning by a music preset'
             elif self.store.rows('SELECT id FROM edits WHERE asset_id=?', (key,)):
                 reason = 'Possui edição Audacity registrada'
             elif not path.is_file():

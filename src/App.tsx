@@ -10,6 +10,8 @@ import { LanguageSettings, useLocaleProfile } from "./ui/language-settings";
 import { UpdateControl } from "./ui/update-control";
 import { PathField } from "./ui/path-field";
 import { StorageWorkspace } from "./storage";
+import { BatchExport } from "./batch-export";
+import { MusicPresets } from "./music-presets";
 import { FxStudio, VoiceStudio, MusicEngines } from "./studio";
 import {
   Activity,
@@ -208,6 +210,8 @@ export function App() {
   const [activeId, setActiveId] = useState<string>();
   const [fxAssetId, setFxAssetId] = useState<string>();
   const [compare, setCompare] = useState<string[]>([]);
+  const [exportSelection, setExportSelection] = useState<string[]>([]);
+  useEffect(() => { setExportSelection([]); }, [data?.selected_project]);
   const [connection, setConnection] = useState<{
     url: string;
     token: string;
@@ -442,6 +446,7 @@ export function App() {
                 ? "V3 · CPU"
                 : page === "fx"
                   ? tr("workspace", "dspNative")
+                  : page === "queue" ? tr("production", "sharedQueue")
                   : "CPU · DiT-only"}
             </span>
             <span className="mono">
@@ -784,7 +789,7 @@ export function App() {
                           {[
                             tr("workspace", "queue"),
                             tr("workspace", "loading"),
-                            tr("workspace", "inference"),
+                            tr("production", "processingStage"),
                             tr("workspace", "validation"),
                           ].map((step, i) => (
                             <span
@@ -810,19 +815,19 @@ export function App() {
                           <div className="empty engine-empty">
                             <AudioLines size={45} />
                             <h3>
-                              {tr("workspace", "engine")}{" "}
-                              {stateLabel(data.engine.state)?.toLowerCase() ??
-                                data.engine.state}
+                              {tr("production", "queueIdle")}
                             </h3>
                             <p>
-                              {tr("workspace", "askCodexForAGenerationTheTaskAppears")}</p>
+                              {tr("production", "queueIdleHelp")}</p>
                             <span className="mono">
-                              {tr("workspace", "aceStep15Turbo8StepsOde")}</span>
+                              ACE-Step 1.5 Turbo · {stateLabel(data.engine.state)}</span>
                           </div>
                         )}
                         <div className="panel-footer">
                           <span className="mono muted">
-                            {formatNumber(data.engine.rss_gib, 2)} {tr("workspace", "gibInTheEngineProcess")}</span>
+                            {activeJob?.params._engine
+                              ? <>{formatNumber(activeJob.metrics.peak_rss_gib, 2)} GiB · {tr("production", "observedJobPeak")}</>
+                              : <>{formatNumber(data.engine.rss_gib, 2)} GiB · ACE-Step</>}</span>
                           <button
                             className="outline"
                             disabled={
@@ -1079,6 +1084,9 @@ export function App() {
                       </div>
                     </Panel>
                   )}
+                  <BatchExport assets={data.assets.filter(a => a.project_id === project?.id)} selected={exportSelection}
+                    onSelection={setExportSelection} busy={busy} act={act} />
+                  <MusicPresets data={data} busy={busy} act={act} />
                   <div className="library-grid">
                     {assets.map((asset) => (
                       <article
@@ -1091,12 +1099,13 @@ export function App() {
                               ? tr("workspace", "edit")
                               : asset.kind === "imported"
                                 ? tr("workspace", "imported")
-                                : tr("workspace", "generation")}{" "}
+                                : asset.kind === "processed" ? tr("production", "processedBadge")
+                                  : asset.kind === "voice" ? tr("production", "voiceBadge") : tr("workspace", "generation")}{" "}
                             / {asset.id.slice(0, 6)}
                           </span>
                           <button
                             className={`icon-button ${asset.favorite ? "favorite" : ""}`}
-                            aria-label={`Favoritar ${asset.name}`}
+                            aria-label={tr("production", "favoriteAsset", { name: asset.name })}
                             onClick={() =>
                               void act("result_feedback", {
                                 asset_id: asset.id,
@@ -1115,7 +1124,7 @@ export function App() {
                         <div className="version-name">
                           <button
                             className="play-disc small"
-                            aria-label={`Ouvir ${asset.name}`}
+                            aria-label={tr("production", "playAsset", { name: asset.name })}
                             onClick={() => {
                               selectAudio(asset);
                               setPlaying(true);
@@ -1143,7 +1152,7 @@ export function App() {
                             {asset.metadata.channels === 2 ? "ST" : "MONO"}
                           </span>
                           <span>
-                            {asset.metadata.parameters?.seed
+                            {asset.metadata.parameters?.seed !== undefined
                               ? `Seed ${asset.metadata.parameters.seed}`
                               : asset.metadata.subtype}
                           </span>
@@ -1159,6 +1168,12 @@ export function App() {
                               onChange={() => toggleCompare(asset.id)}
                             />{" "}
                             {tr("workspace", "compare")}</label>
+                          {asset.path.toLowerCase().endsWith(".wav") && asset.kind !== "reference" && <label className="check-label">
+                            <input type="checkbox" disabled={busy} checked={exportSelection.includes(asset.id)}
+                              aria-label={tr("production", "exportAsset", { name: asset.name })}
+                              onChange={e => setExportSelection(ids => e.target.checked ? [...ids, asset.id] : ids.filter(id => id !== asset.id))} />
+                            {tr("production", "exportSelect")}
+                          </label>}
                           {!!asset.selected && (
                             <Badge tone="ok">{tr("workspace", "selected")}</Badge>
                           )}
@@ -1358,7 +1373,7 @@ export function App() {
                             ([key, passed]) => (
                               <div key={key}>
                                 <Check size={15} />
-                                <span>{key.replaceAll("_", " ")}</span>
+                                <span title={key}>{tr("production", `check_${key}`, { defaultValue: key })}</span>
                                 <Badge tone={passed ? "ok" : "error"}>
                                   {passed ? tr("workspace", "verified") : tr("workspace", "failed")}
                                 </Badge>
@@ -1712,6 +1727,10 @@ export function App() {
               </dd>
               <dt>{tr("workspace", "previousVersion")}</dt>
               <dd>{detail.parent_id ?? tr("workspace", "initialVersion")}</dd>
+              {detail.metadata.music_preset && <>
+                <dt>{tr("production", "musicPresets")}</dt>
+                <dd><code>{detail.metadata.music_preset.preset_id}</code> · {tr("production", "presetRevision", { revision: detail.metadata.music_preset.revision })}</dd>
+              </>}
               <dt>{tr("workspace", "file")}</dt>
               <dd className="file-path">{detail.path}</dd>
             </dl>

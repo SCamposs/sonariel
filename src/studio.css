@@ -3,6 +3,31 @@
   flex-direction: column;
   gap: 20px;
 }
+.loop-studio {
+  grid-column: 1 / -1;
+}
+.music-presets {
+  margin-bottom: 20px;
+}
+.music-presets > summary {
+  cursor: pointer;
+}
+.music-preset-list,
+.music-preset-review {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.config-preview {
+  max-height: 340px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding: 16px;
+  border: 1px solid var(--line);
+  background: var(--deep);
+}
 @media (min-width: 1200px) {
   .fx-workspace {
     display: grid;

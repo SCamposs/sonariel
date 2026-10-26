@@ -20,6 +20,8 @@ from .store import Store, identifier
 from .local_engine import LocalRunner, LOCAL_ADAPTERS, VOICE_ID, FX_ID
 from .studio import Studio, studio_methods
 from .storage import Storage, storage_methods
+from .production import Production, production_methods
+from .music_presets import MusicPresets, music_preset_methods
 
 
 def local_audio(value: str) -> Path:
@@ -31,7 +33,7 @@ def local_audio(value: str) -> Path:
     return path.resolve(strict=True)
 
 
-class Service(Studio, Storage):
+class Service(MusicPresets, Production, Studio, Storage):
     def __init__(self, store: Store | None = None, start_worker: bool = True):
         self.store = store or Store()
         self.engine = Engine(self.store)
@@ -405,6 +407,8 @@ class Service(Studio, Storage):
                 metadata = self.engine.download(result, output)
                 metadata["sha256"] = sha256(output)
                 metadata["parameters"] = params
+                if preset := self.music_preset_metadata(job["id"]):
+                    metadata["music_preset"] = preset
                 metrics["inference_seconds"] = self.engine.inference_seconds(result)
                 metrics["processing_seconds"] = round(time.monotonic() - start, 3)
                 key = identifier()
@@ -455,6 +459,8 @@ class Service(Studio, Storage):
             if params["_engine"]==FX_ID and metadata["peak"]>=1:
                 raise ValueError("Render DSP excedeu headroom; original preservado")
             metadata.update(sha256=sha256(output),parameters=params,render_receipt=receipt)
+            if preset := self.music_preset_metadata(job["id"]):
+                metadata["music_preset"] = preset
             metrics.update(measured)
             if "inference_seconds" in receipt:
                 metrics.update(load_seconds=receipt["load_seconds"],inference_seconds=receipt["inference_seconds"],imports_seconds=receipt.get("imports_seconds",0))
@@ -532,3 +538,5 @@ METHODS = {
 METHODS.update(studio_methods(tool,S,ID,B))
 METHODS["ui_preferences_save"] = tool("Save only the application's display language; never changes generation parameters or active tasks.", {"locale": {"type": "string", "enum": ["en", "pt-BR"]}}, ["locale"])
 METHODS.update(storage_methods(tool,ID,B))
+METHODS.update(production_methods(tool,S,ID,B))
+METHODS.update(music_preset_methods(tool,S,ID,B))

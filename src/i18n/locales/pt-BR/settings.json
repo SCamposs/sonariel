@@ -1,5 +1,6 @@
 {
   "title": "Configurações",
+  "description": "Escolha o idioma da interface. A mudança é imediata, sem reiniciar nem interromper tarefas.",
   "language": "Idioma do aplicativo",
   "choose": "Escolha seu idioma",
   "firstUse": "Escolha um idioma antes do guia de uso. Você pode alterá-lo depois em Configurações na sidebar.",

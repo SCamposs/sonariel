@@ -63,7 +63,7 @@ export function PathField({ label, value, onChange, kind, placeholder, required,
       </button>
       {kind === "preset" && <button type="button" className="outline path-picker"
         disabled={disabled || picking || !native} aria-busy={picking}
-        aria-label={`Salvar como: ${label}`} title={tr("files", "chooseADestinationForANewJsonPreset")}
+        aria-label={`${tr("files", "saveAs")}: ${label}`} title={tr("files", "chooseADestinationForANewJsonPreset")}
         onClick={() => void pick(true)}><Save size={17} aria-hidden="true" /></button>}
     </div>
     {error && <span id={`${id}-error`} className="path-field-error" role="alert">{systemMessage(error)}</span>}

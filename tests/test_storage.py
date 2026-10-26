@@ -120,7 +120,7 @@ def test_interrupted_move_can_be_recovered(service,monkeypatch):
 def test_migration_keeps_schema2_backup(service):
     service.store.execute('PRAGMA user_version=2')
     Store(service.store.home)
-    assert len(list((service.store.home/'backups').glob('pre-schema3-*.sqlite3')))==1
+    assert len(list((service.store.home/'backups').glob('pre-schema4-*.sqlite3')))==1
 
 
 def test_tampered_trash_cannot_be_restored(service):

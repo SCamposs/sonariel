@@ -26,7 +26,7 @@ def prepare_fx(store, folder, params, output):
     preset = folder / "preset.json"
     preset.write_text(json.dumps(params["recipe"], allow_nan=False), encoding="utf-8")
     source_path = params["source_path"]
-    if params.get("preview"):
+    if params.get("preview") and params["recipe"].get("operation") != "loop":
         import soundfile as sf
         with sf.SoundFile(source_path) as source:
             excerpt = source.read(frames=source.samplerate*10, dtype="float32", always_2d=True)
