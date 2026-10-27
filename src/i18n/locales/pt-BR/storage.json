@@ -38,5 +38,10 @@
   "permanentDeletionCompleted": "Exclusão definitiva concluída.",
   "deleteFilePermanently": "Apagar este arquivo do disco definitivamente",
   "forgetHiddenRecord": "Remover registro oculto; o arquivo importado permanece no disco",
-  "spaceWillBeReclaimed": "serão liberados no disco."
+  "spaceWillBeReclaimed": "serão liberados no disco.",
+  "fileDetails": "Detalhes e caminhos completos",
+  "protectedState": "Protegido",
+  "reviewRequiredState": "Revisão obrigatória antes de alterar",
+  "inTrashState": "Na lixeira recuperável",
+  "catalogedState": "Na biblioteca"
 }

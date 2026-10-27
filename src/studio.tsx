@@ -129,18 +129,17 @@ export function MusicEngines({
                   )}
                   {engine.id === "stable-audio-3-medium" && <p className="muted">{tr("studio", engine.quality_profiles?.includes("fidelity") ? "fidelityAvailable" : "fidelityOptional")}</p>}
                 </div>
-                <span className={`badge ${engine.installed ? "mint" : ""}`}>
-                  {engine.tested
-                    ? tr("studio", "testedLocally")
-                    : engine.installed
-                      ? tr("studio", "linked")
-                      : engine.id.endsWith("sft")
-                        ? tr("studio", "validationPending")
-                        : tr("studio", "setUp")}
-                </span>
+                <div>
+                  <span className={`badge ${engine.installed && engine.compatible ? "mint" : ""}`}>
+                    {engine.blocked_reason ? tr("studio", "validationPending") : engine.installed
+                      ? tr("studio", engine.compatible ? "linked" : "needsVerification") : tr("studio", "setUp")}
+                  </span>
+                  {engine.tested && <p className="mono muted">{tr("studio", "executionRecorded")}</p>}
+                </div>
               </div>
             ))}
         </div>
+        <p className="muted">{tr("studio", "engineStateScope")}</p>
         <details className="fx-layer">
           <summary>{tr("studio", "setUpStableAudio3ExperimentalLitertCpu")}</summary>
           <p>
@@ -689,6 +688,7 @@ export function FxStudio({
   };
   return (
     <div className="studio-workspace fx-workspace">
+      <p className="muted">{tr("studio", "fxWorkflowHelp")}</p>
       {loadError && (
         <p className="message error" role="alert">
           {systemMessage(loadError)}
@@ -1149,8 +1149,8 @@ export function VoiceStudio({
       <section className="panel">
         <header className="panel-title">
           <h2>{tr("studio", "voiceEngine")}</h2>
-          <span className={`badge ${engine?.installed ? "mint" : ""}`}>
-            {engine?.installed ? tr("studio", "linked") : tr("studio", "setUp")}
+          <span className={`badge ${engine?.installed && engine.compatible ? "mint" : ""}`}>
+            {engine?.installed ? tr("studio", engine.compatible ? "linked" : "needsVerification") : tr("studio", "setUp")}
           </span>
         </header>
         <div className="studio-body">
@@ -1161,6 +1161,7 @@ export function VoiceStudio({
           </div>
           <p>
             {tr("studio", "askCodexToGenerateWithLanguageExactText")}</p>
+          <p className="message">{tr("studio", engine?.installed && engine.compatible ? "voiceConfiguredNext" : "voiceSetupNext")}</p>
           <details className="fx-layer" open={!engine?.installed}>
             <summary>{tr("studio", "linkAnExistingIsolatedEnvironment")}</summary>
             <PathField label={tr("studio", "environmentPython")} kind="executable" disabled={busy}

@@ -99,9 +99,12 @@ export function StorageWorkspace({ data, act, busy }: {
             checked={selected.includes(item.id)} onChange={e => setSelected(current => e.target.checked ? [...current, item.id] : current.filter(id => id !== item.id))} />
           <div className="storage-file"><strong>{item.name}</strong>
             <span className="mono">{data.projects.find(p => p.id === item.project_id)?.name ?? tr("storage", "project")} · {size(item.bytes)} · {item.managed ? tr("storage", "managed") : tr("storage", "protectedExternalFile")}{item.favorite ? tr("storage", "favorite") : ""}{item.selected ? tr("storage", "selected") : ""}{!item.exists ? tr("storage", "missingFile") : ""}</span>
-            <code>{item.path}</code>
-            {trash && item.trash_path && <small className="muted">{tr("storage", "trash")}{" "}{item.trash_path}</small>}
+            <small className="muted">{tr("storage", item.favorite || item.selected || item.kind === "reference" ? "protectedState" : "reviewRequiredState")} · {tr("storage", item.trashed ? "inTrashState" : "catalogedState")}</small>
             {trash && item.expires_at && <small className="muted">{tr("storage", "expiresAt", { date: formatDate(item.expires_at) })}</small>}
+            <details className="storage-path"><summary>{tr("storage", "fileDetails")}</summary>
+              <code>{item.id}</code><code>{item.path}</code>
+              {trash && item.trash_path && <small className="muted">{tr("storage", "trash")}{" "}<code>{item.trash_path}</code></small>}
+            </details>
             {item.state === "preparing" && <small>{tr("storage", "interruptedOperationUseRestoreToRecoverTheRecord")}</small>}
           </div>
           {trash && <button className="outline" disabled={locked || item.state === "purging"} onClick={() => void restore(item.id)}><RotateCcw size={15} /> {tr("storage", "restore")}</button>}

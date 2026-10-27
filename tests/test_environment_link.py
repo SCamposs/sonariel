@@ -58,3 +58,12 @@ def test_editor_independence_does_not_weaken_engine_checks(tmp_path, engine, mis
     service = Service(Store(tmp_path/'profile'), start_worker=False)
     assert not service.invoke('environment_link', {'root':str(root)})['compatible']
     assert service.store.setting('environment') is None
+
+
+def test_catalog_does_not_equate_a_stored_environment_with_engine_compatibility(tmp_path):
+    service = Service(Store(tmp_path/'profile'), start_worker=False)
+    for checks in [{}, {'compatible':False}, {'compatible':True}]:
+        service.store.set('environment', {'root':'synthetic', **checks})
+        turbo = next(e for e in service.invoke('engines_list') if e['id']=='acestep-v15-turbo')
+        assert turbo['installed']
+        assert turbo['compatible'] is (checks.get('compatible') is True)

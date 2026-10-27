@@ -46,7 +46,7 @@
   "tagsSaved": "Tags dos candidatos atualizadas.",
   "filtersSaveFailed": "Os filtros estão ativos nesta sessão, mas não foram salvos. Tente alterá-los novamente.",
   "selectCandidate": "Selecionar {{name}} para organizar ou exportar",
-  "select": "Selecionar",
+  "select": "Lote / tags",
   "noMatches": "Nenhum candidato corresponde aos filtros",
   "noMatchesHelp": "Limpe ou ajuste os filtros para ver os outros áudios do projeto. Seus arquivos e a seleção de comparação foram preservados.",
   "regions": "Trechos de áudio & papéis de referência",

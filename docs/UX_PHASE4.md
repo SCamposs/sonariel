@@ -78,3 +78,46 @@ não há declaração de conclusão desta fase neste registro inicial.
   ordem da biblioteca/identidade FX independente do player, sessão/filtros e
   navegação de job de outro projeto. São testes React com RPC simulado, não
   observações desktop. A conferência desktop continua pendente.
+
+## Bloco C — clareza operacional
+
+- Handshake registrado é apresentado como histórico; a tela não afirma que
+  ferramentas estão disponíveis na conversa atual. Audacity é identificado
+  como editor opcional e sua indisponibilidade não invalida FX/exportação.
+- Escolha do projeto, comparação A/B, seleção para lote/tags, salvar preset
+  DSP, renderizar e exportar cópia têm termos distintos, sem mudar seus dados.
+- Configuração vinculada, compatibilidade e execução anterior não são uma
+  aprovação geral do motor. Corrigido o catálogo ACE-Step para não inferir
+  compatibilidade apenas da existência de uma configuração persistida.
+- Fila explica espera de RAM, permanência da solicitação e recuperação com ID
+  e request_key, sem introduzir repetição automática ou nova chave.
+- Armazenamento usa os recursos reais da v0.5.0. Nome/tamanho/estado/proteção
+  conhecida/expiração aparecem antes dos caminhos, disponíveis em detalhes e
+  mantidos na confirmação física. Ausência de favorita não significa aprovação
+  de exclusão: continua sendo obrigatória a revisão das proteções no núcleo.
+- 82 testes frontend passaram em 21 arquivos; build/TypeScript passaram.
+  Suíte Python completa: 152 testes passaram.
+
+## Primeira evidência desktop — Bloco A
+
+A conferência inicial por Computer Use foi interrompida pela interação do
+usuário, sem continuar cliques concorrentes. A alternativa usa o mecanismo
+[oficial de testes WebView2 do Playwright](https://github.com/microsoft/playwright/blob/main/docs/src/webview2.md):
+um executável Tauri real, `http://tauri.localhost/`, IPC Rust/núcleo empacotado
+e perfil/WebView separados, com CDP temporário somente em loopback. Não é a
+prévia Vite em navegador e não modifica a segurança do aplicativo distribuído.
+A automação não injeta entradas no mouse/teclado do Windows.
+
+No build nativo A de 1280×720, a UI selecionou o WAV, adicionou gain -3 dB,
+renderizou prévia (10 s), ouviu pelo player (avanço real, áudio mudo), renderizou
+12 s completos e exportou explicitamente o processado. A cópia exportada tem
+SHA-256 `8f60bb31fbb1bdc1d0ef8c205bbccf20f910f93b2b618f4c0ddaea8cb0e2224f`,
+igual ao processado e diferente da fonte preservada. Os jobs foram
+`1a9c1d3e23644b558219f276cd7d120c` e `127be5fd832e44ce8d5dfe8246742b99`.
+
+A preparação da fixture e as consultas de verificação foram feitas por scripts;
+os pedidos de prévia/render e exportação foram feitos pelos controles reais
+do desktop. Houve ajustes de seletores no harness de teste (URL inicial e
+rótulos), sem repetir a prévia já concluída nem inventar um aceite auditivo.
+A janela automatizada e seu núcleo foram encerrados de forma graciosa.
+Screenshots e o percurso final completo ainda serão acrescentados.

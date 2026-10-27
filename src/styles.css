@@ -1584,3 +1584,5 @@ input[type="checkbox"] {
 @media (max-width: 1100px) { .workflow-path-grid { grid-template-columns: 1fr; gap: 16px; } }
 
 .version-tools { display: flex; flex-wrap: wrap; gap: 8px; border-top: 1px solid var(--line); margin-top: 12px; padding-top: 8px; }
+
+.storage-path > summary { cursor: pointer; color: var(--muted); padding: 6px 0; }

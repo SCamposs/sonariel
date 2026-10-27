@@ -46,7 +46,7 @@
   "tagsSaved": "Candidate tags updated.",
   "filtersSaveFailed": "Filters are active for this session but could not be saved. Try changing them again.",
   "selectCandidate": "Select {{name}} for organization or export",
-  "select": "Select",
+  "select": "Batch / tags",
   "noMatches": "No candidates match these filters",
   "noMatchesHelp": "Clear or adjust the filters to see the project's other audio. Your files and comparison selection are preserved.",
   "regions": "Audio regions & reference roles",

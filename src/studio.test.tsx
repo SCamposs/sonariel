@@ -178,7 +178,7 @@ it("saves a project-scoped new preset revision and never overwrites originals", 
   fireEvent.change(screen.getByLabelText("Nome da revisão"), {
     target: { value: "Personal chain" },
   });
-  fireEvent.click(screen.getByRole("button", { name: "Salvar nova revisão" }));
+  fireEvent.click(screen.getByRole("button", { name: "Salvar revisão de preset DSP" }));
   expect(p.act).toHaveBeenCalledWith(
     "fx_preset_save",
     expect.objectContaining({ name: "Personal chain", project_id: "p" }),
@@ -218,11 +218,11 @@ it("exports an explicit original rather than silently exporting a preview", asyn
   fireEvent.change(screen.getByLabelText("Destino do novo WAV"), {
     target: { value: "D:/exports/new.wav" },
   });
-  expect((screen.getByRole("button", { name: "Exportar WAV" }) as HTMLButtonElement).disabled).toBe(true);
+  expect((screen.getByRole("button", { name: "Exportar cópia WAV" }) as HTMLButtonElement).disabled).toBe(true);
   const user = userEvent.setup();
   await user.click(screen.getByRole("combobox", { name: "Versão para exportar" }));
   await user.click(await screen.findByRole("option", { name: /Independent WAV.*Fonte/ }));
-  fireEvent.click(screen.getByRole("button", { name: "Exportar WAV" }));
+  fireEvent.click(screen.getByRole("button", { name: "Exportar cópia WAV" }));
   expect(p.act).toHaveBeenCalledWith(
     "result_export",
     { asset_id: asset.id, destination: "D:/exports/new.wav" },
@@ -238,7 +238,7 @@ it("exports the chosen processed identity and never substitutes a missing select
   const data = { ...p.data, assets: [asset, preview, processed] };
   const view = render(<FxStudio {...p} data={data} initialAssetId={asset.id} />);
   fireEvent.change(screen.getByLabelText("Destino do novo WAV"), { target: { value: "D:/copy.wav" } });
-  const button = screen.getByRole("button", { name: "Exportar WAV" }) as HTMLButtonElement;
+  const button = screen.getByRole("button", { name: "Exportar cópia WAV" }) as HTMLButtonElement;
   expect(button.disabled).toBe(true); // A project preference is not export consent.
   const user = userEvent.setup();
   await user.click(screen.getByRole("combobox", { name: "Versão para exportar" }));

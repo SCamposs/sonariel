@@ -79,9 +79,9 @@ def fx_binary() -> Path:
 
 
 def catalog(store) -> list[dict]:
-    def item(key, name, category, license, backend, modes, ready=False, experimental=True, **extra):
+    def item(key, name, category, license, backend, modes, ready=False, experimental=True, compatible=None, **extra):
         return dict(id=key, name=name, category=category, license=license, backend=backend,
-                    modes=modes, installed=ready, compatible=ready, experimental=experimental,
+                    modes=modes, installed=ready, compatible=ready if compatible is None else bool(compatible), experimental=experimental,
                     tested=bool(store.setting("engine_validation:"+key)), **extra)
     voice = store.setting("voice_environment")
     stable = store.setting("stable_environment",{})
@@ -92,7 +92,8 @@ def catalog(store) -> list[dict]:
                         text_max_seconds=60, audio_input_max_seconds=120)
     return [
         item("acestep-v15-turbo", "ACE-Step 1.5 Turbo", "music", "MIT", "torch-cpu",
-             ["text2music", "cover"], bool(store.setting("environment")), experimental=False, baseline=True),
+             ["text2music", "cover"], bool(store.setting("environment")), experimental=False,
+             compatible=(store.setting("environment") or {}).get("compatible") is True, baseline=True),
         item("acestep-v15-sft", "ACE-Step 1.5 SFT", "music", "MIT", "torch-cpu",
              ["text2music", "cover"], blocked_reason="Isolated validation pending"),
         item("stable-audio-3-small-music", "Stable Audio 3 Small-Music", "music",

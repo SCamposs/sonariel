@@ -1,5 +1,6 @@
 # Setup
 
+The editor-independent ACE-Step flow below is a Phase 4 main change, not yet shipped in the stable v0.5.0 installer. See [the Phase 4 report](UX_PHASE4.md).
 ## Existing engine
 
 Provide a dedicated root containing `.venv/Scripts/python.exe` and `ACE-Step-1.5/acestep/api_server.py`. Audacity is optional and configured separately in Audacity & Codex. Legacy `environment_link` calls may still supply `audacity_path`; omitting it preserves a configured editor. Inspection reads package metadata, the Git commit (or Sonariel installation receipt), model presence and the DiT-only patch. It does not run `uv sync`, launch upstream Windows batch scripts or rewrite the environment.

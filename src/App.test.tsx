@@ -36,7 +36,7 @@ it("links a music engine through the environment UI without an Audacity field", 
   await screen.findByText("O que você quer fazer?");
   fireEvent.click(screen.getByRole("button", { name: "Ambiente" }));
   expect(screen.queryByLabelText("Executável do Audacity")).toBeNull();
-  expect(screen.getByText(/Audacity é opcional/)).toBeTruthy();
+  expect(screen.getAllByText(/Audacity é opcional/)[0]).toBeTruthy();
   fireEvent.change(screen.getByLabelText("Pasta do ambiente"), { target: { value: "D:/synthetic-engine" } });
   fireEvent.click(screen.getByRole("button", { name: "Inspecionar e vincular" }));
   await waitFor(() => expect(rpc).toHaveBeenCalledWith("environment_link", { root: "D:/synthetic-engine" }));

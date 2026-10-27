@@ -14,6 +14,7 @@ import { BatchExport } from "./batch-export";
 import { MusicPresets } from "./music-presets";
 import { LibraryTools, emptyFilters, filterLibrary, loopSeams, useLibraryFilters } from "./library-workspace";
 import { WorkflowPaths } from "./workflow-paths";
+import { jobRecoveryKey } from "./workflow-state";
 import { AudioRegion } from "./audio-region";
 import { useWorkspaceScroll } from "./ui/use-workspace-scroll";
 import { FxStudio, VoiceStudio, MusicEngines } from "./studio";
@@ -505,7 +506,7 @@ export function App() {
                 : page === "fx"
                   ? tr("workspace", "dspNative")
                   : page === "queue" ? tr("production", "sharedQueue")
-                  : "CPU · DiT-only"}
+                  : tr("workspace", "localAudioWorkspace")}
             </span>
             <span className="mono">
               RAM {formatNumber(data?.telemetry.available_gib, 1) ?? "—"}{" "}
@@ -514,7 +515,7 @@ export function App() {
             <Badge tone={data?.codex.tested ? "ok" : ""}>
               MCP{" "}
               {data?.codex.tested
-                ? tr("workspace", "tested")
+                ? tr("workspace", "handshakeRecorded")
                 : data?.codex.configured
                   ? tr("workspace", "configured")
                   : tr("workspace", "notConfigured")}
@@ -899,6 +900,7 @@ export function App() {
                                 <p>
                                   {systemMessage(job.stage)} {tr("workspace", "seed")}{" "}{String(job.params.seed)}
                                 </p>
+                                <p className="muted">{tr("workspace", jobRecoveryKey(job) ?? "queuedTaskHelp")}</p>
                               </div>
                               <button
                                 className="outline"
@@ -1479,6 +1481,7 @@ export function App() {
 
               {page === "bridges" && (
                 <>
+                  <p className="message">{tr("workspace", "agentAndEditorScope")}</p>
                   <div className="bridge-flow">
                     <span>
                       <Terminal size={24} />
@@ -1510,7 +1513,7 @@ export function App() {
                       aside={
                         <Badge tone={data.codex.tested ? "ok" : ""}>
                           {data.codex.tested
-                            ? tr("workspace", "handshakeTested")
+                            ? tr("workspace", "handshakeRecorded")
                             : data.codex.configured
                               ? tr("workspace", "configured2")
                               : tr("workspace", "notConfigured2")}
@@ -1569,6 +1572,7 @@ export function App() {
                       <div className="form-stack">
                         <p>
                           {tr("workspace", "resultsAreImportedIntoNewIdentifiedProjectsExports")}</p>
+                        {!data.audacity.pipe_available && <p className="muted">{tr("workspace", "audacityUnavailableHelp")}</p>}
                         <PathField label={tr("workspace", "audacityExecutableIndependentOfEngines")} kind="executable"
                           value={audacityPath} onChange={setAudacityPath} disabled={busy}
                           placeholder={tr("workspace", "absolutePathToAudacityExe")} />
@@ -1950,6 +1954,7 @@ function JobPanel({ job, results = [], onResult, onListen }: { job: Job; results
         {asset.kind !== "preview" && <button className="outline" onClick={() => onResult?.(asset)}>{tr("workspace", "openResultInLibrary")}</button>}
       </div>)}
       {job.error && <p className="error-text">{systemMessage(job.error)}</p>}
+      {jobRecoveryKey(job) && <p className="message" role="status">{tr("workspace", jobRecoveryKey(job)!)}</p>}
     </div>
   );
 }

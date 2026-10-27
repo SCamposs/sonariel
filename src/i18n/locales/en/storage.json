@@ -38,5 +38,10 @@
   "permanentDeletionCompleted": "Permanent deletion completed.",
   "deleteFilePermanently": "Permanently delete this file from disk",
   "forgetHiddenRecord": "Forget hidden record; the imported file stays on disk",
-  "spaceWillBeReclaimed": "will be reclaimed on disk."
+  "spaceWillBeReclaimed": "will be reclaimed on disk.",
+  "fileDetails": "File details & full paths",
+  "protectedState": "Protected",
+  "reviewRequiredState": "Review required before changes",
+  "inTrashState": "In recoverable trash",
+  "catalogedState": "In library"
 }
