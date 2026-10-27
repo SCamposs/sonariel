@@ -1,6 +1,6 @@
 # Recovery and limits
 
-These constraints describe v0.3.2. ACE-Step-specific limits below do not apply to every engine; see the [engine guide](ENGINES.md) for voice, Stable Audio and native DSP thresholds.
+These constraints describe v0.4.0. ACE-Step-specific limits below do not apply to every engine; see the [engine guide](ENGINES.md) for voice, Stable Audio and native DSP thresholds.
 
 - **Not enough RAM:** the task remains queued with measured available memory and the start threshold. Do not close unrelated applications automatically or lower the limit silently.
 - **CPU headroom:** cold startup now requires 12 GiB available, reduced from 16 at the owner's explicit request. This is a start threshold, not a measured safe minimum: the previous short acceptance run reached approximately 14 GiB engine working set and briefly exhausted free physical memory at the older 10 GiB gate. No new lower-memory model profile was introduced or benchmarked. Longer/source-conditioned tasks can use more RAM, and paging, slowdown or allocation failures remain possible. A subsequent job with the model already resident still requires 4 GiB available. The model loads only on demand; telemetry and single-job ownership remain enabled.
@@ -18,4 +18,4 @@ These constraints describe v0.3.2. ACE-Step-specific limits below do not apply t
 
 Logs, database, caches, outputs, config backups and receipts are private user data under the application data home. No telemetry is included. Database backups should use SQLite backup, not copy a live WAL database. Live Audacity project files are never used as consistency-proven backups.
 
-Unreleased schema-5 builds migrate schema DDL, version and initial locale preference in one transaction after the consistent backup. SQL failure or process loss rolls back uncommitted migration changes; retry with the compatible new core. The v0.3.2 core refuses schema 5. Never relabel/downgrade the database or copy only its open main file. See the [isolated upgrade evidence](PHASE2_6.md#migration-restart-and-recovery).
+Version 0.4.0 schema-5 builds migrate schema DDL, version and initial locale preference in one transaction after the consistent backup. SQL failure or process loss rolls back uncommitted migration changes; retry with the compatible new core. The v0.3.2 core refuses schema 5. Never relabel/downgrade the database or copy only its open main file. See the [isolated upgrade evidence](PHASE2_6.md#migration-restart-and-recovery).

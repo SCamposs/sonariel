@@ -10,11 +10,11 @@ Não execute a inicialização novamente para uma chave já publicada. Guarde um
 
 O build descriptografa a chave somente no processo de compilação. Também aceita `TAURI_SIGNING_PRIVATE_KEY` fornecida pelo mantenedor. Não publique variáveis de assinatura. `scripts/build.ps1` sem `-SignUpdates` cria apenas um instalador de desenvolvimento; ele não é uma release oficial assinada para o atualizador.
 
-## Próxima versão
+## Versão 0.4.0
 
-A main prepara `0.4.0-rc.1`, candidato de teste para a proposta v0.4.0; a distribuição pública continua v0.3.2. Python usa a forma PEP 440 equivalente `0.4.0rc1`. `prepare-release.py` exige versão estável e deve recusar este RC; não execute `release.ps1` para prepará-lo ou publicá-lo como estável. O proprietário autorizou uma pré-release pública para download/teste na VM, mantendo `latest.json` e a release estável v0.3.2 inalterados. Artefatos locais do RC devem ficar numa cópia privada de validação, fora da pasta de releases públicas. Use o mesmo `build.ps1 -SignUpdates` e a chave existente, sem inicialização nova; preserve runtime em uso. Não instale o candidato sobre o Sonariel de produção.
+A v0.4.0 promove a implementação do candidato `0.4.0-rc.1`, com novo build e assinatura vinculada à versão estável. O mantenedor autorizou a publicação e disponibilização no atualizador, aceitando expressamente a ressalva: o ciclo completo v0.3.2 → v0.4.0 por instalador/atualizador não foi testado. Instalação/uso básico Windows do RC e migração isolada passaram; consulte o relatório da Fase 2.7 em [português](PHASE2_7.pt-BR.md) ou [inglês](PHASE2_7.md). Não apresente os testes não executados como aprovados.
 
-Antes de escolher/publicar a próxima versão, consulte a avaliação da Fase 2.6 em [português](PHASE2_6.pt-BR.md) ou [inglês](PHASE2_6.md). Loops ainda não têm aceite auditivo. Migração isolada validada e assinatura de pacote anterior não substituem o teste completo do futuro candidato assinado, incluindo reinício e preservação do WebView/MCP. Não execute a preparação/publicação usando novamente a versão já distribuída.
+A criação de loops permanece desativada na distribuição; issue #3 aberta. Use `build.ps1 -SignUpdates` e a chave existente, sem inicialização nova. Quando houver runtime de desenvolvimento em uso, construa numa cópia isolada e preserve o processo e os artefatos anteriores. Não instale automaticamente sobre o Sonariel de produção durante a publicação.
 
 O builder recusa runtime de desenvolvimento em uso antes de invocar Cargo/PyInstaller; não force o encerramento de processos alheios para liberar arquivos. Na validação isolada, a coleta de licenças pode receber `scripts/collect-notices.py --output <pasta-de-licencas-do-runtime-isolado>`. Isso não publica ou assina artefatos.
 

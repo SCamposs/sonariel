@@ -2,9 +2,9 @@
 
 [English overview](../README.md) · [Português (Brasil)](../README.pt-BR.md)
 
-Current distributed release: [v0.3.2](https://github.com/SCamposs/sonariel/releases/tag/v0.3.2). The desktop UI remains in Brazilian Portuguese. The two top-level READMEs describe the same capabilities; not every supporting document has been translated.
+Current distributed release: [v0.4.0](https://github.com/SCamposs/sonariel/releases/tag/v0.4.0). The desktop UI supports English and Brazilian Portuguese. The two top-level READMEs describe the same capabilities; not every supporting document has been translated.
 
-Source builds on main now include EN/pt-BR UI and the Phase 2 production tools. They have not been published as a release. [Phase 2: evidence, screenshots, limitations and isolated preview](PHASE2.md).
+Version 0.4.0 includes EN/pt-BR UI and the Phase 2 production tools. Packaged loop creation is disabled. The untested complete v0.3.2 upgrade lifecycle remains documented in the Phase 2.7 acceptance report. [Phase 2: evidence, screenshots, limitations and isolated preview](PHASE2.md).
 
 Phase 2.5 adds reference/source regions and project-local tags/filters. Its acceptance record distinguishes real desktop/MCP execution from automated tests and rejected loop listening rounds: [Phase 2.5](PHASE2_5.md), [musical loop acceptance](LOOP_ACCEPTANCE.md).
 
@@ -29,7 +29,7 @@ Phase 2.5 adds reference/source regions and project-local tags/filters. Its acce
 
 - Phase 2.6 release-readiness assessment: [English](PHASE2_6.md) / [Português (Brasil)](PHASE2_6.pt-BR.md). Stabilization evidence and pending publication decisions, not a new release.
 
-- [Changelog](../CHANGELOG.md) and [release notes](releases/v0.3.2.md) (current release notes in Portuguese).
+- [Changelog](../CHANGELOG.md) and [release notes](releases/v0.4.0.md) / [notas em português](releases/v0.4.0.pt-BR.md).
 - [Validation record](VALIDATION.md): automated checks, real integrations, historical observations, and remaining limits. Test counts are tied to their release, not a guarantee about every machine.
 - [Expansion report](EXPANSION.md): historical v0.3.0 implementation/evidence. Its text-only Stable Audio limit and 16 GiB Turbo gate were superseded by v0.3.1/v0.3.2, respectively.
 - [Releasing](RELEASING.md): maintainer signing/publication procedure (Portuguese). This is not an installation guide.

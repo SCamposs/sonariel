@@ -2,7 +2,7 @@
 
 [Documentation index](README.md) · [Quick start](QUICK_START.md)
 
-This is the application profile shipped in **v0.3.2**, not a list of everything the upstream models can do. The adapters use Windows x64 CPU execution, batch size 1, and one shared task at a time. GPU/ROCm/CUDA acceleration is not implemented in this profile. Models are not loaded when the UI or MCP starts.
+This is the application profile shipped in **v0.4.0**, not a list of everything the upstream models can do. The adapters use Windows x64 CPU execution, batch size 1, and one shared task at a time. GPU/ROCm/CUDA acceleration is not implemented in this profile. Models are not loaded when the UI or MCP starts.
 
 ## Implemented workflows
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.0
+
+- Publish the Phase 2 production tools and bilingual UI as a stable Windows release, with signed updater assets.
+- Retain the packaged loop-creation gate across UI/core/MCP and preserve all existing audio/lineage; issue #3 stays open.
+- Promote the tested RC implementation by version identity/documentation only, with a separate signed build and stable release notes in English and Portuguese.
+- Windows RC installation/basic use and isolated migration/MCP/FX checks passed. The full official v0.3.2 → v0.4.0 installer/updater lifecycle remains untested, explicitly accepted by the maintainer for publication. See [English notes](docs/releases/v0.4.0.md), [notas em português](docs/releases/v0.4.0.pt-BR.md) and the [Phase 2.7 report](docs/PHASE2_7.md).
+
 ## 0.4.0-rc.1 — test prerelease
 
 - Prepare the proposed v0.4.0 without replacing the public v0.3.2 download/update.

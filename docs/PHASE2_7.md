@@ -45,8 +45,24 @@ Issue [#3](https://github.com/SCamposs/sonariel/issues/3) remains open: both ear
 
 No functional failure was observed in the completed VM checks. RAM prevented the guest FX render from starting; it is not a successful render. A separate private transport-only v0.3.2 updater client was built but not exercised in the guest and is not an official/public artifact.
 
+Validation logistics: Windows Sandbox was unavailable; the first existing VM was Ubuntu. A disposable Windows 11 Hyper-V guest was prepared instead. Hyper-V guest file copy failed with `0x800710DF` (device not ready). At the owner's direction, the RC was published as a prerelease and downloaded from GitHub inside the guest. That resolved installer delivery; the transfer failure was not a Sonariel runtime failure. The owner later ended further VM checks and accepted the explicit limits below.
+
 ## Delivery and recommendation
 
 Private evidence includes candidate inventory, packaged MCP/FX receipt, migration and restart receipts, VM installation observations, isolated builds and the unused updater fixture. These remain outside Git. The installed stable application, production data, model environments and Unity projects were untouched.
 
 The owner accepted Windows installation/basic-use validation and explicitly chose to close Phase 2.7 with the untested update lifecycle recorded as a caveat, rather than retain it as an outstanding phase requirement. The remaining untested items above are retained as limits of this acceptance. That decision does not manufacture missing evidence. **Phase closed with caveats; suitable as a test prerelease. Complete v0.3.2 → RC update acceptance remains unverified for an unconditional stable-readiness claim.** Publishing/promoting stable and changing its update feed still require the owner's separate decision.
+
+
+## Stable v0.4.0 publication follow-up
+
+After closing the RC phase with caveats, the maintainer explicitly authorized a normal stable release and the public updater. The previous latest/feed v0.3.2 boundary above describes the RC acceptance checkpoint; it is superseded by the v0.4.0 publication decision. The untested full v0.3.2 → v0.4.0 installation/update cycle remains a documented, accepted caveat, not a passed test.
+
+- Stable version identity `0.4.0` is coherent across npm, Cargo, Tauri, Python package and core. The implementation is unchanged from the RC: 109 runtime files compared; only the core version string differs. One additional bilingual diagnostic regression is test-only.
+- A fresh isolated Windows build used the existing signing routine and key. No installed application, production profile or running runtime was overwritten. The signed installer is `Sonariel_0.4.0_x64-setup.exe`, 22,533,414 bytes, SHA-256 `3645f92b041085dbbeb5967407bcf54ac289a308450cfecbae51c5d837e27b5c`. The RC artifacts remain unchanged.
+- Repeated stable checks: **131 Python**, **73 frontend**, **28 native Rust workspace** tests and typecheck passed. Production frontend/Tauri/NSIS build passed; existing nonblocking JavaScript chunk-size warning remains.
+- Actual stable packaged stdio MCP handshake/version and **58 tools** passed. Both loop bypass attempts were rejected, including explicit development opt-in on the frozen package. Reference excerpt, one synthetic 10-second native gain preview and two hash-verified exports passed; original hash preserved; **zero AI jobs**. The test-owned core was prepared for clean shutdown afterward.
+- Stable public-key signature and authenticated `0.4.0` version passed; modified bytes, truncation and invalid signature were rejected. No private signing material was exposed. This is not Authenticode.
+- Stable release assets comprise installer, updater signature, `latest.json`, SHA-256 list and license. The public updater points to the stable signed installer; checking availability does not install it automatically. [Stable release](https://github.com/SCamposs/sonariel/releases/tag/v0.4.0), [English notes](releases/v0.4.0.md), [Portuguese notes](releases/v0.4.0.pt-BR.md).
+
+The final stable installer was not rerun in the VM. Its installation evidence is the RC's actual VM exercise plus unchanged implementation and repeated stable packaging/contracts. The VM audible-output, uninstall, FX-in-guest and full-updater limits in the acceptance table remain explicit. Publication with these limits is the maintainer's accepted release decision; it does not claim every original acceptance scenario passed. No heavy generation, driver/RAM change, third musical loop round, host update or Unity change was performed.

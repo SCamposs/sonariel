@@ -10,9 +10,9 @@ Sonariel is a source-available Windows desktop application that brings music gen
 
 ![Sonariel v0.3.2 project workspace with an isolated demonstration project, sessions, and a preserved audio selection](docs/images/projects.webp)
 
-*Real v0.3.2 desktop captures. The interface is currently in Brazilian Portuguese. The isolated showcase uses an imported synthetic sound study and real native DSP renders, not AI-generated music or production material. [Capture details](docs/SHOWCASE.md).*
+*Real v0.3.2 desktop captures. The captured interface is in Brazilian Portuguese; v0.4.0 also supports English. The isolated showcase uses an imported synthetic sound study and real native DSP renders, not AI-generated music or production material. [Capture details](docs/SHOWCASE.md).*
 
-**Development on main:** English/pt-BR UI, batch WAV export, versioned music presets, non-destructive audio regions, tags and project-specific combined filters are available in source builds. Loop creation is disabled in packaged candidates and requires explicit source-development authorization; existing loop audio remains preserved. The proposed v0.4.0 is available as the [v0.4.0-rc.1 test prerelease](https://github.com/SCamposs/sonariel/releases/tag/v0.4.0-rc.1), with Windows installer acceptance still pending. These changes are not included in the v0.3.2 download. Use an isolated preview profile; see [Phase 2.5 validation and preview instructions](docs/PHASE2_5.md).
+**Current release: [v0.4.0](https://github.com/SCamposs/sonariel/releases/tag/v0.4.0).** Includes English/pt-BR UI, batch WAV export, versioned music presets, non-destructive audio regions, tags and combined library filters. Loop creation is disabled in packaged distributions; existing audio is preserved. Windows installation/basic use was validated. The complete v0.3.2 → v0.4.0 installer/updater lifecycle was not tested; this documented caveat was accepted by the maintainer. See the [Phase 2.7 acceptance report](docs/PHASE2_7.md).
 
 ## From a request to a usable version
 
@@ -59,7 +59,7 @@ These are **queue admission thresholds, not guarantees of sufficient memory**. A
 
 ## Download and install
 
-1. Open the [official releases](https://github.com/SCamposs/sonariel/releases/latest) and download `Sonariel_<version>_x64-setup.exe`. The current stable release is [v0.3.2](https://github.com/SCamposs/sonariel/releases/tag/v0.3.2).
+1. Open the [official releases](https://github.com/SCamposs/sonariel/releases/latest) and download `Sonariel_<version>_x64-setup.exe`. The current stable release is [v0.4.0](https://github.com/SCamposs/sonariel/releases/tag/v0.4.0).
 2. Install the desktop app. End users do **not** need Node.js, Rust, or a development Python installation. WebView2 is required; the installer offers its bootstrap component when needed.
 3. Prepare a compatible engine separately through the app. Model weights are not bundled. Downloads require internet, disk space, and your authorization; external model terms still apply.
 

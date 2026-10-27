@@ -47,12 +47,12 @@ Official contracts consulted:
 - https://manual.audacityteam.org/man/scripting.html
 - https://v2.tauri.app/
 
-## Phase 2 source contracts (unreleased)
+## Phase 2 contracts (distributed in v0.4.0)
 
-The development core exposes 55 tools. Reload the MCP client after deliberately connecting an isolated development runtime; the installed stable server is not replaced automatically. Full parameter schemas remain available through `tools/list`.
+Phase 2 introduced the contracts below. Version 0.4.0 exposes 58 packaged tools in total; authorized source loop development exposes 59. Reload the MCP client after updating its runtime. Full parameter schemas remain available through `tools/list`.
 
 - `ui_preferences_save(locale)`: EN (`en`) or Brazilian Portuguese (`pt-BR`); no engine/job changes.
-- **Authorized source development only:** `fx_loop_render(asset_id, request_key, start_seconds, end_seconds, crossfade_ms, preview, repetitions)`. Packaged candidates do not expose/permit loop creation. Preview repeats 2–4 complete edited cycles; final output is one cycle. It has no approved musical-continuity guarantee. Never change request keys after an uncertain submission.
+- **Authorized source development only:** `fx_loop_render(asset_id, request_key, start_seconds, end_seconds, crossfade_ms, preview, repetitions)`. Packaged distributions do not expose/permit loop creation. Preview repeats 2–4 complete edited cycles; final output is one cycle. It has no approved musical-continuity guarantee. Never change request keys after an uncertain submission.
 - `result_export_batch(asset_ids, directory, naming, collisions, manifest, include_prompts, include_references)`: copies 1–200 selected WAVs. Naming fields: `{index}`, `{name}`, `{id}`, `{model}`, `{seed}`. Collision modes `rename` and `skip` never overwrite. Each item reports success/failure. Optional portable JSON omits paths, runtime context and credentials; prompts and references require separate explicit inclusion. Unknown metadata remains absent/null. Inspect `manifest_error` separately from successful WAV copies.
 - `music_presets_list`, `music_preset_save`, `music_preset_favorite`: capture compatible music-result parameters or an explicit engine configuration; revisions/duplicates preserve earlier settings. DSP and voice retain separate presets/profiles.
 - `music_preset_prepare`: `reuse` reviews settings only; `repeat` preserves saved parameters; `variation` requires an explicitly different seed. Engine-incompatible settings and foreign-project conditioning fail closed.
@@ -60,9 +60,9 @@ The development core exposes 55 tools. Reload the MCP client after deliberately 
 
 The desktop exposes preset capture, favorite, revision/duplicate and review. Creative parameter/prompt changes and generation remain directed through Codex/MCP. No generic shell or arbitrary Audacity execution tool was added. See [Phase 2 validation](PHASE2.md) before using these contracts.
 
-## Phase 2.5 source contracts (unreleased)
+## Phase 2.5 contracts (distributed in v0.4.0)
 
-The development core now exposes 59 tools. Discover actual installed availability first; the distributed v0.3.2 server is unchanged. Four tools are additive:
+The packaged v0.4.0 core exposes 58 tools, with loop creation excluded. Discover actual installed availability first. Phase 2.5 added these four tools:
 
 - `audio_region_create`: registered asset ID, request key, sample-rounded start/end seconds, name, engine ID and explicit `style`/`source` role. Confirmed excerpts become derived WAV assets; identical selections reuse a verified asset. Never reuse a key with changed parameters. Refer to the returned asset ID in later generation/preset requests, preserving its intended role/engine. No model loads or generation occurs when confirming a region.
 - `asset_tags_update`: atomic add/remove of normalized organizational tags on up to 200 explicit same-project assets. Tags do not alter audio/generation identity. No production defaults are shipped.

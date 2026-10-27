@@ -2,7 +2,7 @@
 
 # Sonariel
 
-**Desenvolvimento na main:** interface em inglês/pt-BR, exportação WAV em lote, presets musicais versionados, recortes não destrutivos, tags e filtros combinados por projeto estão disponíveis ao compilar o código. A criação de loops fica desativada no candidato empacotado; experimentos exigem autorização explícita no código-fonte. Áudios anteriores são preservados. A futura v0.4.0 está disponível como [pré-release de teste v0.4.0-rc.1](https://github.com/SCamposs/sonariel/releases/tag/v0.4.0-rc.1), com aceite do instalador Windows ainda pendente. Essas mudanças ainda não fazem parte do download v0.3.2. Use um perfil de prévia isolado: [validação e instruções da Fase 2.5](docs/PHASE2_5.md).
+**Versão atual: [v0.4.0](https://github.com/SCamposs/sonariel/releases/tag/v0.4.0).** Inclui interface EN/pt-BR, exportação WAV em lote, presets musicais versionados, recortes não destrutivos, tags e filtros combinados. A criação de loops fica desativada na distribuição; áudios anteriores são preservados. Instalação/uso básico no Windows validados. O ciclo completo v0.3.2 → v0.4.0 por instalador/atualizador não foi testado; essa ressalva documentada foi aceita pelo mantenedor. Consulte o [relatório da Fase 2.7](docs/PHASE2_7.pt-BR.md).
 
 **Produção de áudio local, com direção pelo seu agente de IA conectado.**
 
@@ -12,7 +12,7 @@ O Sonariel é um aplicativo desktop source-available para Windows que reúne ger
 
 ![Área de projetos do Sonariel v0.3.2 com projeto demonstrativo isolado, sessões e uma escolha de áudio preservada](docs/images/projects.webp)
 
-*Capturas reais do desktop v0.3.2. A interface permanece em português brasileiro. O perfil isolado usa um estudo sonoro sintético importado e renders reais do DSP nativo, não músicas geradas por IA ou material de produção. [Como as capturas foram feitas](docs/SHOWCASE.md).*
+*Capturas reais do desktop v0.3.2. A interface capturada está em português brasileiro; a v0.4.0 também oferece inglês. O perfil isolado usa um estudo sonoro sintético importado e renders reais do DSP nativo, não músicas geradas por IA ou material de produção. [Como as capturas foram feitas](docs/SHOWCASE.md).*
 
 ## Do pedido à versão utilizável
 
@@ -59,7 +59,7 @@ São **limites para admitir a tarefa na fila, não garantias de memória suficie
 
 ## Download e instalação
 
-1. Abra as [releases oficiais](https://github.com/SCamposs/sonariel/releases/latest) e baixe `Sonariel_<versão>_x64-setup.exe`. A release estável atual é a [v0.3.2](https://github.com/SCamposs/sonariel/releases/tag/v0.3.2).
+1. Abra as [releases oficiais](https://github.com/SCamposs/sonariel/releases/latest) e baixe `Sonariel_<versão>_x64-setup.exe`. A release estável atual é a [v0.4.0](https://github.com/SCamposs/sonariel/releases/tag/v0.4.0).
 2. Instale o app. Usuários finais **não** precisam de Node.js, Rust ou uma instalação de Python de desenvolvimento. O WebView2 é necessário; o instalador oferece seu componente de bootstrap quando preciso.
 3. Prepare um motor compatível separadamente pelo app. Os pesos não acompanham o instalador. Downloads exigem internet, espaço em disco e autorização; as licenças externas continuam valendo.
 

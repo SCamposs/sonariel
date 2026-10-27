@@ -2,7 +2,7 @@
 
 [English overview](../README.md) · [Visão geral em português](../README.pt-BR.md) · [Documentation index](README.md)
 
-This guide follows the distributed Windows x64 application, currently v0.3.2. The UI is in Brazilian Portuguese; the labels below are the labels you will see. No command-line development tools are needed to use the installer.
+This guide follows the distributed Windows x64 application, currently v0.4.0. Choose English or Brazilian Portuguese at first use or in Settings; the examples below retain the Portuguese labels. No command-line development tools are needed to use the installer.
 
 ## Installation and updates
 

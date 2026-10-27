@@ -32,7 +32,7 @@ Closing the desktop leaves the lightweight core available for MCP and already ac
 
 The stdio transport carries one UTF-8 JSON-RPC object per line, supports initialization, notifications, ping, tool discovery and tool calls. Generation tools return immediately with a persistent job_id.
 
-## Phase 2 source builds (unreleased)
+## Phase 2 functionality (distributed in v0.4.0)
 
 Schema 4 adds `music_presets` and `music_preset_uses`, with a consistent pre-migration SQLite backup for schemas 1–3. It preserves previous rows/settings. Databases newer than the running core remain rejected; do not open a development profile in the stable app. Conditioning assets referenced by a preset are protected from discard.
 
@@ -40,7 +40,7 @@ Schema 4 adds `music_presets` and `music_preset_uses`, with a consistent pre-mig
 
 Loops use the existing single native-DSP queue and ownership/watchdog contracts. No audio model or Audacity project is involved. Batch export copies registered sources, verifies hashes, uses exclusive destination creation and never overwrites a collision. Music preset review does not enqueue work; explicit confirmed generation routes through the existing engine-specific contracts and request-key safeguards.
 
-## Phase 2.5 source builds (unreleased)
+## Phase 2.5 functionality (distributed in v0.4.0)
 
 `library.py` owns bounded-memory region extraction, explicit region role/engine validation, organizational tags and per-project filter preferences. Schema 5 adds `asset_tags`, `library_filters` and `region_requests` after a consistent backup of schemas 1–4. Existing generation/job ownership and queue state are unchanged. Region requests have their own idempotency ledger and reuse a verified identical selection; they do not enqueue inference or rewrite a source. Style-reference excerpts retain reference protections; source excerpts retain parent/hash/frame lineage and are validated against the intended engine when used.
 
