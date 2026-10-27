@@ -22,3 +22,5 @@ The [FMOD authoring guide](https://www.fmod.com/docs/2.04/studio/authoring-event
 8. Obtain explicit user approval. Rejection keeps #3 open; preserve the rejected samples and parameters. Continue independent product work.
 
 If no suitable phrase exists in a recording, document that limitation. Producing a musical transition or a new loop-ready arrangement is a separate production decision; do not conceal it behind an automatic “seamless” label.
+
+The [Phase 2.6 diagnosis](PHASE2_6.md#loop-diagnosis-what-the-rejected-files-establish) separates measured period loss and boundary integrity from unverified pulse, harmony, phrase and tail compatibility in the two rejected rounds. It does not authorize a third round or approve a new DSP method. Loop availability in the next distribution remains an explicit owner decision.

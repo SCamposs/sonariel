@@ -25,6 +25,8 @@ Phase 2.5 adds reference/source regions and project-local tags/filters. Its acce
 
 ## Release history and validation
 
+- Phase 2.6 release-readiness assessment: [English](PHASE2_6.md) / [Português (Brasil)](PHASE2_6.pt-BR.md). Stabilization evidence and pending publication decisions, not a new release.
+
 - [Changelog](../CHANGELOG.md) and [release notes](releases/v0.3.2.md) (current release notes in Portuguese).
 - [Validation record](VALIDATION.md): automated checks, real integrations, historical observations, and remaining limits. Test counts are tied to their release, not a guarantee about every machine.
 - [Expansion report](EXPANSION.md): historical v0.3.0 implementation/evidence. Its text-only Stable Audio limit and 16 GiB Turbo gate were superseded by v0.3.1/v0.3.2, respectively.

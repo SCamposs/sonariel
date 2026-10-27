@@ -17,3 +17,5 @@ These constraints describe v0.3.2. ACE-Step-specific limits below do not apply t
 - **Distribution:** the Windows installer is unsigned unless a distributor supplies a signing certificate. Do not bypass OS warnings automatically.
 
 Logs, database, caches, outputs, config backups and receipts are private user data under the application data home. No telemetry is included. Database backups should use SQLite backup, not copy a live WAL database. Live Audacity project files are never used as consistency-proven backups.
+
+Unreleased schema-5 builds migrate schema DDL, version and initial locale preference in one transaction after the consistent backup. SQL failure or process loss rolls back uncommitted migration changes; retry with the compatible new core. The v0.3.2 core refuses schema 5. Never relabel/downgrade the database or copy only its open main file. See the [isolated upgrade evidence](PHASE2_6.md#migration-restart-and-recovery).

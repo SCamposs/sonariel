@@ -1,5 +1,7 @@
 # Validation receipt — 2026-10-23
 
+The latest unreleased stabilization assessment is [Phase 2.6](PHASE2_6.md), also available in [Português](PHASE2_6.pt-BR.md). It records the actual schema-3 upgrade, failure recovery, packaged-core and public-signature checks, and distinguishes reused native UI evidence from a future installer/update gate. Historical measurements below remain tied to their original release.
+
 This file records real execution separately from implementation coverage. No musical references, audio, private logs or machine-specific paths belong in this repository.
 
 ## Phase 2 source development — 26 October 2026

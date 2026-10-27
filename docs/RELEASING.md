@@ -12,6 +12,10 @@ O build descriptografa a chave somente no processo de compilação. Também acei
 
 ## Próxima versão
 
+Antes de escolher/publicar a próxima versão, consulte a avaliação da Fase 2.6 em [português](PHASE2_6.pt-BR.md) ou [inglês](PHASE2_6.md). Loops ainda não têm aceite auditivo. Migração isolada validada e assinatura de pacote anterior não substituem o teste completo do futuro candidato assinado, incluindo reinício e preservação do WebView/MCP. Não execute a preparação/publicação usando novamente a versão já distribuída.
+
+O builder recusa runtime de desenvolvimento em uso antes de invocar Cargo/PyInstaller; não force o encerramento de processos alheios para liberar arquivos. Na validação isolada, a coleta de licenças pode receber `scripts/collect-notices.py --output <pasta-de-licencas-do-runtime-isolado>`. Isso não publica ou assina artefatos.
+
 1. Atualize a versão em `package.json`, lock npm, config e Cargo do Tauri, `pyproject.toml` e `core/sonariel/__init__.py`. Adicione `docs/releases/v<versão>.md`.
 2. Execute testes Python/React, typecheck, build e os checks relevantes de integração. Nunca gere áudio como parte de um teste de atualização.
 3. Execute `scripts/build.ps1 -SignUpdates`. A assinatura deve incluir a versão da aplicação.
