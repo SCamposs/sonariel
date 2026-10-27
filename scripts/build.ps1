@@ -4,6 +4,12 @@ $previousSigningKey = $env:TAURI_SIGNING_PRIVATE_KEY
 $root = Split-Path -Parent $PSScriptRoot
 Push-Location $root
 try {
+    # PyInstaller --noconfirm removes the previous onedir tree before copying.
+    # Refuse before touching any files if a shared core still owns that runtime.
+    $runtimeExecutable = Join-Path $root 'build/runtime/sonariel-core/sonariel-core.exe'
+    if (Get-Process -Name sonariel-core -ErrorAction SilentlyContinue | Where-Object { $_.Path -eq $runtimeExecutable }) {
+        throw 'Build runtime is in use. Finish its queue/MCP and shut down that development core, or build to a separate output directory. No process was stopped.'
+    }
     & cargo build --release --locked --manifest-path native/fx/Cargo.toml
     if ($LASTEXITCODE -ne 0) { throw 'Native DSP build failed' }
     $nativeFx = Join-Path $root 'native/fx/target/release/sonariel-fx.exe'

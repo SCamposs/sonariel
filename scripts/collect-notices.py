@@ -4,10 +4,14 @@ import shutil
 import json
 import sys
 import tomllib
+import argparse
 from pathlib import Path
 
 root = Path(__file__).resolve().parents[1]
-output = root / "build/runtime/sonariel-core/licenses"
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--output', type=Path, default=root / 'build/runtime/sonariel-core/licenses',
+                    help='License folder for a separately packaged validation runtime')
+output = parser.parse_args().output
 output.mkdir(parents=True, exist_ok=True)
 for distribution in importlib.metadata.distributions():
     name = distribution.metadata.get("Name", "unknown")
