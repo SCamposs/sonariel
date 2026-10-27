@@ -45,7 +45,7 @@ Permission disclosure: read chosen project/audio metadata; write requested Sonar
 
 ## Compatibility note
 
-Windows x64, Sonariel 0.4.0, local stdio MCP. Codex connection/discovery and real lightweight workflows were tested. Claude Code transport health check connected; its full workflow is not validated. Cursor and GitHub Copilot in VS Code have documented configurations but were not tested end to end. Remote/web-only clients without a local Windows bridge are not supported by this skill. No vendor certification is claimed.
+Windows x64, Sonariel 0.4.0, local stdio MCP. A fresh Codex CLI session automatically selected and read the skill, then executed a real lightweight workflow; unrelated requests did not activate it. Claude Code's earlier transport check connected, but no authenticated session was ready for the final workflow review. Cursor and GitHub Copilot in VS Code have documented configurations but were not tested end to end. Remote/web-only clients without a local Windows bridge are not supported by this skill. No vendor certification is claimed.
 
 ## Use cases
 

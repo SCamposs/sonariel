@@ -1,11 +1,11 @@
 # Submission ZIP audit
 
-Audited on 2026-10-27. This is a local preparation audit, **not Agensi approval**. Nothing has been uploaded or submitted to the marketplace.
+Rebuilt and re-audited on 2026-10-27 after the [independent behavioral review](INDEPENDENT_REVIEW.md). This is a local preparation audit, **not Agensi approval**. Nothing has been uploaded or submitted to the marketplace.
 
 - File: `sonariel-mcp-integration-1.0.0.zip`.
 - Skill version: **1.0.0**; target application: **0.4.0**.
-- Size: **19,904 bytes** compressed; **40,225 bytes** uncompressed.
-- SHA-256: `7a0396cb9884b472327096cf1392405140732cbcb6eb14e4b5d012f81d4d722f`.
+- Size: **20,256 bytes** compressed; **41,055 bytes** uncompressed.
+- SHA-256: `dbcc991bfc76b7c1d07d1ea239f634f41a619b853ef6285939032da2ac01b6b4`.
 - Location: private artifact directory outside Git, reported directly to the owner. No archive is attached to an app release.
 - Exact entry count: **10**; one root `SKILL.md`; no outer directory or nested archive.
 
@@ -16,15 +16,17 @@ Audited on 2026-10-27. This is a local preparation audit, **not Agensi approval*
 | `LICENSE` | 4146 | `ec749881ed6560a1fa5ccb1add318e894145f2184af34462f30545b859872230` |
 | `README.md` | 2085 | `f1975c19426dda0b510ceff60bb82d9cc14c29277ed692739b5521d65a3173bc` |
 | `SKILL.md` | 6209 | `4f21d30104b071182f9b28fe83bc13e3fd73b153092cd08cc48ba532e28fa52d` |
-| `references/compatibility.md` | 3966 | `de4e232825496678b842e13c4815550029d1600fd3ca3da5cf14023aaa77ccf9` |
+| `references/compatibility.md` | 4157 | `0fa9805d598edc27310d685b59d84fb64cc2016ac057d1f4a35c5f348b6d3645` |
 | `references/engine-capabilities.md` | 4613 | `5ea781886dd2d9af37dfb3212a1d20b6db5ef24b64baef179df38199ec83561d` |
 | `references/mcp-workflow.md` | 7910 | `f088979da5a758b879fffda59021d473ae158887f6b10cfda83b0efb128c0b2a` |
 | `references/safety-and-recovery.md` | 4010 | `6cfa51bf0d1418e03452b95bca7a226cd68ca8fc453572d60ef7d81dfc337ff8` |
 | `references/setup.md` | 3740 | `f0e72f87815d528eba3fd6c47aafe36f1de5713bb9f05479953afe6373c256e9` |
-| `references/troubleshooting.md` | 3103 | `fb1f932bddd3597df51a723fa8baa40822902ffac362e379e89dad6247603d83` |
+| `references/troubleshooting.md` | 3742 | `6e3163c06df986a341cde12882467dc8d3e205d42a09ca88a651fdc033ca9d35` |
 | `templates/codex-mcp.toml.example` | 443 | `cdbe263253a8ce643c011e89205c003db7246fbc7b869d26f1b8dbab00edc00f` |
 
 ## Checks completed
+
+The original preparation archive (`7a0396cb9884b472327096cf1392405140732cbcb6eb14e4b5d012f81d4d722f`) remains preserved privately. This definitive prepublication 1.0.0 archive changes only compatibility evidence and troubleshooting text; the entrypoint, setup/workflow instructions exercised by the agent, other references, template and license retain their previous bytes. The corrected troubleshooting reference was additionally read and used by a fresh diagnostic agent session.
 
 - Explicit ten-file allowlist exactly matches source and ZIP; every entry round-trips byte-for-byte; ZIP CRC test passes. No traversal, symlink entries, absolute paths or extraneous files.
 - Repeated fixed-order/fixed-timestamp ZIP assembly produced identical bytes. This audit describes the hash above; editing any payload requires another audit and hash.

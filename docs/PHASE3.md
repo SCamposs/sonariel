@@ -107,3 +107,7 @@ Agensi acceptance, account terms, name availability and final live delivery rema
 ## Publication handoff
 
 Review the [listing and manual steps](agensi/LISTING.md#manual-submission-after-owner-approval), [ZIP audit](agensi/PACKAGE_AUDIT.md) and [source files](../skills/sonariel-mcp-integration/README.md). Only validated skill/documentation source is published to main; the ZIP stays private. No branch, PR, paid product, new Sonariel release or Agensi submission is part of this delivery.
+
+## Independent behavioral acceptance follow-up
+
+The subsequent [independent review](agensi/INDEPENDENT_REVIEW.md) adds evidence beyond this phase's original driver-based execution: fresh Codex CLI skill discovery, automatic positive/negative selection, actual reference reads and an agent-executed lightweight workflow against the unchanged distributed 0.4.0 core. The accepted run passed 27 independent verification assertions. Earlier unsuccessful setup attempts remain documented. Claude has no authenticated session ready and remains unvalidated. The [ZIP audit](agensi/PACKAGE_AUDIT.md) now identifies the definitive reviewed 1.0.0 payload; the original preparation package is preserved privately. Submission to Agensi still awaits the owner's decision.

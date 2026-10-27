@@ -42,3 +42,9 @@ Date: 2026-10-27. Skill: `sonariel-mcp-integration` 1.0.0. This is a **guided au
 - Transport checks are not advertised as full client workflows. Claude's successful health check did not promote it to full validation.
 
 Unchanged boundaries: no loop workaround, no app code changes, no external license acceptance, no global agent changes, no production data, no heavy inference. The remaining limitation is behavioral coverage: instructions guide an agent but do not replace the core's safeguards or guarantee all future agents' choices.
+
+## Independent follow-up
+
+The owner subsequently requested a fresh-session behavioral evaluation. It is recorded in [INDEPENDENT_REVIEW.md](INDEPENDENT_REVIEW.md), separately from the guided driver checks above. A new Codex CLI session discovered the repository-scoped skill, read its entrypoint and two references, and performed the authorized beginner workflow itself through MCP. Independent scripts only prepared the fixture/session and verified the resulting evidence; they did not submit its workflow calls. Two unrelated fresh requests made no skill-file or MCP tool calls. Claude remained untested because no authenticated session was ready.
+
+Initial isolated runs exposed client permission/setup gaps; those attempts are retained, not counted as successful skill execution. The accepted run used the existing Windows sandbox and process-local authorization for the requested lightweight operations. The final skill documents client-policy/file-access failures and updates the compatibility evidence. Core/app code and production configuration were not changed.
