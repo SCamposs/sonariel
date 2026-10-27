@@ -40,6 +40,7 @@ class Store:
                     db.backup(target)
             db.executescript('''
                 PRAGMA journal_mode=WAL;
+                BEGIN IMMEDIATE;
                 CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY, value TEXT NOT NULL);
                 CREATE TABLE IF NOT EXISTS projects(id TEXT PRIMARY KEY,name TEXT NOT NULL,context TEXT NOT NULL DEFAULT '',created REAL NOT NULL);
                 CREATE TABLE IF NOT EXISTS sessions(id TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(id),name TEXT NOT NULL,created REAL NOT NULL);
@@ -47,11 +48,6 @@ class Store:
                 CREATE TABLE IF NOT EXISTS jobs(id TEXT PRIMARY KEY,request_key TEXT UNIQUE NOT NULL,project_id TEXT NOT NULL REFERENCES projects(id),session_id TEXT REFERENCES sessions(id),state TEXT NOT NULL,stage TEXT NOT NULL,params TEXT NOT NULL,remote_id TEXT,metrics TEXT NOT NULL DEFAULT '{}',error TEXT,created REAL NOT NULL,started REAL,finished REAL);
                 CREATE TABLE IF NOT EXISTS events(id INTEGER PRIMARY KEY AUTOINCREMENT,time REAL NOT NULL,kind TEXT NOT NULL,message TEXT NOT NULL,job_id TEXT);
                 CREATE TABLE IF NOT EXISTS edits(id TEXT PRIMARY KEY,asset_id TEXT NOT NULL REFERENCES assets(id),project_path TEXT NOT NULL,created REAL NOT NULL);
-            ''')
-            version = db.execute("PRAGMA user_version").fetchone()[0]
-            if version > 5:
-                raise ValueError("Banco criado por versão mais nova do Sonariel; não será alterado")
-            db.executescript('''
                 CREATE TABLE IF NOT EXISTS fx_presets(id TEXT PRIMARY KEY,project_id TEXT REFERENCES projects(id),name TEXT NOT NULL,recipe TEXT NOT NULL,created REAL NOT NULL);
                 CREATE TABLE IF NOT EXISTS voice_profiles(id TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(id),name TEXT NOT NULL,language TEXT NOT NULL,reference_id TEXT REFERENCES assets(id),consent INTEGER NOT NULL,created REAL NOT NULL);
                 CREATE TABLE IF NOT EXISTS asset_trash(asset_id TEXT PRIMARY KEY REFERENCES assets(id),original_path TEXT NOT NULL,trash_path TEXT,sha256 TEXT NOT NULL,state TEXT NOT NULL,created REAL NOT NULL);
@@ -64,6 +60,8 @@ class Store:
             ''')
             # Record origin once, before any UI preference is chosen. Existing
             # installations keep Portuguese and their independent tour state.
+            # Keep DDL, schema marker and this preference in one transaction.
+            # The connection context rolls everything back on any failure.
             db.execute("INSERT OR IGNORE INTO settings(key,value) VALUES(?,?)", (
                 "ui_preferences", json.dumps({"locale": None, "existing_installation": existing_profile}),
             ))
