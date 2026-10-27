@@ -25,6 +25,8 @@ Phase 2.5 adds reference/source regions and project-local tags/filters. Its acce
 
 ## Release history and validation
 
+- Phase 2.7 Windows candidate acceptance: [English](PHASE2_7.md) / [Português (Brasil)](PHASE2_7.pt-BR.md). Published test RC, actual VM installation/basic-use evidence and explicit updater limits.
+
 - Phase 2.6 release-readiness assessment: [English](PHASE2_6.md) / [Português (Brasil)](PHASE2_6.pt-BR.md). Stabilization evidence and pending publication decisions, not a new release.
 
 - [Changelog](../CHANGELOG.md) and [release notes](releases/v0.3.2.md) (current release notes in Portuguese).
