@@ -31,11 +31,11 @@ class Store:
             existing_profile = previous_version > 0 or bool(db.execute(
                 "SELECT 1 FROM sqlite_master WHERE type='table' AND name IN ('projects','settings') LIMIT 1"
             ).fetchone())
-            if previous_version > 4:
+            if previous_version > 5:
                 raise ValueError("Banco criado por versão mais nova do Sonariel; não será alterado")
-            if previous_version in (1, 2, 3):
+            if previous_version in (1, 2, 3, 4):
                 # Consistent SQLite backup includes committed WAL pages, not a live file copy.
-                backup = self.home / 'backups' / f'pre-schema4-{time.time_ns()}.sqlite3'
+                backup = self.home / 'backups' / f'pre-schema5-{time.time_ns()}.sqlite3'
                 with sqlite3.connect(backup) as target:
                     db.backup(target)
             db.executescript('''
@@ -49,7 +49,7 @@ class Store:
                 CREATE TABLE IF NOT EXISTS edits(id TEXT PRIMARY KEY,asset_id TEXT NOT NULL REFERENCES assets(id),project_path TEXT NOT NULL,created REAL NOT NULL);
             ''')
             version = db.execute("PRAGMA user_version").fetchone()[0]
-            if version > 4:
+            if version > 5:
                 raise ValueError("Banco criado por versão mais nova do Sonariel; não será alterado")
             db.executescript('''
                 CREATE TABLE IF NOT EXISTS fx_presets(id TEXT PRIMARY KEY,project_id TEXT REFERENCES projects(id),name TEXT NOT NULL,recipe TEXT NOT NULL,created REAL NOT NULL);
@@ -57,7 +57,10 @@ class Store:
                 CREATE TABLE IF NOT EXISTS asset_trash(asset_id TEXT PRIMARY KEY REFERENCES assets(id),original_path TEXT NOT NULL,trash_path TEXT,sha256 TEXT NOT NULL,state TEXT NOT NULL,created REAL NOT NULL);
                 CREATE TABLE IF NOT EXISTS music_presets(id TEXT PRIMARY KEY,project_id TEXT NOT NULL REFERENCES projects(id),name TEXT NOT NULL,description TEXT NOT NULL,engine_id TEXT NOT NULL,params TEXT NOT NULL,family_id TEXT NOT NULL REFERENCES music_presets(id),revision INTEGER NOT NULL,parent_id TEXT REFERENCES music_presets(id),favorite INTEGER NOT NULL DEFAULT 0,created REAL NOT NULL,source_asset_id TEXT REFERENCES assets(id));
                 CREATE TABLE IF NOT EXISTS music_preset_uses(job_id TEXT PRIMARY KEY REFERENCES jobs(id),preset_id TEXT NOT NULL REFERENCES music_presets(id),intent TEXT NOT NULL,request_fingerprint TEXT NOT NULL,created REAL NOT NULL);
-                PRAGMA user_version=4;
+                CREATE TABLE IF NOT EXISTS asset_tags(asset_id TEXT NOT NULL REFERENCES assets(id),tag TEXT NOT NULL,PRIMARY KEY(asset_id,tag));
+                CREATE TABLE IF NOT EXISTS library_filters(project_id TEXT PRIMARY KEY REFERENCES projects(id),params TEXT NOT NULL);
+                CREATE TABLE IF NOT EXISTS region_requests(request_key TEXT PRIMARY KEY,fingerprint TEXT NOT NULL,asset_id TEXT NOT NULL REFERENCES assets(id));
+                PRAGMA user_version=5;
             ''')
             # Record origin once, before any UI preference is chosen. Existing
             # installations keep Portuguese and their independent tour state.

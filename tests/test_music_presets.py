@@ -97,8 +97,8 @@ def test_schema4_migration_backs_up_schema3_and_preserves_existing_records(tmp_p
     migrated = Store(store.home)
     assert migrated.setting("preferences")["idle_minutes"] == 19
     assert migrated.rows("SELECT * FROM projects")[0]["context"] == "Private context"
-    with migrated.connect() as db: assert db.execute("PRAGMA user_version").fetchone()[0] == 4
-    backups = list((store.home / "backups").glob("pre-schema4-*.sqlite3"))
+    with migrated.connect() as db: assert db.execute("PRAGMA user_version").fetchone()[0] == 5
+    backups = list((store.home / "backups").glob("pre-schema5-*.sqlite3"))
     assert len(backups) == 1
     with sqlite3.connect(backups[0]) as db:
         assert db.execute("PRAGMA user_version").fetchone()[0] == 3

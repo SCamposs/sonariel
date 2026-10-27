@@ -140,6 +140,7 @@ class Studio:
             if not source_id:
                 raise ValueError("audio2audio exige source_id do projeto")
             asset = self.verified_source(source_id)
+            self.validate_audio_role(asset, "source", engine_id)
             if asset["project_id"] != project_id:
                 raise ValueError("Fonte de áudio pertence a outro projeto")
             if asset["metadata"]["channels"] not in (1, 2):

@@ -25,7 +25,7 @@ class Storage:
         path = Path(asset['path'])
         root = self.store.home / 'output'
         # Only direct, application-generated output; imports and symlinks stay protected.
-        return (asset['kind'] in {'generated', 'export', 'preview', 'voice', 'processed'}
+        return (asset['kind'] in {'generated', 'export', 'preview', 'voice', 'processed', 'region'}
                 and path.suffix.lower() == '.wav' and not path.is_symlink()
                 and not root.is_symlink() and root.resolve() == self.store.home.resolve() / 'output'
                 and path.parent.resolve() == root.resolve())

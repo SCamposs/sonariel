@@ -56,6 +56,7 @@ class MusicPresets:
         for role in ("reference_id", "source_id"):
             if value.get(role):
                 source = self.verified_source(value[role])
+                self.validate_audio_role(source, "style" if role == "reference_id" else "source", engine_id)
                 if source["project_id"] != project_id:
                     raise ValueError("Preset conditioning belongs to another project; select an explicit replacement")
         if mode in {"cover", "audio2audio"}:

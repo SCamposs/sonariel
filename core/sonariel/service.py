@@ -22,6 +22,7 @@ from .studio import Studio, studio_methods
 from .storage import Storage, storage_methods
 from .production import Production, production_methods
 from .music_presets import MusicPresets, music_preset_methods
+from .library import Library, library_methods
 
 
 def local_audio(value: str) -> Path:
@@ -33,7 +34,7 @@ def local_audio(value: str) -> Path:
     return path.resolve(strict=True)
 
 
-class Service(MusicPresets, Production, Studio, Storage):
+class Service(Library, MusicPresets, Production, Studio, Storage):
     def __init__(self, store: Store | None = None, start_worker: bool = True):
         self.store = store or Store()
         self.engine = Engine(self.store)
@@ -98,6 +99,11 @@ class Service(MusicPresets, Production, Studio, Storage):
             return {"ready": True}
 
     def rpc_snapshot(self):
+        value = self._snapshot()
+        value.update(references=self.rpc_references_list(), library_filters=self.library_filters(value["selected_project"]))
+        return value
+
+    def _snapshot(self):
         projects = self.rpc_projects_list()
         return {"projects": projects, "sessions": self.store.rows("SELECT * FROM sessions ORDER BY created DESC"), "jobs": self.rpc_queue_list(), "assets": self.rpc_results_list(), "events": self.store.rows("SELECT * FROM events ORDER BY id DESC LIMIT 80"), "selected_project": self.store.setting("selected_project"), "environment": self.store.setting("environment"), "engine": {"state": self.engine.status, "managed": bool(self.engine.owned_process()), "rss_gib": round(self.engine.rss(), 3), "load_seconds": self.engine.last_load_seconds}, "telemetry": telemetry(), "audacity": audacity.status(), "setup": self.store.setting("setup_status"), "codex": self.store.setting("codex", {"configured": False, "tested": False}), "preferences": self.store.setting("preferences", {"idle_minutes": 5}), "ui_preferences": self.store.setting("ui_preferences"), "data_home": str(self.store.home), "edits": self.store.rows("SELECT * FROM edits ORDER BY created DESC"), "engines": self.rpc_engines_list(), "voice_environment": self.store.setting("voice_environment")}
 
@@ -151,30 +157,43 @@ class Service(MusicPresets, Production, Studio, Storage):
         return {"session_id": key}
 
     def rpc_references_list(self, project_id: str | None = None):
-        return self.store.rows("SELECT * FROM assets WHERE kind='reference'" + (" AND project_id=?" if project_id else "") + " ORDER BY created DESC", (project_id,) if project_id else ())
+        return self.with_tags(self.store.rows("SELECT * FROM assets WHERE kind='reference' AND id NOT IN (SELECT asset_id FROM asset_trash)" + (" AND project_id=?" if project_id else "") + " ORDER BY created DESC", (project_id,) if project_id else ()))
 
-    def rpc_reference_register(self, project_id: str, path: str, name: str):
+    def require_session(self, session_id, project_id):
+        if session_id and not self.store.rows("SELECT id FROM sessions WHERE id=? AND project_id=?", (session_id, project_id)):
+            raise ValueError("Sessão não pertence ao projeto")
+
+    def rpc_reference_register(self, project_id: str, path: str, name: str, session_id: str | None = None):
         self.require_project(project_id)
+        self.require_session(session_id, project_id)
         source = local_audio(path)
         metadata = inspect_wav(source)
         metadata["sha256"] = sha256(source)
         key = identifier()
-        self.store.execute("INSERT INTO assets(id,project_id,path,name,kind,metadata,created) VALUES(?,?,?,?,?,?,?)", (key, project_id, str(source), name, "reference", json.dumps(metadata), time.time()))
+        self.store.execute("INSERT INTO assets(id,project_id,session_id,path,name,kind,metadata,created) VALUES(?,?,?,?,?,?,?,?)", (key, project_id, session_id, str(source), name, "reference", json.dumps(metadata), time.time()))
         return self.store.asset(key)
 
-    def rpc_result_import(self, project_id: str, path: str, name: str, parameters: dict | None = None, parent_id: str | None = None):
+    def rpc_result_import(self, project_id: str, path: str, name: str, parameters: dict | None = None, parent_id: str | None = None, session_id: str | None = None):
         self.require_project(project_id)
+        self.require_session(session_id, project_id)
         source = local_audio(path)
         metadata = inspect_wav(source)
         metadata.update({"sha256": sha256(source), "parameters": parameters or {}, "imported": True})
         if parent_id and self.store.asset(parent_id)["project_id"] != project_id:
             raise ValueError("Versão anterior pertence a outro projeto")
         key = identifier()
-        self.store.execute("INSERT INTO assets(id,project_id,path,name,kind,metadata,parent_id,created) VALUES(?,?,?,?,?,?,?,?)", (key, project_id, str(source), name, "imported", json.dumps(metadata), parent_id, time.time()))
+        self.store.execute("INSERT INTO assets(id,project_id,session_id,path,name,kind,metadata,parent_id,created) VALUES(?,?,?,?,?,?,?,?,?)", (key, project_id, session_id, str(source), name, "imported", json.dumps(metadata), parent_id, time.time()))
         return self.store.asset(key)
 
-    def rpc_results_list(self, project_id: str | None = None):
-        return self.store.rows("SELECT * FROM assets WHERE kind!='reference' AND id NOT IN (SELECT asset_id FROM asset_trash)" + (" AND project_id=?" if project_id else "") + " ORDER BY created DESC", (project_id,) if project_id else ())
+    def rpc_results_list(self, project_id: str | None = None, query: str = "", favorite: bool = False,
+                         tags: list[str] | None = None, session_id: str | None = None, kind: str | None = None):
+        if (query or favorite or tags or session_id or kind) and not project_id:
+            raise ValueError("Choose a project before filtering its library")
+        filters = self.validate_filters(project_id, dict(query=query, favorite=favorite, tags=tags or [], session_id=session_id, kind=kind)) if project_id else {}
+        assets = self.with_tags(self.store.rows("SELECT * FROM assets WHERE " + ("kind='reference'" if kind == "reference" else "kind!='reference'") + " AND id NOT IN (SELECT asset_id FROM asset_trash)" + (" AND project_id=?" if project_id else "") + " ORDER BY created DESC", (project_id,) if project_id else ()))
+        return [a for a in assets if (not filters.get("query") or filters["query"].casefold() in (a["name"] + " " + a["notes"]).casefold())
+            and (not favorite or a["favorite"]) and (not session_id or a["session_id"] == session_id)
+            and (not kind or a["kind"] == kind) and set(filters.get("tags", [])).issubset(a["tags"])]
 
     def rpc_result_feedback(self, asset_id: str, favorite: bool, selected: bool, notes: str):
         asset = self.store.asset(asset_id)
@@ -206,6 +225,7 @@ class Service(MusicPresets, Production, Studio, Storage):
                 asset = self.store.asset(asset_id)
                 if asset["project_id"] != project_id:
                     raise ValueError("Referência pertence a outro projeto")
+                self.validate_audio_role(asset, "style" if key == "reference_audio_path" else "source", "acestep-v15-turbo")
                 params[key] = str(local_audio(asset["path"]))
         if mode == "cover":
             if not source_id:
@@ -540,3 +560,8 @@ METHODS["ui_preferences_save"] = tool("Save only the application's display langu
 METHODS.update(storage_methods(tool,ID,B))
 METHODS.update(production_methods(tool,S,ID,B))
 METHODS.update(music_preset_methods(tool,S,ID,B))
+_library_methods, _filters = library_methods(tool,S,ID,B)
+METHODS.update(_library_methods)
+METHODS["results_list"]["inputSchema"]["properties"].update(_filters)
+for _method in ("result_import", "reference_register"):
+    METHODS[_method]["inputSchema"]["properties"]["session_id"] = ID

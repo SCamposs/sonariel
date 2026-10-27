@@ -45,6 +45,36 @@ def test_loop_contract_validates_region_preserves_source_and_is_idempotent(tmp_p
     assert len(service.invoke("results_list")) == 1
 
 
+def test_explicit_beat_grid_compensates_overlap_and_rejects_stale_alignment(tmp_path):
+    service = Service(Store(tmp_path / "profile"), start_worker=False)
+    project = service.invoke("project_create", {"name": "Beat grid contract"})["project_id"]
+    path = tmp_path / "rhythmic.wav"
+    rate = 24000
+    t = np.arange(rate * 12) / rate
+    # A controlled periodic musical timing fixture, not human listening approval.
+    signal = .2 * np.sin(2 * np.pi * 220 * t) * np.exp(-6 * (t % .5))
+    sf.write(path, signal, rate, subtype="FLOAT")
+    asset = service.invoke("result_import", dict(project_id=project, path=str(path), name="Rhythm timing"))
+    grid = dict(anchor_seconds=2, bpm=120, beats_per_bar=4, bars=2)
+    args = dict(asset_id=asset["id"], request_key="grid-loop", start_seconds=1.8, end_seconds=6,
+                crossfade_ms=200, beat_grid=grid)
+    job = service.invoke("fx_loop_render", args)
+    params = service.store.job(job["job_id"])["params"]
+    assert params["beat_grid"] == grid
+    assert params["recipe"]["end_seconds"] - params["recipe"]["start_seconds"] - .2 == 4
+    with pytest.raises(ValueError, match="Beat grid"):
+        service.invoke("fx_loop_render", {**args, "request_key": "stale-grid", "crossfade_ms": 100})
+    if fx_binary().is_file():
+        recipe = tmp_path / "grid-recipe.json"
+        output = tmp_path / "grid-loop.wav"
+        recipe.write_text(json.dumps(params["recipe"]))
+        subprocess.run([str(fx_binary()), str(path), str(output), str(recipe)], check=True, capture_output=True)
+        audio, actual_rate = sf.read(output, dtype="float32", always_2d=True)
+        assert actual_rate == rate and len(audio) == 4 * rate
+        original, _ = sf.read(path, dtype="float32")
+        assert audio[0, 0] == original[2 * rate]  # Export begins at the chosen audible anchor.
+
+
 @pytest.mark.skipif(not fx_binary().is_file(), reason="Build native/fx before native loop acceptance")
 def test_real_native_loop_has_expected_period_seam_preview_and_source_hash(tmp_path):
     service = Service(Store(tmp_path / "profile"), start_worker=False)

@@ -29,6 +29,7 @@ PORTABLE_FIELDS = {
     "ring_depth_end", "dry_db", "lead_ms", "reverse_swell_ms", "reverse_swell_db", "target_lufs",
     "ceiling_dbtp", "enabled", "expressivity", "exaggeration", "cfg_weight", "temperature",
     "repetition_penalty", "min_p", "top_p", "language", "model_revision", "checkpoint_revision",
+    "beat_grid", "anchor_seconds", "beats_per_bar", "bars",
 }
 
 
@@ -133,6 +134,9 @@ class Production:
                 if include_prompts and isinstance(params.get("prompt"), str):
                     parameters["prompt"] = params["prompt"]
                 lineage = {"parent_id": asset["parent_id"]}
+                if isinstance(metadata.get("region"), dict):
+                    region = metadata["region"]
+                    lineage["region"] = {field: region[field] for field in ("source_id", "source_sha256", "start_frame", "end_frame", "sample_rate", "role", "engine_id") if field in region}
                 for field in ("source_sha256", "reference_sha256"):
                     if re.fullmatch(r"[0-9a-f]{64}", str(params.get(field, ""))):
                         lineage[field] = params[field]
@@ -163,18 +167,23 @@ class Production:
 
     def rpc_fx_loop_render(self, asset_id: str, request_key: str, start_seconds: float,
                            end_seconds: float, crossfade_ms: float, name: str = "Loop",
-                           preview: bool = False, repetitions: int = 3):
+                           preview: bool = False, repetitions: int = 3, beat_grid: dict | None = None):
         asset = self.verified_source(asset_id)
         meta = asset["metadata"]
         if Path(asset["path"]).suffix.lower() != ".wav" or meta["channels"] not in (1, 2):
             raise ValueError("Loop source must be a mono or stereo WAV")
         sr = meta["sample_rate"]
-        first, last = round(start_seconds * sr), round(end_seconds * sr)
-        overlap = round(crossfade_ms * sr / 1000)
+        first, last = math.floor(start_seconds * sr + .5), math.floor(end_seconds * sr + .5)
+        overlap = math.floor(crossfade_ms * sr / 1000 + .5)
         if first < 0 or last > round(meta["duration"] * sr) or last - first < sr / 10:
             raise ValueError("Loop region must fit the source and contain at least 0.1 seconds")
         if overlap and (overlap < 2 or overlap > (last - first) // 2):
             raise ValueError("Crossfade must fit half the region and contain at least two frames")
+        if beat_grid:
+            anchor = math.floor(beat_grid["anchor_seconds"] * sr + .5)
+            period = math.floor(60 / beat_grid["bpm"] * beat_grid["beats_per_bar"] * beat_grid["bars"] * sr + .5)
+            if first != anchor - overlap or last != anchor + period:
+                raise ValueError("Beat grid does not match selected region; apply the grid again after changing the crossfade")
         repeat = repetitions if preview else 1
         if (last - first - overlap) * repeat > sr * 600:
             raise ValueError("Loop preview/output limit is ten minutes; shorten the region or reduce repetitions")
@@ -182,6 +191,8 @@ class Production:
                       end_seconds=end_seconds, crossfade_ms=crossfade_ms, repetitions=repeat)
         params = dict(_engine=FX_ID, source_path=asset["path"], source_sha256=meta["sha256"],
                       _parent_id=asset_id, recipe=recipe, preview=preview)
+        if beat_grid:
+            params["beat_grid"] = beat_grid
         return self.enqueue_local(asset["project_id"], request_key, params, asset["session_id"])
 
 
@@ -203,6 +214,12 @@ def production_methods(tool, S, ID, B):
                  start_seconds=dict(type="number", minimum=0, maximum=600),
                  end_seconds=dict(type="number", exclusiveMinimum=0, maximum=600),
                  crossfade_ms=dict(type="number", minimum=0, maximum=300000), preview=B,
-                 repetitions=dict(type="integer", minimum=2, maximum=4)),
+                 repetitions=dict(type="integer", minimum=2, maximum=4),
+                 beat_grid=dict(type="object", additionalProperties=False, properties=dict(
+                    anchor_seconds=dict(type="number", minimum=0, maximum=600),
+                    bpm=dict(type="number", minimum=30, maximum=300),
+                    beats_per_bar=dict(type="integer", enum=[2, 3, 4, 6]),
+                    bars=dict(type="integer", minimum=1, maximum=32)),
+                    required=["anchor_seconds", "bpm", "beats_per_bar", "bars"])),
             ["asset_id", "request_key", "start_seconds", "end_seconds", "crossfade_ms"]),
     }
