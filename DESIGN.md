@@ -1,5 +1,7 @@
 # Sonariel visual system
 
+The Windows installer carries the original audio mark and Urbanist wordmark in dark sidebar/header artwork, with ivory surfaces and amber rules. Use supported Tauri NSIS settings and appearance-only Modern UI hooks; retain the default installer template, native titlebar and standard Windows controls. Do not replace installation/update logic for branding. See `docs/INSTALLER_BRANDING.md` for artwork regeneration and validation boundaries.
+
 A music creator works at a Windows workstation with a dark editor and audio tools open. The dark workspace reduces glare; warm-gray recessed work surfaces distinguish reference details and system audit records.
 
 The supplied Sonariel screens and later visual references define the primary direction. Use nearly black plum/graphite foundations, ivory ink, amber actions and restrained mint signals. Fine perimeter rules, square corners, dense modular layouts and a persistent player form the desktop shell. No promotional hero or webpage footer.

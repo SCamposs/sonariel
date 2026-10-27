@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Brand the Windows installer and uninstaller with Sonariel icons, header/sidebar artwork and warm ivory/graphite/amber colors, retaining Tauri's stock NSIS installation and update logic and native Windows controls.
+
 ## 0.4.0
 
 - Publish the Phase 2 production tools and bilingual UI as a stable Windows release, with signed updater assets.

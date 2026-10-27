@@ -1,5 +1,7 @@
 # Publicar uma release Windows
 
+A identidade visual do NSIS usa os recursos já versionados; veja [personalização do instalador](INSTALLER_BRANDING.md). Não é necessário instalar Pillow para compilar. Preserve o template padrão do Tauri e não distribua prévias locais de empacotamento como releases.
+
 As releases oficiais são geradas localmente, assinadas e publicadas no GitHub. Não há chave privada em Git ou em arquivos da release.
 
 ## Chave de assinatura
