@@ -75,9 +75,9 @@ Direct isolated app captures, without generated UI or retouching. Only generic s
 
 ## Limits and issue disposition
 
-The native existing-file import, preset review and empty-state/pagination checkpoint passed after a newly authorized round. Issues #4/#5 meet their implemented acceptance criteria; their final disposition follows publication of the validated commits. #3 remains open with two rejected listening rounds. #6–#9 remain independent investigations. No new release/tag/updater feed or installed-app update is part of this phase.
+The native existing-file import, preset review and empty-state/pagination checkpoint passed after a newly authorized round. [Issue #4](https://github.com/SCamposs/sonariel/issues/4#issuecomment-6433105849) and [issue #5](https://github.com/SCamposs/sonariel/issues/5#issuecomment-6433110282) are closed as completed, with published implementation and acceptance evidence. [Issue #3](https://github.com/SCamposs/sonariel/issues/3#issuecomment-6433114446) remains open with two rejected listening rounds. #6–#9 remain open independent investigations. No new release/tag/updater feed or installed-app update is part of this phase; the distributed release remains v0.3.2.
 
-Implementation commits: `324fecc` (core contracts/schema/tests) and `1787af6` (bilingual desktop/interaction tests). Publication and final issue disposition are verified separately from local commit creation.
+Published on `main`: `324fecc` (core contracts/schema/tests), `1787af6` (bilingual desktop/interaction tests) and `f36118b` (native acceptance documentation and safe screenshots). Local and remote heads were verified after pushing; issue states were checked separately after their updates.
 
 No heavy AI generation, cold-cache setup, new GPU profile or production Audacity handoff was run. New region roles/engine compatibility were verified through contracts, preset review and rejection tests without claiming a live model-generation benchmark. The native frontend build retains its existing bundle-size warning (main JavaScript approximately 736 kB / 235 kB gzip); this phase did not introduce dependency splitting or a new UI framework.
 
