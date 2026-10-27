@@ -28,6 +28,8 @@ Testes com SQL exato e código real da v0.3.2 verificaram schema 3 → 5, backup
 
 O build também ganhou recusa antecipada de runtime em uso. O problema foi encontrado numa tentativa real de empacotar: o Windows bloqueou uma DLL após limpeza parcial. Arquivos ausentes de desenvolvimento foram restaurados de runtime preservado com o mesmo hash do executável, sem sobrescrever arquivos existentes ou encerrar processos. O novo pacote foi construído em outra pasta. A coleta de licenças aceita um destino separado para essa validação.
 
+O core empacotado também passou no ciclo privado de preparação de atualização: confirmou que estava pronto, encerrou o processo identificado e abriu um novo processo no snapshot seguinte. Todas as tabelas persistidas foram preservadas, exceto os eventos esperados de ciclo de vida. Isso foi executado somente no perfil de validação, sem instalador; não comprova NSIS ou preservação das preferências do WebView.
+
 ## 6. Desktop
 
 Reutilizadas as verificações nativas da [Fase 2.5](PHASE2_5.md), em 1000×700 e 1280×720, EN/PT-BR: foco/teclado, diálogos, importação, presets, player, A/B, rolagem, exportação e paginação. Nenhum código frontend mudou nesta fase; os 71 testes passaram novamente. Não se declara uma nova rodada de cliques nem certificação de leitor de tela/DPI. 900×600 segue fora do mínimo.

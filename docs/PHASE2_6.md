@@ -27,6 +27,8 @@ Favorite/selected flags are persisted and preserved. **The desktop A/B pair is t
 
 The published installer was not installed over another app in this phase. Repeat that lifecycle with the chosen future version and an isolated installation/profile after explicit publication-build authorization. Stable users' data, models, client registration and settings were not modified.
 
+The real packaged core also passed its private update-preparation lifecycle on the migrated isolated profile: preparation returned ready, the identified core exited, a subsequent snapshot started a different process, and every persisted table except expected lifecycle events matched. No installer was executed. Only this validation-owned profile/process participated; this does not verify NSIS or WebView preferences.
+
 ## Loop diagnosis: what the rejected files establish
 
 Both rejected sets remain unchanged and private. No third musical round was generated. The owner's rejection prevails.
