@@ -16,6 +16,7 @@ Phase 2.5 adds reference/source regions and project-local tags/filters. Its acce
 | [Engine guide](ENGINES.md) | Implemented modes, CPU/RAM thresholds, experimental features, model terms | English |
 | [Architecture](ARCHITECTURE.md) | Desktop/MCP shared core, queue, storage and process boundaries | English |
 | [Codex/MCP](CODEX.md) | Registration, stdio contracts, source/reference roles | English |
+| [Free integration skill](../skills/sonariel-mcp-integration/README.md) | Standalone agent guidance for Sonariel 0.4.0; prepared for Agensi review, not submitted | English |
 | [Setup](SETUP.md) | Pinned isolated CPU installation and existing-environment inspection | English |
 | [Storage](STORAGE.md) | Protected inventory, recoverable discard and migration backup | Português |
 | [Stable Audio source input](STABLE_AUDIO_INPUT.md) | Encoder/resampler preparation, source-mode contract and live evidence | Português |
@@ -24,6 +25,8 @@ Phase 2.5 adds reference/source regions and project-local tags/filters. Its acce
 | [Screenshots and recording proposal](SHOWCASE.md) | Real capture provenance and a future demonstration plan | English |
 
 ## Release history and validation
+
+- [Phase 3 skill preparation](PHASE3.md): isolated stable-MCP execution, client compatibility, ZIP audit and owner-reviewed marketplace handoff. No app release or Agensi publication.
 
 - Phase 2.7 Windows candidate acceptance: [English](PHASE2_7.md) / [Português (Brasil)](PHASE2_7.pt-BR.md). Published test RC, actual VM installation/basic-use evidence and explicit updater limits.
 
