@@ -2,7 +2,7 @@
 
 [English overview](../README.md) · [Visão geral em português](../README.pt-BR.md) · [Documentation index](README.md)
 
-This guide follows the distributed Windows x64 application, currently v0.4.0. Choose English or Brazilian Portuguese at first use or in Settings; the examples below retain the Portuguese labels. No command-line development tools are needed to use the installer.
+This guide follows the distributed Windows x64 application, currently v0.5.0. Choose English or Brazilian Portuguese at first use or in Settings; the examples below retain the Portuguese labels. No command-line development tools are needed to use the installer.
 
 ## Installation and updates
 
@@ -59,7 +59,7 @@ Watch **Fila de geração**. Stages and RAM readings come from the core; they ar
 - In **Biblioteca & versões**, play a result, inspect its parameters, and choose two versions for comparison. Mark a favorite or selection only after listening.
 - In **FX & processamento**, choose a WAV, add/reorder effects, and adjust settings. Editing a slider does not render automatically. Request **Renderizar prévia (até 10 s)** first, then **Renderizar versão completa** when ready. Tails can extend the resulting duration.
 - Save presets as new revisions. Export a WAV to a new destination; core validation refuses overwriting an existing file even if a native save dialog lets you select it.
-- **Armazenamento** inventories registered assets. Recoverable discard has a preview/confirmation step and does not delete external originals. It retains disk space; there is no permanent-delete or empty-trash action. [Storage guide](STORAGE.md).
+- **Armazenamento** inventories registered assets. Recoverable discard has a preview/confirmation step and retains physically moved files for 30 days. Expiry runs while the core is open and idle; older trash receives an upgrade grace period. Permanent deletion requires its own preview/confirmation and frees disk space. Imported originals stay unchanged unless you explicitly enable their physical move/deletion. [Storage guide](STORAGE.md).
 
 You can start with an imported WAV and native FX instead of generation. This needs no music/voice weights, no agent request, and no Audacity connection.
 

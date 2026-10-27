@@ -1,5 +1,5 @@
 import { systemMessage } from "./i18n/system-message";
-import { tr, formatNumber } from "./i18n";
+import { tr, formatNumber, formatDate } from "./i18n";
 import { useTranslation } from "react-i18next";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { RefreshCw, RotateCcw, Trash2 } from "lucide-react";
@@ -9,10 +9,10 @@ import "./storage.css";
 
 type Item = { id: string; project_id: string; name: string; path: string; kind: string;
   favorite: boolean; selected: boolean; managed: boolean; bytes: number; exists: boolean;
-  trashed: boolean; trash_path: string | null; state: string };
+  trashed: boolean; trash_path: string | null; state: string; expires_at?: number | null };
 type Inventory = { items: Item[]; data_home: string; note: string };
 type Plan = { token: string; managed_bytes: number; reclaimed_bytes: number;
-  entries: { id: string; name: string; bytes: number; action: string; blocked: string | null }[] };
+  entries: { id: string; name: string; path?: string | null; bytes: number; action: string; blocked: string | null }[] };
 const size = (bytes: number) => `${formatNumber((bytes / 1024 ** 2), 1)} MiB`;
 
 export function StorageWorkspace({ data, act, busy }: {
@@ -23,6 +23,7 @@ export function StorageWorkspace({ data, act, busy }: {
   const [inventory, setInventory] = useState<Inventory>();
   const [all, setAll] = useState(false);
   const [trash, setTrash] = useState(false);
+  const [external, setExternal] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
   const [plan, setPlan] = useState<Plan>();
   const [loading, setLoading] = useState(false);
@@ -46,8 +47,9 @@ export function StorageWorkspace({ data, act, busy }: {
     || (j.state === "interrupted" && Boolean(j.remote_id)));
   const items = inventory?.items.filter(i => i.trashed === trash) ?? [];
   const preview = async () => {
+    const version = loadVersion.current;
     setWorking(true); setError("");
-    try { setPlan(await rpc<Plan>("storage_preview", { asset_ids: selected })); }
+    try { const value = await rpc<Plan>(trash ? "storage_purge_preview" : "storage_preview", { asset_ids: selected, include_external_files: external }); if (version === loadVersion.current) setPlan(value); }
     catch (e) { setError(String(e)); }
     finally { setWorking(false); }
   };
@@ -55,9 +57,9 @@ export function StorageWorkspace({ data, act, busy }: {
     if (!plan) return;
     setWorking(true); setError("");
     try {
-      await rpc("storage_discard", { asset_ids: plan.entries.map(e => e.id), preview_token: plan.token, confirmed: true });
+      await rpc(trash ? "storage_purge" : "storage_discard", { asset_ids: plan.entries.map(e => e.id), preview_token: plan.token, confirmed: true, include_external_files: external });
       setPlan(undefined); setSelected([]);
-      await act("storage_list", projectId ? { project_id: projectId } : {}, tr("storage", "recoverableDiscardCompletedNoExternalFileWasDeleted"));
+      await act("storage_list", projectId ? { project_id: projectId } : {}, tr("storage", trash ? "permanentDeletionCompleted" : "recoverableDiscardCompletedNoExternalFileWasDeleted"));
     } catch (e) { setError(String(e)); setPlan(undefined); }
     finally { setWorking(false); await load(); }
   };
@@ -77,12 +79,13 @@ export function StorageWorkspace({ data, act, busy }: {
       <div className="storage-summary">
         <p>{tr("storage", "allRegisteredAudioWithPathsAndSizesExternal")}</p>
         <div className="studio-toolbar">
-          <label className="check"><input type="checkbox" checked={all} onChange={e => setAll(e.target.checked)} /> {tr("storage", "allProjects")}</label>
-          <button className={`outline ${!trash ? "selected" : ""}`} onClick={() => { setTrash(false); setSelected([]); }}>{tr("storage", "available")}</button>
-          <button className={`outline ${trash ? "selected" : ""}`} onClick={() => { setTrash(true); setSelected([]); }}>{tr("storage", "recoverableTrash")}</button>
-          {!trash && <button ref={trigger} className="outline" disabled={locked || !selected.length} onClick={() => void preview()}>
-            <Trash2 size={16} /> {tr("storage", "reviewDiscard")}{selected.length})</button>}
+          <label className="check"><input type="checkbox" checked={all} disabled={working} onChange={e => setAll(e.target.checked)} /> {tr("storage", "allProjects")}</label>
+          <button disabled={working} className={`outline ${!trash ? "selected" : ""}`} onClick={() => { setTrash(false); setSelected([]); setExternal(false); }}>{tr("storage", "available")}</button>
+          <button disabled={working} className={`outline ${trash ? "selected" : ""}`} onClick={() => { setTrash(true); setSelected([]); setExternal(false); }}>{tr("storage", "recoverableTrash")}</button>
+          <button ref={trigger} className="outline" disabled={locked || !selected.length} onClick={() => void preview()}>
+            <Trash2 size={16} /> {trash ? tr("storage", "reviewPermanentDeletion") : tr("storage", "reviewDiscard")}{selected.length})</button>
         </div>
+        <label className="check"><input type="checkbox" checked={external} disabled={locked} onChange={e => { setExternal(e.target.checked); setPlan(undefined); }} /> {tr("storage", trash ? "deleteExternalFiles" : "moveExternalFiles")}</label>
         <p className="mono">{items.length} {tr("storage", "records")}{" "}{size(items.reduce((total, i) => total + i.bytes, 0))}</p>
         <p className="muted">{tr("storage", "referencesFavoritesSelectionsAndSourcesWithDependenciesAre")}</p>
         {locked && <p role="status">{tr("storage", "discardAndRestoreWaitForTheQueueTo")}</p>}
@@ -91,25 +94,27 @@ export function StorageWorkspace({ data, act, busy }: {
       <div className="storage-items">
         {!items.length && <p className="storage-empty">{loading ? tr("storage", "checkingFiles") : tr("storage", "noRecordsInThisView")}</p>}
         {items.map(item => <div className="storage-row" key={item.id}>
-          {!trash && <input type="checkbox" aria-label={tr("storage", "selectValue", { value0: item.name })}
+          <input type="checkbox" aria-label={tr("storage", "selectValue", { value0: item.name })}
             disabled={locked || item.favorite || item.selected || item.kind === "reference"}
-            checked={selected.includes(item.id)} onChange={e => setSelected(current => e.target.checked ? [...current, item.id] : current.filter(id => id !== item.id))} />}
+            checked={selected.includes(item.id)} onChange={e => setSelected(current => e.target.checked ? [...current, item.id] : current.filter(id => id !== item.id))} />
           <div className="storage-file"><strong>{item.name}</strong>
             <span className="mono">{data.projects.find(p => p.id === item.project_id)?.name ?? tr("storage", "project")} · {size(item.bytes)} · {item.managed ? tr("storage", "managed") : tr("storage", "protectedExternalFile")}{item.favorite ? tr("storage", "favorite") : ""}{item.selected ? tr("storage", "selected") : ""}{!item.exists ? tr("storage", "missingFile") : ""}</span>
             <code>{item.path}</code>
             {trash && item.trash_path && <small className="muted">{tr("storage", "trash")}{" "}{item.trash_path}</small>}
+            {trash && item.expires_at && <small className="muted">{tr("storage", "expiresAt", { date: formatDate(item.expires_at) })}</small>}
             {item.state === "preparing" && <small>{tr("storage", "interruptedOperationUseRestoreToRecoverTheRecord")}</small>}
           </div>
-          {trash && <button className="outline" disabled={locked} onClick={() => void restore(item.id)}><RotateCcw size={15} /> {tr("storage", "restore")}</button>}
+          {trash && <button className="outline" disabled={locked || item.state === "purging"} onClick={() => void restore(item.id)}><RotateCcw size={15} /> {tr("storage", "restore")}</button>}
         </div>)}
       </div>
     </section>
-    <ConfirmationDialog open={Boolean(plan)} title={tr("storage", "reviewDiscard2")}
-      description={tr("storage", "onlyTheRecordsBelowYouCanRestoreThem")}
+    <ConfirmationDialog open={Boolean(plan)} title={tr("storage", trash ? "permanentDeletionTitle" : "reviewDiscard2")}
+      description={tr("storage", trash ? "permanentDeletionDescription" : "onlyTheRecordsBelowYouCanRestoreThem")}
+      confirmLabel={trash ? tr("storage", "confirmPermanentDeletion") : undefined}
       onClose={() => setPlan(undefined)} onConfirm={() => void discard()} busy={working}
       blocked={locked || Boolean(plan?.entries.some(e => Boolean(e.blocked)))} returnFocus={trigger}>
-            {plan?.entries.map(entry => <div key={entry.id}><strong>{entry.name}</strong><p className="muted">{(entry.blocked ? systemMessage(entry.blocked) : null) ?? (entry.action === "move_to_trash" ? tr("storage", "moveManagedWavToTrash") : tr("storage", "hideRecordExternalFileStaysUnchanged"))}</p></div>)}
-            <p>{size(plan?.managed_bytes ?? 0)} {tr("storage", "willRemainInTrashSpaceReclaimedNow0")}</p>
+            {plan?.entries.map(entry => <div key={entry.id}><strong>{entry.name}</strong>{entry.path && <code>{entry.path}</code>}<p className="muted">{(entry.blocked ? systemMessage(entry.blocked) : null) ?? tr("storage", entry.action === "delete_file" ? "deleteFilePermanently" : entry.action === "forget_record" ? "forgetHiddenRecord" : entry.action === "move_to_trash" ? "moveManagedWavToTrash" : "hideRecordExternalFileStaysUnchanged")}</p></div>)}
+            <p>{size(trash ? plan?.reclaimed_bytes ?? 0 : plan?.managed_bytes ?? 0)} {tr("storage", trash ? "spaceWillBeReclaimed" : "willRemainInTrashSpaceReclaimedNow0")}</p>
     </ConfirmationDialog>
   </div>;
 }

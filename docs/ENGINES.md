@@ -1,8 +1,10 @@
 # Engine capabilities and requirements
 
+Version 0.5.0 adds an optional Medium `fidelity` profile (DiT FP32 + SAME-L FP32), separately downloaded and verified. It supports text-to-audio, records the selected profile in results/presets and requires 12 GiB available RAM to start. The compact profile remains default. See [implementation and validation boundaries](STORAGE_AND_QUALITY.md). The compact workflows below remain available.
+
 [Documentation index](README.md) · [Quick start](QUICK_START.md)
 
-This is the application profile shipped in **v0.4.0**, not a list of everything the upstream models can do. The adapters use Windows x64 CPU execution, batch size 1, and one shared task at a time. GPU/ROCm/CUDA acceleration is not implemented in this profile. Models are not loaded when the UI or MCP starts.
+This is the application profile shipped in **v0.5.0**, not a list of everything the upstream models can do. The adapters use Windows x64 CPU execution, batch size 1, and one shared task at a time. GPU/ROCm/CUDA acceleration is not implemented in this profile. Models are not loaded when the UI or MCP starts.
 
 ## Implemented workflows
 
@@ -10,6 +12,7 @@ This is the application profile shipped in **v0.4.0**, not a list of everything 
 | --- | --- | --- |
 | ACE-Step 1.5 Turbo | `generate`: text-to-music and explicit source-guided `cover`; `reference_id` for style and `source_id` for source content | Baseline CPU/DiT-only, no additional LM/planning/autofill or Flash Attention. Explicit BPM/key/meter/seed; 10–120 s in the contract. Cover duration must match the full registered source. |
 | Stable Audio 3 Small-Music / Medium | `music_generate`: `text2audio` (5–60 s) and explicit `audio2audio` (5–120 s) | Experimental LiteRT CPU with pinned quantized components. Source mode needs the verified SAME-S encoder/resampler and exact full-source duration. Batch 1, 8 steps is the tested recipe; exact BPM/key are not guaranteed. No inpainting. |
+| Stable Audio 3 Medium optional FP32 / SAME-L | `quality_profile="fidelity"`, text-to-audio only; 7.60 GB extra pinned weights | Experimental CPU; 12 GiB available to start, 2.5 GiB system floor and 14.5 GiB child RSS ceiling. Compact remains default; source audio rejected. No promise of better artistic output. |
 | Chatterbox Multilingual V3 | `voice_generate`: exact text/language/seed, expressivity controls, optional saved voice profiles and authorized reference conditioning | Experimental CPU recipe. 23 declared languages; Portuguese/Swahili paths have documented live testing, not all languages. Optional Chinese/Japanese preprocessors are omitted. Cross-utterance identity/reference consistency remains unvalidated. No automatic continuation or guaranteed phoneme/IPA/SSML controls. |
 | Native DSP | `fx_render`: ordered/layered chains, explicit short previews, full WAV processing, versioned presets, verified export | Independent of generative models and Audacity. Gain, fades, filters, EQ, reverb, delay, chorus and layered transformations. Source preservation does not imply every processing setting preserves an upstream watermark's detectability. |
 

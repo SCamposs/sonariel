@@ -2,7 +2,7 @@
 
 # Sonariel
 
-**Versão atual: [v0.4.0](https://github.com/SCamposs/sonariel/releases/tag/v0.4.0).** Inclui interface EN/pt-BR, exportação WAV em lote, presets musicais versionados, recortes não destrutivos, tags e filtros combinados. A criação de loops fica desativada na distribuição; áudios anteriores são preservados. Instalação/uso básico no Windows validados. O ciclo completo v0.3.2 → v0.4.0 por instalador/atualizador não foi testado; essa ressalva documentada foi aceita pelo mantenedor. Consulte o [relatório da Fase 2.7](docs/PHASE2_7.pt-BR.md).
+**Versão atual: [v0.5.0](https://github.com/SCamposs/sonariel/releases/tag/v0.5.0).** Adiciona lixeira de 30 dias, exclusão definitiva confirmada, modelos Medium FP32 opcionais e instalador personalizado. Mantém a interface EN/pt-BR e as ferramentas de produção existentes. [Relatório da revisão](docs/releases/v0.5.0-validation.md). A criação de loops fica desativada na distribuição; áudios anteriores são preservados. Instalação/uso básico no Windows validados. O ciclo completo v0.3.2 → v0.4.0 por instalador/atualizador não foi testado; essa ressalva documentada foi aceita pelo mantenedor. Consulte o [relatório da Fase 2.7](docs/PHASE2_7.pt-BR.md).
 
 **Produção de áudio local, com direção pelo seu agente de IA conectado.**
 
@@ -52,6 +52,7 @@ O perfil distribuído é **Windows x64, CPU, uma tarefa por vez**. Os adaptadore
 | --- | --- | --- |
 | ACE-Step 1.5 Turbo | Padrão musical, geração e cover com áudio-fonte, DiT-only | 12 GiB a frio / 4 GiB com o modelo gerenciado residente |
 | Stable Audio 3 Small-Music / Medium | Música experimental via LiteRT CPU; texto e variação com fonte explícita | 5 / 6 GiB |
+| Stable Audio 3 Medium FP32 / SAME-L opcional | Experimental, CPU e somente texto para áudio; download separado de 7,60 GB | 12 GiB |
 | Chatterbox Multilingual V3 | Voz multilíngue experimental e perfis opcionais com referência autorizada | 7,5 GiB |
 | DSP nativo | WAVs, cadeias, camadas, prévias, presets e exportação | 3 GiB |
 
@@ -59,7 +60,7 @@ São **limites para admitir a tarefa na fila, não garantias de memória suficie
 
 ## Download e instalação
 
-1. Abra as [releases oficiais](https://github.com/SCamposs/sonariel/releases/latest) e baixe `Sonariel_<versão>_x64-setup.exe`. A release estável atual é a [v0.4.0](https://github.com/SCamposs/sonariel/releases/tag/v0.4.0).
+1. Abra as [releases oficiais](https://github.com/SCamposs/sonariel/releases/latest) e baixe `Sonariel_<versão>_x64-setup.exe`. A release estável atual é a [v0.5.0](https://github.com/SCamposs/sonariel/releases/tag/v0.5.0).
 2. Instale o app. Usuários finais **não** precisam de Node.js, Rust ou uma instalação de Python de desenvolvimento. O WebView2 é necessário; o instalador oferece seu componente de bootstrap quando preciso.
 3. Prepare um motor compatível separadamente pelo app. Os pesos não acompanham o instalador. Downloads exigem internet, espaço em disco e autorização; as licenças externas continuam valendo.
 
@@ -98,7 +99,7 @@ Desktop e MCP usam o mesmo núcleo leve e estado persistente. Motores pesados ex
 
 Os dados ficam por padrão em `%USERPROFILE%\.sonariel`; `SONARIEL_HOME` seleciona outro perfil. Modelos, áudios, referências, bancos e presets privados ficam fora deste repositório. O Sonariel não contém telemetria de uso; consultas opcionais de atualização acessam o GitHub e downloads de setup usam fontes oficiais externas. O agente conectado tem sua própria política de dados.
 
-Descarte recuperável não é exclusão permanente e **não libera espaço em disco**. Essa operação nunca move/apaga arquivos externos, e o inventário mostra apenas arquivos catalogados. [Comportamento do armazenamento](docs/STORAGE.md).
+O descarte recuperável mantém os arquivos movidos por **30 dias** e não libera espaço imediatamente. A limpeza de itens expirados ocorre com o núcleo aberto e a fila ociosa, com carência para a lixeira anterior. A exclusão definitiva tem prévia e confirmação próprias; originais importados exigem opção explícita. O inventário mostra apenas arquivos catalogados. [Comportamento do armazenamento](docs/STORAGE.md).
 
 O código e a documentação próprios usam a [Sonariel Source Available License 1.0](LICENSE), **não uma licença open source aprovada pela OSI**. É permitido usar o app gratuitamente, estudar/modificar o código e redistribuí-lo gratuitamente sob seus termos. Vender o Sonariel, versões modificadas ou acesso pago para operá-lo exige autorização separada.
 

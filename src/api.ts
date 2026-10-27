@@ -154,6 +154,7 @@ export type EngineInfo = {
   license: string;
   modes?: string[];
   audio_input_ready?: boolean;
+  quality_profiles?: ("compact" | "fidelity")[];
   audio_input_note?: string | null;
   languages?: Record<string, string>;
   blocked_reason?: string;

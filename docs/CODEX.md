@@ -17,7 +17,7 @@ The bundled skill is installed at `~/.agents/skills/sonariel/SKILL.md`. It descr
 
 Recommended sequence: environment_status → projects_list → project_select → reference_register (if needed) → generate → job_get → result_feedback → audacity_import/export after an editing request. Tools are prefixed `sonariel_`. Complete schemas are returned by tools/list; unsupported fields/modes are rejected.
 
-Storage operations: `storage_list` inventories registered files; `storage_preview` produces a content-bound token; `storage_discard` requires that token and explicit confirmation of selected IDs. `storage_restore` recovers an item. Never infer discard approval from a missing favorite flag. External files are not moved/deleted, protected/dependent assets are blocked, and there is no permanent-delete API. See [STORAGE.md](STORAGE.md). Reload the MCP connection after upgrading to receive the expanded tool list.
+Storage operations: `storage_list` inventories registered files; `storage_preview` produces a content-bound token; `storage_discard` requires that token and explicit confirmation of selected IDs. `storage_restore` recovers an item. Never infer discard approval from a missing favorite flag. Version 0.5.0 adds 30-day retention, opt-in external-file moves and separate `storage_purge_preview`/`storage_purge` tools for explicitly authorized permanent deletion. Distributed v0.4.0 still only hides external records. Discover the actual tool schemas before using new capabilities. See [STORAGE.md](STORAGE.md). Reload the MCP connection after upgrading.
 
 The UI has no competing creative chat or primary prompt editor. Prompt, model, seed, input roles and parameters remain visible in result details. Only explicitly saved musical context is persisted. Sonariel audio inference is local; the Codex model is a separate service.
 
@@ -49,7 +49,7 @@ Official contracts consulted:
 
 ## Phase 2 contracts (distributed in v0.4.0)
 
-Phase 2 introduced the contracts below. Version 0.4.0 exposes 58 packaged tools in total; authorized source loop development exposes 59. Reload the MCP client after updating its runtime. Full parameter schemas remain available through `tools/list`.
+Phase 2 introduced the contracts below. Version 0.5.0 exposes 60 packaged tools in total; authorized source loop development exposes 61. Reload the MCP client after updating its runtime. Full parameter schemas remain available through `tools/list`.
 
 - `ui_preferences_save(locale)`: EN (`en`) or Brazilian Portuguese (`pt-BR`); no engine/job changes.
 - **Authorized source development only:** `fx_loop_render(asset_id, request_key, start_seconds, end_seconds, crossfade_ms, preview, repetitions)`. Packaged distributions do not expose/permit loop creation. Preview repeats 2–4 complete edited cycles; final output is one cycle. It has no approved musical-continuity guarantee. Never change request keys after an uncertain submission.
@@ -62,7 +62,7 @@ The desktop exposes preset capture, favorite, revision/duplicate and review. Cre
 
 ## Phase 2.5 contracts (distributed in v0.4.0)
 
-The packaged v0.4.0 core exposes 58 tools, with loop creation excluded. Discover actual installed availability first. Phase 2.5 added these four tools:
+The packaged v0.5.0 core exposes 60 tools, with loop creation excluded. Discover actual installed availability first. Phase 2.5 added these four tools:
 
 - `audio_region_create`: registered asset ID, request key, sample-rounded start/end seconds, name, engine ID and explicit `style`/`source` role. Confirmed excerpts become derived WAV assets; identical selections reuse a verified asset. Never reuse a key with changed parameters. Refer to the returned asset ID in later generation/preset requests, preserving its intended role/engine. No model loads or generation occurs when confirming a region.
 - `asset_tags_update`: atomic add/remove of normalized organizational tags on up to 200 explicit same-project assets. Tags do not alter audio/generation identity. No production defaults are shipped.

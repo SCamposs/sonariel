@@ -254,5 +254,6 @@ it("reviews LiteRT setup but requires both license consent and install authoriza
   expect(p.act).toHaveBeenCalledWith("stable_setup_plan", {
     destination: "D:/Engines/LiteRT",
     family: "sm-music",
+    quality_profile: "compact",
   });
 });

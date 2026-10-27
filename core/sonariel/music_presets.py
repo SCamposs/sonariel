@@ -51,6 +51,11 @@ class MusicPresets:
                 raise ValueError("text2music requires no source_id and cover_strength=1")
         else:
             value.setdefault("steps", 8)
+            from .stable_profiles import profile_components
+            value.setdefault('quality_profile', 'compact')
+            profile_components(engine_id, value['quality_profile'])
+            if value['quality_profile']=='fidelity' and mode!='text2audio':
+                raise ValueError('FP32/SAME-L currently supports text2audio only')
             if mode == "text2audio" and (value["duration"] > 60 or value.get("source_id") or value.get("init_noise_level") is not None):
                 raise ValueError("text2audio requires no source and at most 60 seconds")
         for role in ("reference_id", "source_id"):
@@ -86,7 +91,9 @@ class MusicPresets:
         elif isinstance(engine, str) and engine in STABLE_IDS:
             if raw.get("cfg", 1) != 1 or raw.get("apg", 1) != 1:
                 raise ValueError("Result is outside the validated Stable Audio preset profile")
-            params = {key: raw[key] for key in ("prompt", "seed", "duration", "steps", "mode", "init_noise_level", "batch_size") if key in raw}
+            params = {key: raw[key] for key in ("prompt", "seed", "duration", "steps", "mode", "init_noise_level", "batch_size", "quality_profile") if key in raw}
+            if raw.get('precision')=='DiT fp32 / SAME-L fp32 / T5Gemma fp16':
+                params['quality_profile']='fidelity'
             roles = (("source_path", "source_id"),)
         else:
             raise ValueError("Choose a music generation result; DSP and voice presets are separate")

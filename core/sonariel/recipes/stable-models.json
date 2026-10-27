@@ -27,6 +27,16 @@
       "path": "tflite/t5gemma/encoder_fp16.tflite",
       "sha256": "8530d0b3e6b9b9dcf1239145c2a853fb749708eaddbb472ff8f0802b50059372",
       "bytes": 563818608
+    },
+    {
+      "path": "tflite/sa3-m/dit_fp32.tflite",
+      "bytes": 5833007200,
+      "sha256": "3a8b2080436cb828a70792409fc6582b10fcb1e67b3e5b3d6a6d831b987f26d9"
+    },
+    {
+      "path": "tflite/same-l/dec_fp32.tflite",
+      "bytes": 1763928560,
+      "sha256": "f06a59343858a871895d4746c94eda03029bae5f2188569244aea6d7d6acf661"
     }
   ],
   "source_files": [

@@ -38,6 +38,8 @@ def local_audio(value: str) -> Path:
 class Service(Library, MusicPresets, Production, Studio, Storage):
     def __init__(self, store: Store | None = None, start_worker: bool = True):
         self.store = store or Store()
+        if self.store.setting('storage_retention_started_at') is None:
+            self.store.set('storage_retention_started_at', time.time())
         self.engine = Engine(self.store)
         self.audacity = audacity.Audacity(self.store)
         self.setup = Setup(self.store)
@@ -361,6 +363,7 @@ class Service(Library, MusicPresets, Production, Studio, Storage):
         return value
 
     def work(self):
+        next_storage_cleanup = 0
         while not self.stopping.wait(1):
             if self.setup_thread and self.setup_thread.is_alive():
                 continue
@@ -374,6 +377,13 @@ class Service(Library, MusicPresets, Production, Studio, Storage):
                 continue
             jobs = self.store.rows("SELECT * FROM jobs WHERE state='queued' ORDER BY created LIMIT 1")
             if not jobs:
+                if time.monotonic() >= next_storage_cleanup:
+                    with self.mutation_lock:
+                        try:
+                            self.expire_storage_trash()
+                        except (ValueError, OSError) as error:
+                            self.store.event('storage_cleanup', str(error))
+                    next_storage_cleanup = time.monotonic() + 3600
                 preferences = self.store.setting("preferences", {"idle_minutes": 5})
                 if self.engine.owned_process() and time.monotonic() - self.engine.last_used > preferences["idle_minutes"] * 60:
                     self.engine.stop()
@@ -466,7 +476,7 @@ class Service(Library, MusicPresets, Production, Studio, Storage):
             if self.external_heavy_process():
                 self.store.execute("UPDATE jobs SET stage='Aguardando motor externo descarregar' WHERE id=?",(job["id"],))
                 return
-            threshold = adapter.minimum_available_gib
+            threshold = 12 if params.get('quality_profile')=='fidelity' else adapter.minimum_available_gib
             if metrics["minimum_available_gib"] < threshold:
                 self.store.execute("UPDATE jobs SET stage=? WHERE id=?",(f"Aguardando {threshold} GiB de RAM livre",job["id"]))
                 return

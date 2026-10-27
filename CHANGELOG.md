@@ -1,6 +1,9 @@
 # Changelog
 
-## Unreleased
+## 0.5.0
+
+- Add 30-day recoverable trash with idle-hourly expiry, an upgrade grace period and separately previewed/confirmed permanent deletion. Imported files require explicit opt-in for physical moves/deletion; protected assets and dependencies remain blocked. Keep purged metadata for lineage and recover interrupted cross-volume moves.
+- Add optional Medium text-to-audio FP32 DiT / SAME-L FP32 decoding, with separate pinned 7.60 GB model downloads, verified reuse, explicit quality-profile metadata/presets and CPU memory admission/watchdog limits. Compact remains default; fidelity audio-to-audio is rejected. No guarantee of artistic quality improvement.
 
 - Brand the Windows installer and uninstaller with Sonariel icons, header/sidebar artwork and warm ivory/graphite/amber colors, retaining Tauri's stock NSIS installation and update logic and native Windows controls.
 

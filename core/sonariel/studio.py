@@ -52,12 +52,12 @@ class Studio:
         self.store.set("audacity_executable", str(path))
         return dict(executable=str(path), configured=True, tested=False)
 
-    def rpc_stable_setup_plan(self, destination: str, family: str):
+    def rpc_stable_setup_plan(self, destination: str, family: str, quality_profile: str = "compact"):
         from .stable_setup import StableSetup
-        return StableSetup(self.store).plan(destination, family)
+        return StableSetup(self.store).plan(destination, family, quality_profile)
 
     def rpc_stable_setup_install(self, destination: str, family: str, authorized: bool,
-                                 accepted_licenses: bool, model_cache: str = ""):
+                                 accepted_licenses: bool, model_cache: str = "", quality_profile: str = "compact"):
         from .stable_setup import StableSetup
         if not authorized or not accepted_licenses:
             raise ValueError("Autorize a instalação e aceite Stability Community e Gemma explicitamente")
@@ -66,11 +66,11 @@ class Studio:
         if self.engine.owned_process() or self.external_heavy_process():
             raise ValueError("Descarregue os motores antes de instalar outro ambiente")
         setup = StableSetup(self.store)
-        plan = setup.plan(destination, family)
+        plan = setup.plan(destination, family, quality_profile)
         self.store.set("setup_status", dict(state="running", stage="Preparar LiteRT isolado", engine="stable-litert"))
         def install():
             try:
-                linked = setup.install(destination, family, authorized, accepted_licenses, model_cache)
+                linked = setup.install(destination, family, authorized, accepted_licenses, model_cache, quality_profile)
                 self.rpc_stable_environment_link(**linked)
                 self.store.set("setup_status", dict(state="completed", stage="LiteRT CPU instalado e vinculado", destination=plan["destination"], engine="stable-litert"))
             except Exception as error:
@@ -111,7 +111,16 @@ class Studio:
             raise ValueError("Encoder de áudio LiteRT diferente da receita")
         probe = subprocess.run([str(python), "-c", "import importlib.metadata as m; print(next((d.version for d in m.distributions() if d.metadata['Name'].lower()=='soxr'),''))"], capture_output=True, text=True, timeout=30, **HIDDEN)
         audio_input_ready = encoder_present and probe.returncode == 0 and probe.stdout.strip() == "1.0.0"
-        config = dict(python=str(python), source=str(source_root), models=str(models_root),
+        from .stable_profiles import FIDELITY_PATHS
+        fidelity_ready = 'medium' in families
+        for name in FIDELITY_PATHS:
+            spec = next(f for f in manifest['files'] if f['path']==name)
+            candidate = models_root/name
+            if not candidate.is_file():
+                fidelity_ready = False
+            elif candidate.stat().st_size!=spec['bytes'] or sha256(candidate)!=spec['sha256']:
+                raise ValueError('FP32/SAME-L checkpoint differs: '+name)
+        config = dict(quality_profiles=['compact','fidelity'] if fidelity_ready else ['compact'], python=str(python), source=str(source_root), models=str(models_root),
             families=families, versions=versions, accepted_licenses=True, acceptance_time=time.time(), model_revision=manifest["revision"],
             audio_input_ready=audio_input_ready, resampler_version=probe.stdout.strip() if probe.returncode == 0 else None)
         self.store.set("stable_environment", config)
@@ -121,13 +130,20 @@ class Studio:
     def rpc_music_generate(self, engine_id: str, project_id: str, request_key: str, prompt: str,
                             seed: int, duration: float, steps: int = 8, batch_size: int = 1,
                             session_id: str | None = None, mode: str = "text2audio",
-                            source_id: str | None = None, init_noise_level: float | None = None):
+                            source_id: str | None = None, init_noise_level: float | None = None, quality_profile: str = "compact"):
         if engine_id not in STABLE_IDS:
             raise ValueError("Este contrato aceita apenas Stable Audio LiteRT; Turbo mantém generate")
         environment = self.store.setting("stable_environment", {})
         if not environment.get("accepted_licenses") or STABLE_IDS[engine_id] not in environment.get("families", []):
             raise ValueError("Configure e aceite as licenças do motor escolhido antes de gerar")
-        params = dict(_engine=engine_id, prompt=prompt, seed=seed, duration=duration, steps=steps, batch_size=batch_size,
+        from .stable_profiles import profile_components
+        profile_components(engine_id, quality_profile)
+        if quality_profile=='fidelity':
+            if 'fidelity' not in environment.get('quality_profiles', []):
+                raise ValueError('Download or link the optional FP32/SAME-L profile first')
+            if mode!='text2audio':
+                raise ValueError('FP32/SAME-L currently supports text2audio only')
+        params = dict(_engine=engine_id, quality_profile=quality_profile, prompt=prompt, seed=seed, duration=duration, steps=steps, batch_size=batch_size,
                       mode=mode, cfg=1., apg=1., backend="litert-cpu")
         if mode == "text2audio":
             if source_id is not None or init_noise_level is not None:
@@ -364,10 +380,10 @@ def studio_methods(tool, S, ID, B):
     return {
         "engines_list":tool("Consultar categorias, instalação e capacidades reais, sem carregar modelos."),
         "audacity_configure":tool("Selecionar Audacity local independentemente dos motores; não altera módulos ou preferências.",dict(executable=S),["executable"]),
-        "stable_setup_plan":tool("Receita LiteRT CPU e termos Stability/Gemma antes de instalar.",dict(destination=S,family=dict(enum=["sm-music","medium"])),["destination","family"]),
-        "stable_setup_install":tool("Instalar LiteRT isolado após autorização e aceite explícito das duas licenças. Não registra uso comercial.",dict(destination=S,family=dict(enum=["sm-music","medium"]),authorized=B,accepted_licenses=B,model_cache=dict(type="string")),["destination","family","authorized","accepted_licenses"]),
+        "stable_setup_plan":tool("Receita LiteRT CPU e termos Stability/Gemma antes de instalar.",dict(destination=S,family=dict(enum=["sm-music","medium"]),quality_profile=dict(enum=["compact","fidelity"])),["destination","family"]),
+        "stable_setup_install":tool("Instalar LiteRT isolado após autorização e aceite explícito das duas licenças. Não registra uso comercial.",dict(destination=S,family=dict(enum=["sm-music","medium"]),authorized=B,accepted_licenses=B,model_cache=dict(type="string"),quality_profile=dict(enum=["compact","fidelity"])),["destination","family","authorized","accepted_licenses"]),
         "stable_environment_link":tool("Vincular LiteRT CPU por hashes/versões após aceite explícito das duas licenças.",dict(python_path=S,source=S,models=S,families=dict(type="array",items=dict(enum=["sm-music","medium"]),minItems=1,maxItems=2,uniqueItems=True),accepted_licenses=B),["python_path","source","models","families","accepted_licenses"]),
-        "music_generate":tool("Stable Audio LiteRT: text2audio até 60s ou audio2audio explícito até 120s com source_id e duração integral da fonte. init_noise_level menor preserva mais a fonte; não é força de referência de estilo. Batch 1, CFG/APG 1. Turbo usa generate.",dict(engine_id=dict(enum=list(STABLE_IDS)),project_id=ID,request_key=S,prompt=dict(type="string",minLength=1,maxLength=4000),seed=dict(type="integer",minimum=0,maximum=4294967295),duration=number(5,120),steps=dict(type="integer",enum=[4,8,16]),batch_size=dict(const=1),session_id=ID,mode=dict(enum=["text2audio","audio2audio"]),source_id=ID,init_noise_level=dict(type="number",minimum=.01,exclusiveMaximum=1)),["engine_id","project_id","request_key","prompt","seed","duration"]),
+        "music_generate":tool("Stable Audio LiteRT: text2audio até 60s ou audio2audio explícito até 120s com source_id e duração integral da fonte. init_noise_level menor preserva mais a fonte; não é força de referência de estilo. Batch 1, CFG/APG 1. Turbo usa generate.",dict(engine_id=dict(enum=list(STABLE_IDS)),project_id=ID,request_key=S,prompt=dict(type="string",minLength=1,maxLength=4000),seed=dict(type="integer",minimum=0,maximum=4294967295),duration=number(5,120),steps=dict(type="integer",enum=[4,8,16]),batch_size=dict(const=1),session_id=ID,mode=dict(enum=["text2audio","audio2audio"]),source_id=ID,init_noise_level=dict(type="number",minimum=.01,exclusiveMaximum=1),quality_profile=dict(enum=["compact","fidelity"])),["engine_id","project_id","request_key","prompt","seed","duration"]),
         "voice_setup_plan":tool("Receita V3 CPU isolada: componentes, versões, licenças e destino.",dict(destination=S),["destination"]),
         "voice_setup_install":tool("Instalar V3 CPU isolado após autorização; retorna sem bloquear. Cache local é copiado e verificado.",dict(destination=S,authorized=B,model_cache=dict(type="string")),["destination","authorized"]),
         "voice_environment_link":tool("Vincular ambiente V3 CPU por versões e hashes, sem alterá-lo.",dict(python_path=S,models=S),["python_path","models"]),

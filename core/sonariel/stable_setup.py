@@ -8,6 +8,7 @@ from pathlib import Path
 
 from .environment import recipe, run, sha256
 from .setup import Setup, download, extract, resource
+from .stable_profiles import FIDELITY_PATHS, PROFILES
 
 VERSIONS = {"ai-edge-litert":"2.2.0", "numpy":"1.26.4", "sentencepiece":"0.2.1", "soundfile":"0.14.0"}
 FAMILIES = {"sm-music":"sa3-sm-music", "medium":"sa3-m"}
@@ -16,11 +17,15 @@ TERMS = {"LICENSE.md":"d6f6b1a4dce5c852bd6d7d9482d002baf0ccdb71e662250b73be9eec8
          "NOTICE":"66f856d7da72797f528fca46b7c80634ab481f917bfe020960e123d84b19f75f"}
 
 
-def selected_files(manifest, families, include_audio=False):
+def selected_files(manifest, families, include_audio=False, quality_profile='compact'):
+    if quality_profile not in PROFILES or quality_profile=='fidelity' and 'medium' not in families:
+        raise ValueError('FP32/SAME-L requires Medium')
     selected = {"tflite/t5gemma/encoder_fp16.tflite", "tflite/same-s/dec_w8a8.tflite"}
     if include_audio:
         selected.add("tflite/same-s/enc_w8a8.tflite")
     selected.update(f"tflite/{FAMILIES[family]}/dit_w8a8.tflite" for family in families)
+    if quality_profile=='fidelity':
+        selected.update(FIDELITY_PATHS)
     return [file for file in manifest["files"] if file["path"] in selected]
 
 
@@ -38,23 +43,27 @@ class StableSetup:
     def __init__(self, store):
         self.store = store
 
-    def plan(self, destination, family):
+    def plan(self, destination, family, quality_profile='compact'):
         if family not in FAMILIES:
             raise ValueError("Família LiteRT inválida")
+        if quality_profile not in PROFILES or quality_profile=='fidelity' and family!='medium':
+            raise ValueError('FP32/SAME-L requires Medium')
         base = Setup(self.store).plan(destination)
         return dict(destination=base["destination"], supported=base["supported"], family=family,
-            disk_required_gib=8, requires_authorization=True, requires_license_acceptance=True,
-            components=["uv isolado", "Python 3.11.15", "LiteRT 2.2.0 CPU, dependências com hashes", "DiT w8a8, SAME-S w8a8, T5Gemma fp16"],
+            disk_required_gib=24 if quality_profile=='fidelity' else 8, quality_profile=quality_profile,
+            optional_model_bytes=7596935760 if quality_profile=='fidelity' else 0,
+            requires_authorization=True, requires_license_acceptance=True,
+            components=["uv isolado", "Python 3.11.15", "LiteRT 2.2.0 CPU, dependências com hashes", "DiT w8a8, SAME-S w8a8, T5Gemma fp16"] + (["Optional Medium FP32 + SAME-L FP32 (7.60 GB)"] if quality_profile=='fidelity' else []),
             licenses=["https://huggingface.co/stabilityai/stable-audio-3-optimized/blob/08b17423649b5714b22eab20f96bf00751f2358a/LICENSE.md",
                       "https://huggingface.co/stabilityai/stable-audio-3-optimized/blob/08b17423649b5714b22eab20f96bf00751f2358a/LICENSE_GEMMA.md"],
             notice="Powered by Stability AI. Licenças próprias; aceite local não equivale a registro/autorização comercial.",
             versions=VERSIONS, modes=["text2audio", "audio2audio"],
             audio_input_components=["SAME-S encoder w8a8 (~61 MiB)", "soxr 1.0.0 HQ resampler"])
 
-    def install(self, destination, family, authorized, accepted_licenses, model_cache=""):
+    def install(self, destination, family, authorized, accepted_licenses, model_cache="", quality_profile='compact'):
         if not authorized or not accepted_licenses:
             raise ValueError("Autorize a instalação e aceite explicitamente Stability Community e Gemma antes de baixar")
-        plan = self.plan(destination, family)
+        plan = self.plan(destination, family, quality_profile)
         if not plan["supported"]:
             raise ValueError("Receita validada para Windows x64 com pelo menos 24 GB de RAM")
         root = Path(plan["destination"])
@@ -67,7 +76,7 @@ class StableSetup:
         probe = root
         while not probe.exists():
             probe = probe.parent
-        if shutil.disk_usage(probe).free < 8*2**30 and not marker.exists():
+        if shutil.disk_usage(probe).free < plan['disk_required_gib']*2**30 and not marker.exists():
             raise ValueError("Espaço insuficiente para LiteRT isolado")
         root.mkdir(parents=True, exist_ok=True)
         marker.write_text(json.dumps(state), encoding="utf-8")
@@ -77,19 +86,25 @@ class StableSetup:
             self.store.set("setup_status", dict(state="running", engine="stable-litert", stage=name, destination=str(root)))
             self.store.event("setup", name)
         uv_spec = recipe()["uv"]
-        stage("Verificar instalador isolado LiteRT")
-        extract(download(uv_spec["url"], cache / "uv.zip", uv_spec["sha256"], self.store.event), root / "tools")
-        uv = next((root / "tools").rglob("uv.exe"))
         env = os.environ.copy()
         env.update(UV_PYTHON_INSTALL_DIR=str(root / "python"), UV_CACHE_DIR=str(cache / "uv"))
         def command(args):
             run([str(a) for a in args], env=env, timeout=3600)
-        stage("Preparar Python e LiteRT CPU fixados")
-        command([uv, "python", "install", "--no-bin", "--no-registry", "3.11.15"])
         python = root / ".venv/Scripts/python.exe"
-        if not python.exists():
-            command([uv, "venv", "--python", "3.11.15", root / ".venv"])
-        command([uv, "pip", "install", "--python", python, "--require-hashes", "-r", resource("stable-requirements.txt")])
+        if not (state.get('complete') and python.is_file()):
+            stage("Verificar instalador isolado LiteRT")
+            extract(download(uv_spec["url"], cache / "uv.zip", uv_spec["sha256"], self.store.event), root / "tools")
+            uv = next((root / "tools").rglob("uv.exe"))
+            stage("Preparar Python e LiteRT CPU fixados")
+            command([uv, "python", "install", "--no-bin", "--no-registry", "3.11.15"])
+            if not python.exists():
+                command([uv, "venv", "--python", "3.11.15", root / ".venv"])
+            command([uv, "pip", "install", "--python", python, "--require-hashes", "-r", resource("stable-requirements.txt")])
+        else:
+            # Verify the existing runtime without changing its packages.
+            probe = run([str(python), '-c', "import json,importlib.metadata as m;print(json.dumps({k:m.version(k) for k in "+repr(list(VERSIONS))+"}))"])
+            if json.loads(probe.stdout)!=VERSIONS:
+                raise ValueError('Existing LiteRT runtime differs; preserved without reinstalling')
         spec = json.loads(resource("stable-models.json").read_text(encoding="utf-8"))
         stage("Verificar código oficial fixado, sem executar instalador upstream")
         archive = download(spec["source_archive"]["url"], cache / "source.zip", spec["source_archive"]["sha256"], self.store.event)
@@ -102,7 +117,7 @@ class StableSetup:
         models = root / "models"
         models.mkdir(exist_ok=True)
         families = sorted(set(state["families"]) | {family})
-        for file in selected_files(spec, families, include_audio=True):
+        for file in selected_files(spec, families, include_audio=True, quality_profile=quality_profile):
             target = models / file["path"]
             target.parent.mkdir(parents=True, exist_ok=True)
             stage("Verificar modelo: " + file["path"])

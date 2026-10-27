@@ -78,10 +78,15 @@ def main():
     manifest = json.loads(Path(__file__).with_name("stable-models.json").read_text(encoding="utf-8"))
     source, models = Path(config["source"]), Path(config["models"])
     family = FAMILIES[params["_engine"]]
+    quality = params.get('quality_profile', 'compact')
+    if quality not in {'compact', 'fidelity'} or quality=='fidelity' and (family!='sa3-m' or params.get('mode','text2audio')!='text2audio'):
+        raise ValueError('FP32/SAME-L requires Medium text2audio')
+    dit_path = f'tflite/{family}/dit_fp32.tflite' if quality=='fidelity' else f'tflite/{family}/dit_w8a8.tflite'
+    decoder_path = 'tflite/same-l/dec_fp32.tflite' if quality=='fidelity' else 'tflite/same-s/dec_w8a8.tflite'
     audio_input = params.get("mode", "text2audio") == "audio2audio"
     if params.get("mode", "text2audio") not in {"text2audio", "audio2audio"}:
         raise ValueError("Unsupported Stable Audio mode")
-    checkpoint_paths = {f"tflite/{family}/dit_w8a8.tflite", "tflite/t5gemma/encoder_fp16.tflite", "tflite/same-s/dec_w8a8.tflite"}
+    checkpoint_paths = {dit_path, 'tflite/t5gemma/encoder_fp16.tflite', decoder_path}
     if audio_input:
         checkpoint_paths.add("tflite/same-s/enc_w8a8.tflite")
         if importlib.metadata.version("soxr") != "1.0.0":
@@ -138,7 +143,7 @@ def main():
         del encoder, source, initial
         gc.collect()
     backend = timed("dit_load", "LiteRT CPU: carregar DiT", lambda: make_dit_backend(
-        models / f"tflite/{family}/dit_w8a8.tflite", length, hidden, mask.astype(np.float32), seconds, 6,
+        models / dit_path, length, hidden, mask.astype(np.float32), seconds, 6,
         cfg=1., apg=1., null_hidden=None, null_mask=None, local_add_cond=None, batched=False))
     actual_steps = []
     def progress(i, total):
@@ -148,8 +153,8 @@ def main():
         backend, x0, noises, pipeline.build_pingpong_schedule(steps, sigma), None, None, on_step=progress))
     del backend
     gc.collect()
-    decoder = timed("decoder_load", "LiteRT CPU: carregar decoder", lambda: RungDecoder(models / "tflite/same-s/dec_w8a8.tflite", threads=6, trim=16))
-    decode_latents = np.concatenate([latents, latents[:, :, -1:]], axis=2) if length % 2 else latents
+    decoder = timed("decoder_load", "LiteRT CPU: carregar decoder", lambda: RungDecoder(models / decoder_path, threads=6, trim=12 if quality=='fidelity' else 16, max_rung=128 if quality=='fidelity' else None))
+    decode_latents = np.concatenate([latents, latents[:, :, -1:]], axis=2) if quality=='compact' and length % 2 else latents
     audio = timed("decode", "LiteRT CPU: decodificar WAV", lambda: decoder.decode(decode_latents))[0, :, :round(seconds * 44100)].T
     if audio.shape != (round(seconds * 44100), 2) or not np.isfinite(audio).all() or np.max(np.abs(audio)) <= 1e-5:
         raise ValueError("Invalid model output")
@@ -166,7 +171,7 @@ def main():
         actual_sampling_steps=actual_steps, sha256=sha(output), sample_rate=44100, channels=2,
         duration_seconds=len(audio)/44100, raw_peak=float(np.max(np.abs(audio))),
         samples_over_full_scale=int(np.sum(np.abs(audio) >= 1)), backend="LiteRT CPU", threads=6,
-        precision="DiT w8a8 / SAME-S w8a8 / T5Gemma fp16", cfg=1., apg=1.,
+        quality_profile=quality, precision='DiT fp32 / SAME-L fp32 / T5Gemma fp16' if quality=='fidelity' else 'DiT w8a8 / SAME-S w8a8 / T5Gemma fp16', cfg=1., apg=1.,
         export="Original float32 waveform; no limiter, normalization or deliberate watermark removal",
         attribution="Powered by Stability AI", license="Stability Community + Gemma terms")
     output.with_suffix(".json").write_text(json.dumps(receipt, indent=2, allow_nan=False), encoding="utf-8")

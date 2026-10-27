@@ -1,6 +1,6 @@
 """Registered-audio inventory and recoverable, explicitly confirmed discard.
 
-No recursive deletion, no external-file deletion, no automatic cleanup. A durable
+No recursive deletion. External files require explicit consent. A durable
 journal is written before a managed WAV is moved, so interrupted moves can be restored.
 """
 from __future__ import annotations
@@ -11,9 +11,10 @@ import time
 from pathlib import Path
 
 from .environment import sha256
+from .storage_lifecycle import StorageLifecycle
 
 
-class Storage:
+class Storage(StorageLifecycle):
     def _storage_idle(self):
         if self.active or self.local.owned() or self.store.rows(
             "SELECT id FROM jobs WHERE state IN ('queued','loading','submitted','generating') "
@@ -39,6 +40,8 @@ class Storage:
         result = []
         for asset in assets:
             journal = trash.get(asset['id'])
+            if journal and journal['state'] == 'purged':
+                continue
             path = Path(journal['trash_path'] if journal and journal['trash_path'] else asset['path'])
             try:
                 size = path.stat().st_size if path.is_file() else 0
@@ -49,11 +52,12 @@ class Storage:
                 selected=bool(asset['selected']), managed=self._storage_owned(asset),
                 bytes=size, exists=path.is_file(), trashed=bool(journal),
                 trash_path=journal['trash_path'] if journal else None,
-                state=journal['state'] if journal else 'available'))
-        return dict(items=result, data_home=str(self.store.home),
-                    note='Somente arquivos catalogados. Referências e arquivos externos não são apagados. Lixeira recuperável não libera espaço em disco.')
+                state=journal['state'] if journal else 'available',
+                expires_at=self._storage_expiration(journal)))
+        return dict(items=result, data_home=str(self.store.home), retention_days=30,
+                    note='30-day recoverable trash. Imported files move only with explicit consent. Permanent deletion frees disk space.')
 
-    def rpc_storage_preview(self, asset_ids: list[str]):
+    def rpc_storage_preview(self, asset_ids: list[str], include_external_files: bool = False):
         entries = []
         for key in asset_ids:
             asset = self.store.asset(key)
@@ -63,7 +67,7 @@ class Storage:
                 reason = 'Referência protegida'
             elif asset['favorite'] or asset['selected']:
                 reason = 'Favorita/escolhida: remova a marca antes de descartar'
-            elif self.store.rows('SELECT id FROM assets WHERE parent_id=?', (key,)):
+            elif self.store.rows("SELECT a.id FROM assets a LEFT JOIN asset_trash t ON a.id=t.asset_id WHERE a.parent_id=? AND (t.state IS NULL OR t.state!='purged')", (key,)):
                 reason = 'Usada como origem de outra versão'
             elif self.store.rows('SELECT id FROM voice_profiles WHERE reference_id=?', (key,)):
                 reason = 'Usada por um perfil vocal'
@@ -75,34 +79,43 @@ class Storage:
                 reason = 'Arquivo ausente: restaure o original antes de descartar'
             managed = self._storage_owned(asset)
             if managed and any(Path(row['path']).resolve() == path.resolve() for row in
-                self.store.rows('SELECT path FROM assets WHERE id!=?', (key,))):
+                self.store.rows("SELECT a.path FROM assets a LEFT JOIN asset_trash t ON a.id=t.asset_id WHERE a.id!=? AND (t.state IS NULL OR t.state!='purged')", (key,))):
                 reason = 'Arquivo compartilhado com outro registro'
             digest = sha256(path) if path.is_file() else None
+            try:
+                self._storage_safe_path(path)
+            except ValueError as error:
+                reason = str(error)
+            # External aliases can point at a protected reference or favorite.
+            if any(Path(row['path']).resolve() == path.resolve() for row in
+                   self.store.rows("SELECT a.path FROM assets a LEFT JOIN asset_trash t ON a.id=t.asset_id WHERE a.id!=? AND (t.state IS NULL OR t.state!='purged')", (key,))):
+                reason = 'Arquivo compartilhado com outro registro'
             if digest != asset['metadata']['sha256']:
                 reason = 'Arquivo alterado desde o registro'
             entries.append(dict(id=key, name=asset['name'], path=asset['path'],
                 bytes=path.stat().st_size if path.is_file() else 0,
-                sha256=digest, action='move_to_trash' if managed else 'hide_record', blocked=reason))
+                sha256=digest, action='move_to_trash' if managed or include_external_files else 'hide_record', blocked=reason))
         token = hashlib.sha256(json.dumps(entries, sort_keys=True).encode()).hexdigest()
         return dict(entries=entries, token=token,
                     managed_bytes=sum(e['bytes'] for e in entries if e['action']=='move_to_trash' and not e['blocked']),
                     reclaimed_bytes=0)
 
-    def rpc_storage_discard(self, asset_ids: list[str], preview_token: str, confirmed: bool):
+    def rpc_storage_discard(self, asset_ids: list[str], preview_token: str, confirmed: bool, include_external_files: bool = False):
         if not confirmed:
             raise ValueError('Confirme a prévia antes de descartar')
         self._storage_idle()
-        plan = self.rpc_storage_preview(asset_ids)
+        plan = self.rpc_storage_preview(asset_ids, include_external_files)
         if plan['token'] != preview_token or any(e['blocked'] for e in plan['entries']):
             raise ValueError('Prévia alterada ou seleção protegida; revise novamente')
-        root = self.store.home / 'trash'
-        root.mkdir(exist_ok=True)
-        if root.is_symlink() or root.resolve().parent != self.store.home.resolve():
+        root = self.store.home / 'tmp/trash'
+        self._storage_safe_path(root / 'probe.wav')
+        root.mkdir(parents=True, exist_ok=True)
+        if root.is_symlink() or root.resolve() != self.store.home.resolve() / 'tmp/trash':
             raise ValueError('Pasta da lixeira não é um diretório próprio seguro')
         completed = []
         for entry in plan['entries']:
             source = Path(entry['path'])
-            target = root / (entry['id'] + '.wav') if entry['action'] == 'move_to_trash' else None
+            target = root / (entry['id'] + source.suffix.lower()) if entry['action'] == 'move_to_trash' else None
             if target and target.exists():
                 raise ValueError('Destino da lixeira ocupado; nenhum arquivo será sobrescrito')
             # The journal survives a crash between either filesystem/SQLite operation.
@@ -112,46 +125,24 @@ class Storage:
             if target:
                 if source.is_symlink() or sha256(source) != entry['sha256']:
                     raise ValueError('Origem mudou; restaure o registro pela lixeira')
-                source.rename(target)
+                self._storage_move(source, target, entry['sha256'])
             self.store.execute("UPDATE asset_trash SET state='trashed' WHERE asset_id=?", (entry['id'],))
             completed.append(entry['id'])
             self.store.event('storage', 'Registro descartado de forma recuperável: ' + entry['id'])
         return dict(discarded=completed, reclaimed_bytes=0)
 
     def rpc_storage_restore(self, asset_id: str):
-        self._storage_idle()
-        rows = self.store.rows('SELECT * FROM asset_trash WHERE asset_id=?', (asset_id,))
-        if not rows:
-            raise ValueError('Registro não está na lixeira')
-        journal = rows[0]
-        source = Path(journal['original_path'])
-        target = Path(journal['trash_path']) if journal['trash_path'] else None
-        if target:
-            root = self.store.home / 'trash'
-            if (root.is_symlink() or target.is_symlink() or source.is_symlink()
-                or target.parent.resolve() != root.resolve()
-                or source.parent.resolve() != (self.store.home/'output').resolve()
-                or (self.store.home/'output').resolve() != self.store.home.resolve()/'output'
-                or (self.store.home/'output').is_symlink()):
-                raise ValueError('Caminhos de recuperação inválidos')
-            if target.exists():
-                if source.exists():
-                    raise ValueError('Destino original ocupado; nada foi sobrescrito')
-                if sha256(target) != journal['sha256']:
-                    raise ValueError('Arquivo da lixeira foi alterado')
-                target.rename(source)
-        if not source.is_file() or sha256(source) != journal['sha256']:
-            raise ValueError('Original ausente ou alterado; registro permanece recuperável')
-        self.store.execute('DELETE FROM asset_trash WHERE asset_id=?', (asset_id,))
-        self.store.event('storage', 'Registro restaurado: ' + asset_id)
-        return dict(restored=asset_id)
+        return self._storage_restore_file(asset_id)
+
 
 
 def storage_methods(tool, ID, B):
     ids = dict(type='array', items=ID, minItems=1, maxItems=100, uniqueItems=True)
     return {
         'storage_list': tool('Inventário central dos áudios catalogados, caminhos, tamanho e lixeira; não varre nem move arquivos.', dict(project_id=ID)),
-        'storage_preview': tool('Prévia obrigatória de descarte recuperável. Referências, favoritas, escolhidas e dependências são protegidas.', dict(asset_ids=ids), ['asset_ids']),
-        'storage_discard': tool('Após escolha explícita: mover WAVs próprios à lixeira; externos apenas ocultam registro. Não libera espaço nem apaga permanentemente.', dict(asset_ids=ids, preview_token=dict(type='string',pattern='^[a-f0-9]{64}$'),confirmed=B), ['asset_ids','preview_token','confirmed']),
+        'storage_preview': tool('Review 30-day trash. External files move only with explicit include_external_files=true.', dict(asset_ids=ids,include_external_files=B), ['asset_ids']),
+        'storage_discard': tool('Confirmed 30-day trash; protects references, favorites and dependencies.', dict(asset_ids=ids, include_external_files=B, preview_token=dict(type='string',pattern='^[a-f0-9]{64}$'),confirmed=B), ['asset_ids','preview_token','confirmed']),
         'storage_restore': tool('Restaurar um registro/arquivo da lixeira sem sobrescrever destinos.',dict(asset_id=ID),['asset_id']),
+        'storage_purge_preview': tool('Review irreversible deletion from trash. Legacy imports need include_external_files=true to delete their actual file.',dict(asset_ids=ids,include_external_files=B),['asset_ids']),
+        'storage_purge': tool('Permanently delete reviewed audio files, never directories. Requires idle queue, unchanged preview and explicit confirmation.',dict(asset_ids=ids,include_external_files=B,preview_token=dict(type='string',pattern='^[a-f0-9]{64}$'),confirmed=B),['asset_ids','preview_token','confirmed']),
     }

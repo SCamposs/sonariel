@@ -157,5 +157,14 @@
   "play": "Ouvir",
   "preferred": "Preferida",
   "openInFx": "Abrir em FX",
-  "useLibraryVersionsForABComparisonNotes": "Use Biblioteca & versões para comparação A/B, notas e exportações. Efeitos criam versões novas; o áudio-base permanece intacto."
+  "useLibraryVersionsForABComparisonNotes": "Use Biblioteca & versões para comparação A/B, notas e exportações. Efeitos criam versões novas; o áudio-base permanece intacto.",
+  "qualityProfile": "Perfil de qualidade",
+  "compactProfile": "Leve · INT8 / SAME-S",
+  "fidelityProfile": "Maior fidelidade · FP32 / SAME-L",
+  "fidelityProfileHelp": "Opcional para Medium por texto. Requer 12 GiB de RAM livre para iniciar. Gerações e presets registram o perfil usado.",
+  "fidelityDownload": "Inclui o perfil leve e dois arquivos opcionais FP32/SAME-L (7,60 GB adicionais). Arquivos existentes são verificados e reutilizados.",
+  "compactDownload": "DiT INT8 e SAME-S. Perfil leve padrão.",
+  "fidelityAvailable": "FP32 / SAME-L disponível para geração por texto.",
+  "fidelityOptional": "FP32 / SAME-L é um download opcional para Medium.",
+  "fidelityIntro": "Medium FP32 com decoder SAME-L FP32, para composição por texto. A qualidade musical depende de escuta; este perfil ainda não aceita áudio de entrada."
 }

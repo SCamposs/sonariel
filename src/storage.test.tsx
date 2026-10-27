@@ -48,6 +48,23 @@ it("only submits discard after preview and explicit confirmation", async () => {
   fireEvent.click(await screen.findByRole("checkbox", { name: "Selecionar Candidate" }));
   fireEvent.click(screen.getByRole("button", { name: "Revisar descarte (1)" }));
   fireEvent.click(await screen.findByRole("button", { name: "Confirmar descarte recuperável" }));
-  await waitFor(() => expect(rpc).toHaveBeenCalledWith("storage_discard", { asset_ids: [fixture.id], preview_token: "b".repeat(64), confirmed: true }));
+  await waitFor(() => expect(rpc).toHaveBeenCalledWith("storage_discard", { asset_ids: [fixture.id], preview_token: "b".repeat(64), confirmed: true, include_external_files: false }));
   await waitFor(() => expect(screen.queryByText("Candidate")).toBeNull());
+});
+
+it("requires a separate permanent-deletion preview and forwards external-file consent", async () => {
+  vi.mocked(rpc).mockImplementation(async method => method === "storage_list" ? {
+    items: [{ ...fixture, managed: false, trashed: true, trash_path: null, state: "trashed" }],
+  } : { token: "b".repeat(64), entries: [{ ...fixture, action: "delete_file", blocked: null }], reclaimed_bytes: 1024 });
+  render(<StorageWorkspace data={data} act={vi.fn(async () => ({}))} busy={false} />);
+  fireEvent.click(screen.getByRole("button", { name: "Lixeira recuperável" }));
+  await screen.findByText("C:/fixture.wav");
+  fireEvent.click(screen.getByRole("checkbox", { name: "Excluir também os arquivos importados que foram apenas ocultos" }));
+  fireEvent.click(screen.getByRole("checkbox", { name: "Selecionar Candidate" }));
+  fireEvent.click(screen.getByRole("button", { name: "Revisar exclusão definitiva (1)" }));
+  await screen.findByRole("dialog");
+  expect(rpc).toHaveBeenCalledWith("storage_purge_preview", { asset_ids: [fixture.id], include_external_files: true });
+  expect(vi.mocked(rpc).mock.calls.some(([method]) => method === "storage_purge")).toBe(false);
+  fireEvent.click(screen.getByRole("button", { name: "Excluir definitivamente" }));
+  await waitFor(() => expect(rpc).toHaveBeenCalledWith("storage_purge", { asset_ids: [fixture.id], preview_token: "b".repeat(64), confirmed: true, include_external_files: true }));
 });

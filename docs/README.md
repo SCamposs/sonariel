@@ -2,7 +2,7 @@
 
 [English overview](../README.md) · [Português (Brasil)](../README.pt-BR.md)
 
-Current distributed release: [v0.4.0](https://github.com/SCamposs/sonariel/releases/tag/v0.4.0). The desktop UI supports English and Brazilian Portuguese. The two top-level READMEs describe the same capabilities; not every supporting document has been translated.
+Current distributed release: [v0.5.0](https://github.com/SCamposs/sonariel/releases/tag/v0.5.0). The desktop UI supports English and Brazilian Portuguese. The two top-level READMEs describe the same capabilities; not every supporting document has been translated.
 
 Version 0.4.0 includes EN/pt-BR UI and the Phase 2 production tools. Packaged loop creation is disabled. The untested complete v0.3.2 upgrade lifecycle remains documented in the Phase 2.7 acceptance report. [Phase 2: evidence, screenshots, limitations and isolated preview](PHASE2.md).
 
@@ -25,6 +25,10 @@ Phase 2.5 adds reference/source regions and project-local tags/filters. Its acce
 | [Screenshots and recording proposal](SHOWCASE.md) | Real capture provenance and a future demonstration plan | English |
 
 ## Release history and validation
+
+- [v0.5.0 final review](releases/v0.5.0-validation.md): 30-day storage lifecycle, optional Medium FP32 profile and branded installer. [Release notes](releases/v0.5.0.md) / [notas em português](releases/v0.5.0.pt-BR.md).
+
+- [Unreleased storage lifecycle and Medium fidelity profile](STORAGE_AND_QUALITY.md): local implementation of 30-day trash, permanent deletion and optional FP32/SAME-L model components. Not part of the published v0.4.0 release.
 
 - [Phase 3 skill preparation](PHASE3.md): isolated stable-MCP execution, client compatibility, ZIP audit and owner-reviewed marketplace handoff. No app release or Agensi publication.
 

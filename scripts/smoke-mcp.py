@@ -10,7 +10,7 @@ from pathlib import Path
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--generate", action="store_true")
-parser.add_argument("--storage", action="store_true", help="Synthetic native DSP and recoverable storage roundtrip, isolated profile only; no AI")
+parser.add_argument("--storage", action="store_true", help="Synthetic native DSP, recoverable trash and permanent deletion, isolated profile only; no AI")
 parser.add_argument("--fx-wav", type=Path, help="Explicit native FX/export test on a local WAV; no synthesis")
 parser.add_argument("--executable", type=Path, help="Test the distributed sonariel-core.exe instead of development Python")
 parser.add_argument("--stable-input-root", type=Path, help="Existing licensed LiteRT environment for one explicitly authorized synthetic 5s audio-input test")
@@ -87,7 +87,26 @@ try:
         tool('storage_restore',dict(asset_id=output['id']))
         assert hashlib.sha256(Path(output['path']).read_bytes()).hexdigest()==output['metadata']['sha256']
         assert hashlib.sha256(source.read_bytes()).hexdigest()==original_hash
-        receipt=dict(storage='passed',output=output['path'],external_unchanged=True,tool_count=len(tools),model_loaded=False)
+        # Verify the destructive additions against synthetic files only, retaining
+        # the original fixture and checking actual bytes rather than RPC success.
+        plan=tool('storage_preview',dict(asset_ids=[output['id']]))
+        tool('storage_discard',dict(asset_ids=[output['id']],preview_token=plan['token'],confirmed=True))
+        purge_plan=tool('storage_purge_preview',dict(asset_ids=[output['id']]))
+        trash_path=Path(purge_plan['entries'][0]['path'])
+        assert trash_path.is_file() and purge_plan['reclaimed_bytes']>0
+        purged=tool('storage_purge',dict(asset_ids=[output['id']],preview_token=purge_plan['token'],confirmed=True))
+        assert output['id'] in purged['deleted'] and not trash_path.exists()
+        assert not any(a['id']==output['id'] for a in tool('storage_list')['items'])
+        # Purged child lineage must not permanently block its preserved source.
+        plan=tool('storage_preview',dict(asset_ids=[original['id']]))
+        assert not plan['entries'][0]['blocked'] and plan['entries'][0]['action']=='hide_record'
+        plan=tool('storage_preview',dict(asset_ids=[original['id']],include_external_files=True))
+        tool('storage_discard',dict(asset_ids=[original['id']],preview_token=plan['token'],confirmed=True,include_external_files=True))
+        assert not source.exists()
+        tool('storage_restore',dict(asset_id=original['id']))
+        assert hashlib.sha256(source.read_bytes()).hexdigest()==original_hash
+        receipt=dict(storage='passed',permanent_delete='passed',imported_move_restore='passed',
+                     purged_child_lineage='passed',output=output['path'],external_unchanged=True,tool_count=len(tools),model_loaded=False)
         (home/'storage-acceptance.json').write_text(json.dumps(receipt,indent=2),encoding='utf-8')
         print(json.dumps(receipt),flush=True)
     if args.stable_input_root:

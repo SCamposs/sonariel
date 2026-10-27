@@ -8,3 +8,4 @@
 .storage-empty { padding: 24px; color: var(--muted); }
 .storage-dialog .storage-confirm { overflow-y: auto; min-height: 0; }
 .storage-dialog .guide-footer { display: flex; justify-content: flex-end; gap: 12px; flex-wrap: wrap; }
+.storage-confirm code { display: block; margin: 6px 0; overflow-wrap: anywhere; }

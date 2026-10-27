@@ -87,6 +87,7 @@ def catalog(store) -> list[dict]:
     stable = store.setting("stable_environment",{})
     stable_modes = ["text2audio"] + (["audio2audio"] if stable.get("audio_input_ready") else [])
     stable_audio = dict(audio_input_ready=bool(stable.get("audio_input_ready")),
+
                         audio_input_note=None if stable.get("audio_input_ready") else "Prepare encoder SAME-S e soxr pelo setup LiteRT e vincule novamente para usar áudio de entrada",
                         text_max_seconds=60, audio_input_max_seconds=120)
     return [
@@ -96,10 +97,10 @@ def catalog(store) -> list[dict]:
              ["text2music", "cover"], blocked_reason="Isolated validation pending"),
         item("stable-audio-3-small-music", "Stable Audio 3 Small-Music", "music",
              "Stability Community + Gemma terms", "litert-cpu", stable_modes, "sm-music" in stable.get("families",[]),
-             requires_license_acceptance=True, upstream_modes=["inpaint"], attribution="Powered by Stability AI", **stable_audio),
+             requires_license_acceptance=True, upstream_modes=["inpaint"], attribution="Powered by Stability AI", quality_profiles=["compact"], **stable_audio),
         item("stable-audio-3-medium", "Stable Audio 3 Medium", "music",
              "Stability Community + Gemma terms", "litert-cpu", stable_modes, "medium" in stable.get("families",[]),
-             requires_license_acceptance=True, upstream_modes=["inpaint"], attribution="Powered by Stability AI", **stable_audio),
+             requires_license_acceptance=True, upstream_modes=["inpaint"], attribution="Powered by Stability AI", quality_profiles=stable.get("quality_profiles",["compact"]), **stable_audio),
         item(VOICE_ID, "Chatterbox Multilingual V3", "voice", "MIT; dependency notices apply", "torch-cpu",
              ["text2speech", "authorized_voice_reference"], bool(voice), languages=LANGUAGES,
              language_paths_tested=["sw", "pt"], omitted_optional_preprocessors=["zh", "ja"],
@@ -134,7 +135,7 @@ class LocalRunner:
         if not adapter:
             raise ValueError("Adaptador local não reconhecido")
         command = adapter.prepare(self.store,folder,params,output)
-        maximum_rss = adapter.maximum_rss_gib
+        maximum_rss = 14.5 if params.get('quality_profile')=='fidelity' else adapter.maximum_rss_gib
         env = os.environ.copy()
         env.update(HF_HUB_OFFLINE="1", HF_HOME=str(self.store.home / "cache/voice"),
                    OMP_NUM_THREADS="6", MKL_NUM_THREADS="6")

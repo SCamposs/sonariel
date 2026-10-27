@@ -12,7 +12,7 @@ Sonariel is a source-available Windows desktop application that brings music gen
 
 *Real v0.3.2 desktop captures supplied by the author and also used in the portfolio, without the remote-control cursor overlay. The interface shown is in Brazilian Portuguese; v0.4.0 also supports English. These screenshots are interface views, not evidence of an AI generation run or a performance benchmark. [Capture details](docs/SHOWCASE.md).*
 
-**Current release: [v0.4.0](https://github.com/SCamposs/sonariel/releases/tag/v0.4.0).** Includes English/pt-BR UI, batch WAV export, versioned music presets, non-destructive audio regions, tags and combined library filters. Loop creation is disabled in packaged distributions; existing audio is preserved. Windows installation/basic use was validated. The complete v0.3.2 → v0.4.0 installer/updater lifecycle was not tested; this documented caveat was accepted by the maintainer. See the [Phase 2.7 acceptance report](docs/PHASE2_7.md).
+**Current release: [v0.5.0](https://github.com/SCamposs/sonariel/releases/tag/v0.5.0).** Adds 30-day trash, confirmed permanent deletion, optional Medium FP32 models and a branded Windows installer. Includes English/pt-BR UI and existing production tools. [Release review](docs/releases/v0.5.0-validation.md). Loop creation is disabled in packaged distributions; existing audio is preserved. Windows installation/basic use was validated. The complete v0.3.2 → v0.4.0 installer/updater lifecycle was not tested; this documented caveat was accepted by the maintainer. See the [Phase 2.7 acceptance report](docs/PHASE2_7.md).
 
 ## From a request to a usable version
 
@@ -52,6 +52,7 @@ The distributed profile is **Windows x64, CPU, one task at a time**. GPU inferen
 | --- | --- | --- |
 | ACE-Step 1.5 Turbo | Baseline music generation and source-guided cover, DiT-only | 12 GiB cold / 4 GiB with the managed model resident |
 | Stable Audio 3 Small-Music / Medium | Experimental LiteRT CPU music; text-to-audio and explicit source-audio variation | 5 / 6 GiB |
+| Stable Audio 3 Medium optional FP32 / SAME-L | Experimental CPU text-to-audio; separate 7.60 GB model download | 12 GiB |
 | Chatterbox Multilingual V3 | Experimental multilingual speech and optional authorized reference profiles | 7.5 GiB |
 | Native DSP | WAV processing, chains, layers, previews, presets, and export | 3 GiB |
 
@@ -59,7 +60,7 @@ These are **queue admission thresholds, not guarantees of sufficient memory**. A
 
 ## Download and install
 
-1. Open the [official releases](https://github.com/SCamposs/sonariel/releases/latest) and download `Sonariel_<version>_x64-setup.exe`. The current stable release is [v0.4.0](https://github.com/SCamposs/sonariel/releases/tag/v0.4.0).
+1. Open the [official releases](https://github.com/SCamposs/sonariel/releases/latest) and download `Sonariel_<version>_x64-setup.exe`. The current stable release is [v0.5.0](https://github.com/SCamposs/sonariel/releases/tag/v0.5.0).
 2. Install the desktop app. End users do **not** need Node.js, Rust, or a development Python installation. WebView2 is required; the installer offers its bootstrap component when needed.
 3. Prepare a compatible engine separately through the app. Model weights are not bundled. Downloads require internet, disk space, and your authorization; external model terms still apply.
 
@@ -98,7 +99,7 @@ The desktop and MCP client share the same lightweight core and persistent state.
 
 Project data defaults to `%USERPROFILE%\.sonariel`; `SONARIEL_HOME` selects a separate profile. Models, audio, references, databases, and private presets stay outside this repository. Sonariel has no usage telemetry; optional update checks contact GitHub, and setup downloads use external official sources. The connected agent has its own data-handling policy.
 
-Recoverable discard is not permanent deletion and **does not free disk space**. External files are never moved/deleted by that operation, and only registered files appear in the inventory. [Storage behavior](docs/STORAGE.md).
+Recoverable discard keeps moved files for **30 days** and does not immediately free disk space. Expired trash is deleted while the core is open and the queue is idle, with a grace period for older trash. Separate confirmed permanent deletion frees space; imported originals require explicit opt-in. Only registered files appear in the inventory. [Storage behavior](docs/STORAGE.md).
 
 Sonariel's own code and documentation use the [Sonariel Source Available License 1.0](LICENSE), **not an OSI-approved open-source license**. You can use the app free of charge, study/modify it, and redistribute it for free under its terms. Selling Sonariel, modified versions, or paid access to operate it requires separate permission.
 
