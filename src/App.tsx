@@ -12,7 +12,8 @@ import { PathField } from "./ui/path-field";
 import { StorageWorkspace } from "./storage";
 import { BatchExport } from "./batch-export";
 import { MusicPresets } from "./music-presets";
-import { LibraryTools, filterLibrary, loopSeams, useLibraryFilters } from "./library-workspace";
+import { LibraryTools, emptyFilters, filterLibrary, loopSeams, useLibraryFilters } from "./library-workspace";
+import { WorkflowPaths } from "./workflow-paths";
 import { AudioRegion } from "./audio-region";
 import { useWorkspaceScroll } from "./ui/use-workspace-scroll";
 import { FxStudio, VoiceStudio, MusicEngines } from "./studio";
@@ -214,12 +215,16 @@ export function App() {
   const query = library.filters.query;
   const favorites = library.filters.favorite;
   const [regionAssetId, setRegionAssetId] = useState("");
+  const advancedLibrary = useRef<HTMLDetailsElement>(null);
   const [importSessionId, setImportSessionId] = useState("");
   const [visibleLimit, setVisibleLimit] = useState(50);
   useEffect(() => setVisibleLimit(50), [data?.selected_project, library.filters]);
   const [playRange, setPlayRange] = useState<{ assetId: string; start: number; end: number }>();
   const [activeId, setActiveId] = useState<string>();
   const [fxAssetId, setFxAssetId] = useState<string>();
+  const [navigationTarget, setNavigationTarget] = useState<{ projectId: string; assetId?: string; sessionId?: string; action: "library" | "listen" }>();
+  const navigationSerial = useRef(0);
+  const [focusedAssetId, setFocusedAssetId] = useState<string>();
   const [compare, setCompare] = useState<string[]>([]);
   const [exportSelection, setExportSelection] = useState<string[]>([]);
   useEffect(() => { setExportSelection([]); setCompare([]); setRegionAssetId(""); setImportSessionId(""); }, [data?.selected_project]);
@@ -311,6 +316,44 @@ export function App() {
   const assets = filterLibrary(projectAudio.filter(a => library.filters.kind === "reference" || a.kind !== "reference"), library.filters);
   const regionSource = projectAudio.find(a => a.id === regionAssetId);
   const active = allAudio.find((a) => a.id === activeId);
+  const navigateLibrary = async (target: NonNullable<typeof navigationTarget>) => {
+    if (!data?.projects.some(p => p.id === target.projectId)) return;
+    const serial = ++navigationSerial.current;
+    if (data.selected_project !== target.projectId) {
+      const changed = await act("project_select", { project_id: target.projectId });
+      if (!changed || serial !== navigationSerial.current) return;
+    }
+    setNavigationTarget(target);
+  };
+  useEffect(() => {
+    if (!navigationTarget || !data) return;
+    const target = navigationTarget;
+    setNavigationTarget(undefined);
+    if (data.selected_project !== target.projectId) return;
+    const asset = target.assetId ? allAudio.find(a => a.id === target.assetId && a.project_id === target.projectId) : undefined;
+    if (target.assetId && !asset) { setNotice(tr("workspace", "navigationAssetMissing")); return; }
+    if (target.sessionId && !data.sessions.some(s => s.id === target.sessionId && s.project_id === target.projectId)) return;
+    if (target.action === "listen" && asset) { selectAudio(asset); setPlayRange(undefined); setPlaying(true); return; }
+    library.update(asset ? { ...emptyFilters, kind: asset.kind === "reference" ? "reference" : null } : { ...library.filters, session_id: target.sessionId ?? null });
+    setFocusedAssetId(asset?.id);
+    setPage("library");
+    if (asset) setNotice(tr("workspace", "openedVersionByIdentity", { name: asset.name }));
+  }, [navigationTarget, data?.selected_project]);
+  useEffect(() => {
+    if (!focusedAssetId || page !== "library") return;
+    const index = assets.findIndex(a => a.id === focusedAssetId);
+    if (index < 0) { setFocusedAssetId(undefined); return; }
+    if (visibleLimit <= index) { setVisibleLimit(Math.ceil((index + 1) / 50) * 50); return; }
+    const node = [...document.querySelectorAll<HTMLElement>("[data-asset-id]")].find(n => n.dataset.assetId === focusedAssetId);
+    node?.scrollIntoView?.({ block: "nearest" });
+    node?.focus({ preventScroll: true });
+    setFocusedAssetId(undefined);
+  }, [focusedAssetId, page, visibleLimit, assets.length, library.filters]);
+  const sendToFx = (asset: Asset) => {
+    if (asset.project_id !== data?.selected_project || !allAudio.some(a => a.id === asset.id && a.project_id === asset.project_id)) return;
+    setFxAssetId(asset.id);
+    setPage("fx");
+  };
   const activeJob = data?.jobs.find((j) =>
     ["loading", "generating", "submitted"].includes(j.state),
   );
@@ -556,10 +599,7 @@ export function App() {
                     setPlaying(true);
                   }}
                   edit={(asset) => void sendToAudacity(asset)}
-                  openFx={(asset) => {
-                    setFxAssetId(asset.id);
-                    setPage("fx");
-                  }}
+                  openFx={sendToFx}
                 />
               )}
               <RetainedWorkspace key={`fx:${data.selected_project}`} active={page === "fx"}>
@@ -577,6 +617,10 @@ export function App() {
               </RetainedWorkspace>
               {page === "projects" && (
                 <>
+                  <WorkflowPaths data={data}
+                    music={() => setPage(data.engines?.some(e => e.category === "music" && e.installed && e.compatible && !e.blocked_reason) ? "bridges" : "environment")}
+                    voice={() => setPage("voice")}
+                    audio={() => { if (!project) { setProjectForm(true); setNotice(tr("workspace", "chooseProjectForAudio")); } else { setPage("library"); setShowRegister(true); } }} />
                   {projectForm && (
                     <Panel title={tr("workspace", "newProject")}>
                       <form
@@ -612,33 +656,6 @@ export function App() {
                       </form>
                     </Panel>
                   )}
-                  <div className="overview-bar">
-                    <div>
-                      <span className="signal-label">{tr("workspace", "localWorkflow")}</span>
-                      <h2>{tr("workspace", "fromContextToYourNextDecision")}</h2>
-                      <p>
-                        {tr("workspace", "organizeSessionsFollowExecutionAndListenToEach")}<br />{tr("workspace", "musicDirectionHappensInYourConversationWithCodex")}</p>
-                      <button
-                        className="outline"
-                        onClick={() => setPage("library")}
-                      >
-                        {tr("workspace", "openLibrary")}{" "}<ChevronRight size={15} />
-                      </button>
-                    </div>
-                    <div className="overview-readout">
-                      <AudioLines size={58} strokeWidth={1} />
-                      <dl>
-                        <dt>{tr("workspace", "engine")}</dt>
-                        <dd>
-                          {stateLabel(data.engine.state) ?? data.engine.state}
-                        </dd>
-                        <dt>{tr("workspace", "validatedProfile")}</dt>
-                        <dd>CPU / Turbo</dd>
-                        <dt>{tr("workspace", "persistentQueue")}</dt>
-                        <dd>{queued.length} {tr("workspace", "waiting")}</dd>
-                      </dl>
-                    </div>
-                  </div>
                   <div className="two-columns">
                     <Panel
                       title={tr("workspace", "projects")}
@@ -699,6 +716,7 @@ export function App() {
                                   <Disc3 size={17} />
                                   <span>{s.name}</span>
                                   <small>{date(s.created)}</small>
+                                  <button className="text-button" disabled={busy} onClick={() => void navigateLibrary({ projectId: s.project_id, sessionId: s.id, action: "library" })}>{tr("workspace", "openSessionResults")}</button>
                                 </div>
                               ))}
                           </div>
@@ -925,7 +943,7 @@ export function App() {
                                 <span>{date(job.created)}</span>
                                 <ChevronRight size={15} />
                               </summary>
-                              <JobPanel job={job} />
+                              <JobPanel job={job} results={data.assets.filter(a => a.job_id === job.id && a.project_id === job.project_id)} onResult={asset => void navigateLibrary({ projectId: asset.project_id, assetId: asset.id, action: "library" })} onListen={asset => void navigateLibrary({ projectId: asset.project_id, assetId: asset.id, action: "listen" })} />
                             </details>
                           ))}
                         {data.jobs.length === 0 && (
@@ -1104,16 +1122,14 @@ export function App() {
                   )}
                   <LibraryTools data={data} assets={projectAudio} filters={library.filters} update={library.update}
                     selected={exportSelection} onSelection={setExportSelection} busy={busy} act={act} saveError={library.error} />
-                  <AudioRegion assets={projectAudio} selectedId={regionAssetId} onSelect={setRegionAssetId}
-                    onPreview={previewRegion} busy={busy} act={act} waveform={regionSource && <Waveform asset={regionSource} />} />
-                  <BatchExport assets={projectAudio} selected={exportSelection}
-                    onSelection={setExportSelection} busy={busy} act={act} />
-                  <MusicPresets data={data} busy={busy} act={act} />
+                  <div hidden={!exportSelection.length}><BatchExport assets={projectAudio} selected={exportSelection}
+                    onSelection={setExportSelection} busy={busy} act={act} /></div>
                   <div className="library-grid">
                     {assets.slice(0, visibleLimit).map((asset) => (
                       <article
                         className={`version-panel ${asset.id === activeId ? "listening" : ""}`}
                         key={asset.id}
+                        data-asset-id={asset.id} tabIndex={-1}
                       >
                         <div className="version-top">
                           <span className="mono muted">
@@ -1209,10 +1225,20 @@ export function App() {
                             {tr("workspace", "details")}{" "}<ChevronRight size={14} />
                           </button>
                         </div>
+                        <div className="version-tools">
+                          <button className="text-button" onClick={() => { setRegionAssetId(asset.id); if (advancedLibrary.current) { advancedLibrary.current.open = true; advancedLibrary.current.scrollIntoView?.({ block: "start" }); } }}>{tr("workspace", "createAudioRegion")}</button>
+                          {asset.kind !== "reference" && <button className="text-button" onClick={() => sendToFx(asset)}>{tr("workspace", "openInFx")}</button>}
+                          {asset.parent_id && allAudio.some(a => a.id === asset.parent_id && a.project_id === asset.project_id) && <button className="text-button" onClick={() => void navigateLibrary({ projectId: asset.project_id, assetId: asset.parent_id!, action: "library" })}>{tr("workspace", "viewSource")}</button>}
+                        </div>
                       </article>
                     ))}
                   </div>
                   {assets.length > visibleLimit && <button className="outline" onClick={() => setVisibleLimit(value => value + 50)}>{tr("library", "showMore", { shown: visibleLimit, total: assets.length })}</button>}
+                  <details ref={advancedLibrary} className="panel library-advanced"><summary>{tr("workspace", "advancedLibraryTools")}</summary>
+                  <AudioRegion assets={projectAudio} selectedId={regionAssetId} onSelect={setRegionAssetId}
+                    onPreview={previewRegion} busy={busy} act={act} waveform={regionSource && <Waveform asset={regionSource} />} />
+                  <MusicPresets data={data} busy={busy} act={act} />
+                  </details>
                   {assets.length === 0 && (
                     <div className="empty library-empty">
                       <AudioLines size={48} />
@@ -1848,7 +1874,7 @@ export function App() {
   );
 }
 
-function JobPanel({ job }: { job: Job }) {
+function JobPanel({ job, results = [], onResult, onListen }: { job: Job; results?: Asset[]; onResult?: (asset: Asset) => void; onListen?: (asset: Asset) => void }) {
   useTranslation();
   const engine = String(job.params._engine ?? "acestep-v15-turbo");
   const duration = job.params.audio_duration ?? job.params.duration;
@@ -1918,6 +1944,11 @@ function JobPanel({ job }: { job: Job }) {
           <span>{tr("workspace", "peak")}{" "}{formatNumber(job.metrics.peak_rss_gib, 2)} GiB</span>
         </div>
       )}
+      {job.state === "completed" && results.map(asset => <div className="studio-toolbar" key={asset.id}>
+        <span>{asset.name} · {formatTime(asset.metadata.duration)} · <code>{asset.id.slice(0, 8)}</code></span>
+        <button className="outline" onClick={() => onListen?.(asset)}>{tr("workspace", "listenToResult")}</button>
+        {asset.kind !== "preview" && <button className="outline" onClick={() => onResult?.(asset)}>{tr("workspace", "openResultInLibrary")}</button>}
+      </div>)}
       {job.error && <p className="error-text">{systemMessage(job.error)}</p>}
     </div>
   );

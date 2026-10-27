@@ -72,6 +72,9 @@ export function LibraryTools({ data, assets, filters, update, selected, onSelect
   const patch = (value: Partial<LibraryFilters>) => update({ ...filters, ...value });
   const count = assets.filter(a => selected.includes(a.id)).length;
   const matching = filterLibrary(assets, filters);
+  const activeFilters = [filters.query, filters.favorite ? tr("workspace", "favorites") : "",
+    data.sessions.find(s => s.id === filters.session_id && s.project_id === project)?.name,
+    filters.kind ? tr("library", `kind_${filters.kind}`) : "", ...filters.tags].filter(Boolean);
   async function tag(operation: "add" | "remove") {
     if (!project) return;
     const result = await act("asset_tags_update", { project_id: project,
@@ -81,6 +84,7 @@ export function LibraryTools({ data, assets, filters, update, selected, onSelect
   }
   return <section className="panel library-tools" aria-label={tr("library", "organization")}>
     <div className="studio-body">
+      <p className="muted">{tr("workspace", "activeFiltersSummary")}: {activeFilters.length ? activeFilters.join(" · ") : tr("workspace", "noActiveFilters")}</p>
       <div className="form-grid">
         <label>{tr("library", "session")}<SelectControl label={tr("library", "session")} value={filters.session_id ?? "all"}
           onChange={value => patch({ session_id: value === "all" ? null : value })}

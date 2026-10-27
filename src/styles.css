@@ -1575,3 +1575,12 @@ input[type="checkbox"] {
 .player-seams .text-button { font-size: 11px; padding: 0; }
 .library-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
 .library-tags > span { border: 1px solid var(--line); color: var(--muted); padding: 2px 7px; font-size: 12px; overflow-wrap: anywhere; }
+
+.workflow-path-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; padding: 18px; }
+.workflow-path-grid p { margin: 10px 0 0; color: var(--muted); line-height: 1.5; }
+.workflow-path-note { padding: 0 18px 16px; margin: 0; }
+.library-advanced > summary { cursor: pointer; padding: 16px 18px; font-weight: 600; }
+.version-panel:focus { outline: 2px solid var(--amber); outline-offset: 2px; }
+@media (max-width: 1100px) { .workflow-path-grid { grid-template-columns: 1fr; gap: 16px; } }
+
+.version-tools { display: flex; flex-wrap: wrap; gap: 8px; border-top: 1px solid var(--line); margin-top: 12px; padding-top: 8px; }

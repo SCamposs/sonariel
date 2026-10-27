@@ -56,3 +56,25 @@ funcional/heurística, não pesquisa com usuários ou medição quantitativa de 
 A validação automatizada do Bloco A permite continuar a implementação
 independente. A conferência desktop da fase continua obrigatória e pendente;
 não há declaração de conclusão desta fase neste registro inicial.
+
+## Bloco B — implementação e validação automatizada
+
+- Projetos oferece três intenções com pré-requisitos reais e navegação apenas;
+  o resumo genérico anterior foi substituído por orientação compacta. Sem
+  projeto, processar WAV abre a criação/seleção em vez de instalar um motor.
+- Biblioteca mantém pesquisa/filtros essenciais e seu resumo, depois A/B e
+  resultados. Trechos e presets têm seção explicitamente nomeada e ações
+  contextuais. Exportação em lote aparece com seleção; sua montagem é mantida
+  para não descartar o destino/rascunho ao limpar a seleção.
+- Sessão → biblioteca aplica o ID da sessão, mantendo os outros filtros.
+  Resultado de tarefa → biblioteca troca o projeto quando necessário, abre o
+  ID exato, limpa filtros conflitantes e amplia a paginação para localizá-lo.
+  O foco contextual é aplicado uma única vez, preservando a rolagem posterior.
+- Fila → player utiliza os resultados do job/projeto, inclusive prévias.
+  Biblioteca/Voice → FX mantém o ID da fonte e valida o projeto. Derivados
+  oferecem navegação para uma origem ainda disponível do mesmo projeto.
+- 80 testes frontend passaram em 20 arquivos; TypeScript/build passaram. Os
+  quatro novos workflows automatizados cobrem intenções sem efeitos colaterais,
+  ordem da biblioteca/identidade FX independente do player, sessão/filtros e
+  navegação de job de outro projeto. São testes React com RPC simulado, não
+  observações desktop. A conferência desktop continua pendente.
