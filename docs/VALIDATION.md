@@ -78,3 +78,7 @@ English/pt-BR internationalization and native loop/batch export/music preset con
 - GPU inference, other upstream task types and active inference cancellation are not implemented. Automated mocks are not counted as live integration evidence.
 
 The source repository contains no audio, model weights, engine environments, installer binaries, private logs or personal configuration. Distribution artifacts remain outside Git.
+
+## Unreleased source validation: Phase 2.5
+
+The [Phase 2.5 validation record](PHASE2_5.md) covers schema 5, non-destructive regions, tags/project filters, real smaller-window checks and the 59-tool packaged development core. It distinguishes native DSP/desktop evidence from model inference and explicit human loop acceptance. The installed/distributed v0.3.2 and its updater remain unchanged. Earlier installer/engine measurements above are historical evidence, not a benchmark of these source changes.

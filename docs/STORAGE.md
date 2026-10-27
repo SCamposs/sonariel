@@ -17,6 +17,8 @@ Descarte/restauração aguardam a fila terminar. Projetos, parâmetros, históri
 
 ## Migração
 
+Na Fase 2.5 da main, o schema 5 adiciona tags, filtros por projeto e o registro idempotente dos recortes, com backup consistente de schemas 1–4. Tags e filtros não movem arquivos. Um recorte confirmado produz um WAV próprio com hash, limites por amostra e linhagem; referências e trechos derivados de referências continuam protegidos. A origem de um trecho fica protegida pela relação de dependência. As tags de organização não são incluídas automaticamente no manifesto de exportação. [Evidências da Fase 2.5](PHASE2_5.md).
+
 Na main de desenvolvimento (Fase 2, ainda sem release), o schema 4 adiciona presets musicais e seu histórico de uso, com backup consistente de schemas 1–3. Áudios usados como condicionamento de presets musicais também ficam protegidos do descarte. Use um perfil de prévia separado; a versão estável não abre o banco mais novo. [Instruções e evidências](PHASE2.md).
 
 O schema 3 acrescenta `asset_trash`, sem recriar as tabelas existentes. Antes de migrar schemas 1/2, o app produz um backup SQLite consistente em `backups`. Versões anteriores não devem abrir um banco já migrado; use o backup com suporte técnico caso precise retornar.

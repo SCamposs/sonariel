@@ -59,3 +59,16 @@ The development core exposes 55 tools. Reload the MCP client after deliberately 
 - `music_preset_generate`: requires `repeat`/`variation`, the matching review token, `confirmed=true`, and a request key. A genuinely new request needs a new key; recovery of an accepted request uses its existing key/job. Results retain preset ID/revision/intent lineage. Reusing a seed does not guarantee identical audio across model revisions or environments.
 
 The desktop exposes preset capture, favorite, revision/duplicate and review. Creative parameter/prompt changes and generation remain directed through Codex/MCP. No generic shell or arbitrary Audacity execution tool was added. See [Phase 2 validation](PHASE2.md) before using these contracts.
+
+## Phase 2.5 source contracts (unreleased)
+
+The development core now exposes 59 tools. Discover actual installed availability first; the distributed v0.3.2 server is unchanged. Four tools are additive:
+
+- `audio_region_create`: registered asset ID, request key, sample-rounded start/end seconds, name, engine ID and explicit `style`/`source` role. Confirmed excerpts become derived WAV assets; identical selections reuse a verified asset. Never reuse a key with changed parameters. Refer to the returned asset ID in later generation/preset requests, preserving its intended role/engine. No model loads or generation occurs when confirming a region.
+- `asset_tags_update`: atomic add/remove of normalized organizational tags on up to 200 explicit same-project assets. Tags do not alter audio/generation identity. No production defaults are shipped.
+- `project_tags_list`: active tags/counts only for the specified project.
+- `library_filters_save`: combined query/favorite/session/type/all-tags-match filters, persisted per project. The selected project's stored filters are available in `snapshot`.
+
+Existing contracts extend without changing their defaults: `results_list` accepts those combined filters; `reference_register` and `result_import` optionally accept a same-project session ID. `snapshot` includes references and library preferences. Region role/engine checks apply to generation/preset reuse; an original unrestricted asset retains its existing explicit-use behavior.
+
+`fx_loop_render` optionally accepts `beat_grid={anchor_seconds,bpm,beats_per_bar,bars}`. Use only timing that has actually been verified; a model's requested BPM or an onset estimator is not proof. For audible anchor A, cycle P and overlap L, pass the region A−L through A+P. The adapter checks this relationship on the sample grid and stores the guide parameters. Crossfade, sample continuity and correct duration do not certify harmony/phrase continuity. Never silently activate warping or claim user listening approval. [Musical loop acceptance](LOOP_ACCEPTANCE.md).

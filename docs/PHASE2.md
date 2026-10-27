@@ -89,4 +89,6 @@ On first launch, choose English or Português (Brasil), then continue to the gui
 
 ### Next phase
 
+The subsequent [Phase 2.5 record](PHASE2_5.md) tracks real smaller-window checks, reference regions, tags/filters and the rejected musical loop listening rounds. The audit and counts above describe the earlier Phase 2 baseline.
+
 Complete human loop-seam listening and small-window desktop acceptance, then investigate #4 reference-region controls and #5 combined library/session filters. Keep offline cold-cache acceptance, GPU profiles, inference cancellation and generative draft/refinement as separate evidence-led investigations. Do not promote this phase to a release until its remaining manual acceptance is resolved.

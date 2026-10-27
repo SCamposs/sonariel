@@ -12,7 +12,7 @@ Sonariel is a source-available Windows desktop application that brings music gen
 
 *Real v0.3.2 desktop captures. The interface is currently in Brazilian Portuguese. The isolated showcase uses an imported synthetic sound study and real native DSP renders, not AI-generated music or production material. [Capture details](docs/SHOWCASE.md).*
 
-**Development on main:** English/pt-BR UI, language selection before onboarding, non-destructive loops, batch WAV export and versioned music presets are available in source builds. These are not included in the v0.3.2 download. Use an isolated preview profile; see [Phase 2 validation and preview instructions](docs/PHASE2.md).
+**Development on main:** English/pt-BR UI, batch WAV export, versioned music presets, non-destructive audio regions, tags and project-specific combined filters are available in source builds. Loop tools remain under human listening evaluation. These changes are not included in the v0.3.2 download. Use an isolated preview profile; see [Phase 2.5 validation and preview instructions](docs/PHASE2_5.md).
 
 ## From a request to a usable version
 

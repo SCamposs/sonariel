@@ -6,6 +6,8 @@ Current distributed release: [v0.3.2](https://github.com/SCamposs/sonariel/relea
 
 Source builds on main now include EN/pt-BR UI and the Phase 2 production tools. They have not been published as a release. [Phase 2: evidence, screenshots, limitations and isolated preview](PHASE2.md).
 
+Phase 2.5 adds reference/source regions and project-local tags/filters. Its acceptance record distinguishes real desktop/MCP execution from automated tests and rejected loop listening rounds: [Phase 2.5](PHASE2_5.md), [musical loop acceptance](LOOP_ACCEPTANCE.md).
+
 ## Start here
 
 | Document | Purpose | Language |
