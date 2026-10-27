@@ -31,6 +31,7 @@ export type Session = {
   created: number;
 };
 export type Asset = {
+  tags?: string[];
   id: string;
   project_id: string;
   session_id: string | null;
@@ -54,6 +55,7 @@ export type Asset = {
     parameters?: Record<string, unknown>;
     music_preset?: { preset_id: string; family_id: string; revision: number; engine_id: string; intent: string; source_asset_id: string | null };
     sha256: string;
+    region?: { source_id: string; source_sha256: string; start_frame: number; end_frame: number; sample_rate: number; role: "style" | "source"; engine_id: string };
   };
 };
 export type Job = {
@@ -75,6 +77,8 @@ export type Job = {
   };
 };
 export type Snapshot = {
+  references?: Asset[];
+  library_filters?: { project_id: string | null; filters: Partial<import("./library-workspace").LibraryFilters> };
   ui_preferences?: { locale: "en" | "pt-BR" | null; existing_installation: boolean };
   engines?: EngineInfo[];
   voice_environment?: { python: string; models: string } | null;

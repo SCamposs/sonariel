@@ -1567,3 +1567,11 @@ input[type="checkbox"] {
 .version-actions {
   flex-wrap: wrap;
 }
+.library-tools, .audio-region { margin-bottom: 20px; min-width: 0; }
+.audio-region > summary { cursor: pointer; }
+.library-tag-editor { display: grid; gap: 12px; border-top: 1px solid var(--line); padding-top: 16px; }
+.library-tag-editor label { display: grid; gap: 8px; }
+.player-seams { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.player-seams .text-button { font-size: 11px; padding: 0; }
+.library-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
+.library-tags > span { border: 1px solid var(--line); color: var(--muted); padding: 2px 7px; font-size: 12px; overflow-wrap: anywhere; }

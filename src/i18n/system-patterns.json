@@ -1078,5 +1078,77 @@
   {
     "key": "usedAsConditioningByMusicPreset",
     "source": "Used as conditioning by a music preset"
+  },
+  {
+    "key": "libraryDiagnostic1",
+    "source": "A tag cannot be added and removed in the same request"
+  },
+  {
+    "key": "libraryDiagnostic2",
+    "source": "Choose a project before filtering its library"
+  },
+  {
+    "key": "libraryDiagnostic3",
+    "source": "Choose mono/stereo audio at 8–192 kHz"
+  },
+  {
+    "key": "libraryDiagnostic4",
+    "source": "Not enough available RAM for region verification; try again after processing finishes"
+  },
+  {
+    "key": "libraryDiagnostic5",
+    "source": "Region boundaries must be finite"
+  },
+  {
+    "key": "libraryDiagnostic6",
+    "source": "Region frame count does not match selection"
+  },
+  {
+    "key": "libraryDiagnostic7",
+    "source": "Region is outside the source or engine duration limits"
+  },
+  {
+    "key": "libraryDiagnostic8",
+    "source": "Region role or engine differs; confirm a new region for this use"
+  },
+  {
+    "key": "libraryDiagnostic9",
+    "source": "Select tags from the active project"
+  },
+  {
+    "key": "libraryDiagnostic10",
+    "source": "Session filter belongs to another project"
+  },
+  {
+    "key": "libraryDiagnostic11",
+    "source": "Source changed during region creation"
+  },
+  {
+    "key": "libraryDiagnostic12",
+    "source": "Source ended before the selected region"
+  },
+  {
+    "key": "libraryDiagnostic13",
+    "source": "Tag selection belongs to another project"
+  },
+  {
+    "key": "libraryDiagnostic14",
+    "source": "Tags must contain 1–48 visible characters"
+  },
+  {
+    "key": "libraryDiagnostic15",
+    "source": "This engine supports source audio only, not style references"
+  },
+  {
+    "key": "libraryDiagnostic16",
+    "source": "Use at most 32 tags per audio"
+  },
+  {
+    "key": "libraryDiagnostic17",
+    "source": "request_key already used with different region parameters"
+  },
+  {
+    "key": "libraryDiagnostic5c5f19660219",
+    "source": "Beat grid does not match selected region; apply the grid again after changing the crossfade"
   }
 ]

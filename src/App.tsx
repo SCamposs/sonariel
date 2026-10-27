@@ -12,7 +12,11 @@ import { PathField } from "./ui/path-field";
 import { StorageWorkspace } from "./storage";
 import { BatchExport } from "./batch-export";
 import { MusicPresets } from "./music-presets";
+import { LibraryTools, filterLibrary, loopSeams, useLibraryFilters } from "./library-workspace";
+import { AudioRegion } from "./audio-region";
+import { useWorkspaceScroll } from "./ui/use-workspace-scroll";
 import { FxStudio, VoiceStudio, MusicEngines } from "./studio";
+import { RetainedWorkspace } from "./ui/retained-workspace";
 import {
   Activity,
   ArrowDownToLine,
@@ -200,18 +204,25 @@ export function App() {
   const [page, setPage] = useState<Page>("projects");
   const [data, setData] = useState<Snapshot>();
   const locale = useLocaleProfile(data ? (data.ui_preferences ?? { locale: "pt-BR", existing_installation: true }) : undefined);
+  const workspaceScroll = useWorkspaceScroll(`${data?.selected_project ?? ""}:${page}`);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const refreshInFlight = useRef(0);
-  const [query, setQuery] = useState("");
-  const [favorites, setFavorites] = useState(false);
+  const library = useLibraryFilters(data);
+  const query = library.filters.query;
+  const favorites = library.filters.favorite;
+  const [regionAssetId, setRegionAssetId] = useState("");
+  const [importSessionId, setImportSessionId] = useState("");
+  const [visibleLimit, setVisibleLimit] = useState(50);
+  useEffect(() => setVisibleLimit(50), [data?.selected_project, library.filters]);
+  const [playRange, setPlayRange] = useState<{ assetId: string; start: number; end: number }>();
   const [activeId, setActiveId] = useState<string>();
   const [fxAssetId, setFxAssetId] = useState<string>();
   const [compare, setCompare] = useState<string[]>([]);
   const [exportSelection, setExportSelection] = useState<string[]>([]);
-  useEffect(() => { setExportSelection([]); }, [data?.selected_project]);
+  useEffect(() => { setExportSelection([]); setCompare([]); setRegionAssetId(""); setImportSessionId(""); }, [data?.selected_project]);
   const [connection, setConnection] = useState<{
     url: string;
     token: string;
@@ -295,15 +306,11 @@ export function App() {
     }
   };
   const project = data?.projects.find((p) => p.id === data.selected_project);
-  const assets =
-    data?.assets.filter(
-      (a) =>
-        a.kind !== "preview" &&
-        (!project || a.project_id === project.id) &&
-        (!favorites || a.favorite) &&
-        a.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()),
-    ) ?? [];
-  const active = data?.assets.find((a) => a.id === activeId);
+  const allAudio = [...(data?.assets ?? []), ...(data?.references ?? [])];
+  const projectAudio = allAudio.filter(a => a.project_id === project?.id && a.kind !== "preview");
+  const assets = filterLibrary(projectAudio.filter(a => library.filters.kind === "reference" || a.kind !== "reference"), library.filters);
+  const regionSource = projectAudio.find(a => a.id === regionAssetId);
+  const active = allAudio.find((a) => a.id === activeId);
   const activeJob = data?.jobs.find((j) =>
     ["loading", "generating", "submitted"].includes(j.state),
   );
@@ -312,11 +319,19 @@ export function App() {
     (a) => a.selected && a.project_id === project?.id,
   );
   const selectAudio = (asset: Asset) => {
+    setPlayRange(undefined);
     if (asset.id !== activeId) {
       setPlaying(false);
       setPosition(0);
       setActiveId(asset.id);
     }
+  };
+  const previewRegion = (asset: Asset, start: number, end: number) => {
+    setPlayRange({ assetId: asset.id, start, end });
+    setActiveId(asset.id);
+    setPosition(start);
+    if (asset.id === activeId && audio.current) audio.current.currentTime = start;
+    setPlaying(true);
   };
   const openDetail = (asset: Asset) => {
     detailReturnFocus.current =
@@ -463,7 +478,7 @@ export function App() {
             </Badge>
           </div>
         </header>
-        <main>
+        <main ref={workspaceScroll.ref} onScroll={workspaceScroll.onScroll}>
           <div className="page-heading">
             <div>
               <p className="section-caption">{currentPage.caption}</p>
@@ -547,9 +562,8 @@ export function App() {
                   }}
                 />
               )}
-              {page === "fx" && (
+              <RetainedWorkspace key={`fx:${data.selected_project}`} active={page === "fx"}>
                 <FxStudio
-                  key={data.selected_project}
                   data={data}
                   busy={busy}
                   act={act}
@@ -560,7 +574,7 @@ export function App() {
                   }}
                   edit={(asset) => void sendToAudacity(asset)}
                 />
-              )}
+              </RetainedWorkspace>
               {page === "projects" && (
                 <>
                   {projectForm && (
@@ -961,13 +975,13 @@ export function App() {
                       <input
                         aria-label={tr("workspace", "searchResults")}
                         value={query}
-                        onChange={(e) => setQuery(e.target.value)}
+                        onChange={(e) => library.update({ ...library.filters, query: e.target.value })}
                         placeholder={tr("workspace", "searchResults2")}
                       />
                     </label>
                     <button
                       className={favorites ? "outline selected" : "outline"}
-                      onClick={() => setFavorites(!favorites)}
+                      onClick={() => library.update({ ...library.filters, favorite: !favorites })}
                     >
                       <Star size={15} /> {tr("workspace", "favorites")}</button>
                     <span className="muted">{assets.length} {tr("workspace", "versions")}</span>
@@ -990,6 +1004,7 @@ export function App() {
                               project_id: project.id,
                               path: registerPath,
                               name: registerName,
+                              ...(importSessionId ? { session_id: importSessionId } : {}),
                             },
                             tr("workspace", "fileRegisteredOriginalPreserved"),
                           ).then((value) => {
@@ -1020,6 +1035,9 @@ export function App() {
                         </label>
                         <PathField className="full" label={tr("workspace", "absoluteLocalPath")} kind="audio"
                           required value={registerPath} onChange={setRegisterPath} disabled={busy} />
+                        <label className="full">{tr("library", "importSession")}<SelectControl label={tr("library", "importSession")}
+                          value={importSessionId || "none"} disabled={busy} onChange={value => setImportSessionId(value === "none" ? "" : value)}
+                          options={[{ value: "none", label: tr("library", "noSession") }, ...data.sessions.filter(s => s.project_id === project?.id).map(s => ({ value: s.id, label: s.name }))]} /></label>
                         <button className="primary" disabled={busy || !project}>
                           {tr("workspace", "registerFile")}</button>
                       </form>
@@ -1038,7 +1056,7 @@ export function App() {
                     >
                       <div className="comparison">
                         {compare.map((id, index) => {
-                          const asset = data.assets.find((a) => a.id === id);
+                          const asset = allAudio.find((a) => a.id === id);
                           return (
                             asset && (
                               <div key={id}>
@@ -1084,11 +1102,15 @@ export function App() {
                       </div>
                     </Panel>
                   )}
-                  <BatchExport assets={data.assets.filter(a => a.project_id === project?.id)} selected={exportSelection}
+                  <LibraryTools data={data} assets={projectAudio} filters={library.filters} update={library.update}
+                    selected={exportSelection} onSelection={setExportSelection} busy={busy} act={act} saveError={library.error} />
+                  <AudioRegion assets={projectAudio} selectedId={regionAssetId} onSelect={setRegionAssetId}
+                    onPreview={previewRegion} busy={busy} act={act} waveform={regionSource && <Waveform asset={regionSource} />} />
+                  <BatchExport assets={projectAudio} selected={exportSelection}
                     onSelection={setExportSelection} busy={busy} act={act} />
                   <MusicPresets data={data} busy={busy} act={act} />
                   <div className="library-grid">
-                    {assets.map((asset) => (
+                    {assets.slice(0, visibleLimit).map((asset) => (
                       <article
                         className={`version-panel ${asset.id === activeId ? "listening" : ""}`}
                         key={asset.id}
@@ -1100,7 +1122,9 @@ export function App() {
                               : asset.kind === "imported"
                                 ? tr("workspace", "imported")
                                 : asset.kind === "processed" ? tr("production", "processedBadge")
-                                  : asset.kind === "voice" ? tr("production", "voiceBadge") : tr("workspace", "generation")}{" "}
+                                  : asset.kind === "voice" ? tr("production", "voiceBadge")
+                                    : asset.kind === "region" ? tr("library", "regionBadge")
+                                      : asset.kind === "reference" ? tr("library", "kind_reference") : tr("workspace", "generation")}{" "}
                             / {asset.id.slice(0, 6)}
                           </span>
                           <button
@@ -1145,6 +1169,7 @@ export function App() {
                               : 0
                           }
                         />
+                        {!!asset.tags?.length && <div className="library-tags" aria-label={tr("library", "candidateTags")}>{asset.tags.map(tag => <span key={tag}>{tag}</span>)}</div>}
                         <div className="data-line">
                           <span>{formatTime(asset.metadata.duration)}</span>
                           <span>
@@ -1168,12 +1193,12 @@ export function App() {
                               onChange={() => toggleCompare(asset.id)}
                             />{" "}
                             {tr("workspace", "compare")}</label>
-                          {asset.path.toLowerCase().endsWith(".wav") && asset.kind !== "reference" && <label className="check-label">
+                          <label className="check-label">
                             <input type="checkbox" disabled={busy} checked={exportSelection.includes(asset.id)}
-                              aria-label={tr("production", "exportAsset", { name: asset.name })}
+                              aria-label={tr("library", "selectCandidate", { name: asset.name })}
                               onChange={e => setExportSelection(ids => e.target.checked ? [...ids, asset.id] : ids.filter(id => id !== asset.id))} />
-                            {tr("production", "exportSelect")}
-                          </label>}
+                            {tr("library", "select")}
+                          </label>
                           {!!asset.selected && (
                             <Badge tone="ok">{tr("workspace", "selected")}</Badge>
                           )}
@@ -1187,13 +1212,14 @@ export function App() {
                       </article>
                     ))}
                   </div>
+                  {assets.length > visibleLimit && <button className="outline" onClick={() => setVisibleLimit(value => value + 50)}>{tr("library", "showMore", { shown: visibleLimit, total: assets.length })}</button>}
                   {assets.length === 0 && (
                     <div className="empty library-empty">
                       <AudioLines size={48} />
-                      <h2>{tr("workspace", "yourNextListeningSessionStartsHere")}</h2>
+                      <h2>{projectAudio.length ? tr("library", "noMatches") : tr("workspace", "yourNextListeningSessionStartsHere")}</h2>
                       <p>
-                        {tr("workspace", "resultsRequestedThroughCodexAppearAutomatically")}<br />
-                        {tr("workspace", "youCanAlsoRegisterFilesYouHaveAlready")}</p>
+                        {projectAudio.length ? tr("library", "noMatchesHelp") : <>{tr("workspace", "resultsRequestedThroughCodexAppearAutomatically")}<br />
+                        {tr("workspace", "youCanAlsoRegisterFilesYouHaveAlready")}</>}</p>
                     </div>
                   )}
                 </>
@@ -1602,6 +1628,12 @@ export function App() {
           </div>
           <div>
             <strong>{active?.name ?? tr("workspace", "selectAResult")}</strong>
+            {playRange && playRange.assetId === activeId && <span>{tr("library", "playbackRegion", { start: formatNumber(playRange.start, 2), end: formatNumber(playRange.end, 2) })}</span>}
+            {!!loopSeams(active).length && <div className="player-seams"><span>{tr("library", "seams")}</span>
+              {loopSeams(active).map(at => <button className="text-button" key={at}
+                aria-label={tr("library", "listenToSeam", { at: formatNumber(at, 2) })}
+                onClick={() => { setPlayRange(undefined); if (audio.current) audio.current.currentTime = Math.max(0, at - .75); setPlaying(true); }}>
+                {formatNumber(at, 2)} s</button>)}</div>}
             <span>
               {active
                 ? tr("workspace", "valueKhzValueLocalFile", { value0: active.metadata.sample_rate / 1000, value1: active.metadata.subtype })
@@ -1625,7 +1657,7 @@ export function App() {
               aria-label={tr("workspace", "returnToStart")}
               disabled={!active}
               onClick={() => {
-                if (audio.current) audio.current.currentTime = 0;
+                if (audio.current) audio.current.currentTime = playRange && playRange.assetId === activeId ? playRange.start : 0;
               }}
             >
               <SkipBack size={16} />
@@ -1634,7 +1666,13 @@ export function App() {
               className="transport-play"
               aria-label={playing ? tr("workspace", "pauseAudio") : tr("workspace", "playAudio")}
               disabled={!active}
-              onClick={() => setPlaying(!playing)}
+              onClick={() => {
+                if (!playing && audio.current && playRange && playRange.assetId === activeId
+                  && (audio.current.currentTime >= playRange.end || audio.current.currentTime < playRange.start)) {
+                  audio.current.currentTime = playRange.start;
+                }
+                setPlaying(!playing);
+              }}
             >
               {playing ? (
                 <Pause size={19} />
@@ -1696,9 +1734,18 @@ export function App() {
           ref={audio}
           src={source}
           onLoadedMetadata={() => {
-            if (audio.current) audio.current.volume = volume;
+            if (audio.current) {
+              audio.current.volume = volume;
+              if (playRange && playRange.assetId === activeId) audio.current.currentTime = playRange.start;
+            }
           }}
-          onTimeUpdate={() => setPosition(audio.current?.currentTime ?? 0)}
+          onTimeUpdate={() => {
+            const current = audio.current?.currentTime ?? 0;
+            setPosition(current);
+            if (playRange && playRange.assetId === activeId && current >= playRange.end && audio.current) {
+              audio.current.pause(); setPlaying(false);
+            }
+          }}
           onEnded={() => setPlaying(false)}
           onError={() => {
             if (source)
@@ -1727,6 +1774,11 @@ export function App() {
               </dd>
               <dt>{tr("workspace", "previousVersion")}</dt>
               <dd>{detail.parent_id ?? tr("workspace", "initialVersion")}</dd>
+              {detail.metadata.region && <>
+                <dt>{tr("library", "role")}</dt><dd>{tr("library", detail.metadata.region.role === "style" ? "styleRole" : "sourceRole")}</dd>
+                <dt>{tr("library", "targetEngine")}</dt><dd><code>{detail.metadata.region.engine_id}</code></dd>
+                <dt>{tr("library", "regionRange")}</dt><dd>{formatNumber(detail.metadata.region.start_frame / detail.metadata.region.sample_rate, 3)}–{formatNumber(detail.metadata.region.end_frame / detail.metadata.region.sample_rate, 3)} s</dd>
+              </>}
               {detail.metadata.music_preset && <>
                 <dt>{tr("production", "musicPresets")}</dt>
                 <dd><code>{detail.metadata.music_preset.preset_id}</code> · {tr("production", "presetRevision", { revision: detail.metadata.music_preset.revision })}</dd>

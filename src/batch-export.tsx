@@ -30,12 +30,13 @@ export function BatchExport({ assets, selected, onSelection, busy, act }: {
   return <section className="panel batch-export">
     <header className="panel-title"><h2><ArrowDownToLine size={16} /> {tr("production", "batchExport")}</h2>
       <div className="studio-toolbar"><button className="text-button" disabled={busy || !eligible.length}
-        onClick={() => onSelection(eligible.map(a => a.id))}>{tr("production", "selectProjectWavs")}</button>
+        onClick={() => onSelection(eligible.slice(0, 200).map(a => a.id))}>{tr("library", eligible.length > 200 ? "selectFirstProjectWavs" : "selectProjectWavs")}</button>
         {!!selected.length && <button className="text-button" disabled={busy} onClick={() => onSelection([])}>{tr("production", "clearExportSelection")}</button>}</div>
     </header>
     <div className="studio-body">
       {!chosen.length ? <p className="muted">{tr("production", "batchHelp")}</p> : <>
         <p>{tr("production", "selectedForExport", { count: chosen.length })}</p>
+        {chosen.length > 200 && <p role="status">{tr("library", "selectionLimit")}</p>}
         <details><summary>{tr("production", "reviewExportSelection")}</summary><ul>{chosen.map(a => <li key={a.id}>{a.name}</li>)}</ul></details>
         <PathField label={tr("production", "exportFolder")} kind="directory" value={directory} onChange={setDirectory} disabled={busy} />
         <label>{tr("production", "namingPattern")}<input value={naming} onChange={e => setNaming(e.target.value)} disabled={busy} maxLength={160} /></label>
@@ -45,7 +46,7 @@ export function BatchExport({ assets, selected, onSelection, busy, act }: {
         <label className="check"><input type="checkbox" checked={manifest} onChange={e => setManifest(e.target.checked)} disabled={busy} />{tr("production", "includeManifest")}</label>
         {manifest && <label className="check"><input type="checkbox" checked={prompts} onChange={e => setPrompts(e.target.checked)} disabled={busy} />{tr("production", "includePrompts")}</label>}
         <p className="muted">{tr("production", "exportPrivacy")}</p>
-        <button className="primary" disabled={busy || !directory || !naming} onClick={() => void run()} aria-busy={busy}>
+        <button className="primary" disabled={busy || !directory || !naming || chosen.length > 200} onClick={() => void run()} aria-busy={busy}>
           <ArrowDownToLine size={16} />{tr("production", "exportSelected")}</button>
       </>}
       {report && <div role="status"><h3>{tr("production", "exportReport")}</h3>

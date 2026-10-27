@@ -22,6 +22,8 @@ import enSystem from "./locales/en/system.json";
 import ptSystem from "./locales/pt-BR/system.json";
 import enProduction from "./locales/en/production.json";
 import ptProduction from "./locales/pt-BR/production.json";
+import enLibrary from "./locales/en/library.json";
+import ptLibrary from "./locales/pt-BR/library.json";
 
 export type AppLocale = "en" | "pt-BR";
 export const supportedLocales: AppLocale[] = ["en", "pt-BR"];
@@ -38,9 +40,9 @@ export function detectLocale(languages: readonly string[]): AppLocale {
 void i18n.use(initReactI18next).init({
   resources: {
     en: { workspace: enWorkspace, studio: enStudio, storage: enStorage, common: enCommon,
-      updates: enUpdates, guide: enGuide, window: enWindow, files: enFiles, settings: enSettings, system: enSystem, production: enProduction },
+      updates: enUpdates, guide: enGuide, window: enWindow, files: enFiles, settings: enSettings, system: enSystem, production: enProduction, library: enLibrary },
     "pt-BR": { workspace: ptWorkspace, studio: ptStudio, storage: ptStorage, common: ptCommon,
-      updates: ptUpdates, guide: ptGuide, window: ptWindow, files: ptFiles, settings: ptSettings, system: ptSystem, production: ptProduction },
+      updates: ptUpdates, guide: ptGuide, window: ptWindow, files: ptFiles, settings: ptSettings, system: ptSystem, production: ptProduction, library: ptLibrary },
   },
   lng: "pt-BR", // Preserve the legacy UI until the profile is inspected.
   fallbackLng: "en",

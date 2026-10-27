@@ -2,7 +2,7 @@
   "batchExport": "Batch export",
   "selectProjectWavs": "Select project WAVs",
   "clearExportSelection": "Clear export selection",
-  "batchHelp": "Select Export on library cards, or select all project WAVs. Originals and references are preserved.",
+  "batchHelp": "Select candidates on library cards, then review the WAV selection here. Originals and references are preserved.",
   "selectedForExport": "Selected WAVs: {{count}}",
   "reviewExportSelection": "Review selected files",
   "exportFolder": "Export folder",

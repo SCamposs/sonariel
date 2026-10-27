@@ -14,12 +14,38 @@ vi.mock("./ui/select-control", () => ({ SelectControl: () => null }));
 vi.mock("./ui/audio-slider", () => ({ AudioSlider: () => null }));
 vi.mock("./studio", () => ({
   FxStudio: () => <div>FX workspace</div>,
-  VoiceStudio: () => null,
+  VoiceStudio: () => <div>Voice workspace</div>,
   MusicEngines: () => null,
 }));
 
 beforeEach(() => { vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => {}); });
 afterEach(() => { cleanup(); vi.resetAllMocks(); vi.restoreAllMocks(); });
+
+it("switches Voice to retained FX without reusing the sibling workspace identity", async () => {
+  const snapshot = {
+    projects: [], sessions: [], assets: [], jobs: [], events: [], edits: [],
+    selected_project: "project-one", setup: null, environment: null,
+    engine: { state: "stopped", managed: false, rss_gib: 0 },
+    telemetry: { available_gib: 8, total_gib: 24, used_percent: 67 },
+    codex: { configured: false, tested: false },
+    audacity: { running: false, pipe_available: false, tested: false },
+    preferences: { idle_minutes: 10 },
+  };
+  vi.mocked(rpc).mockImplementation(async method => method === "snapshot" ? snapshot : {});
+  render(<App />);
+  await screen.findByText("Do contexto à próxima decisão.");
+  fireEvent.click(screen.getByRole("button", { name: "Voice Studio" }));
+  expect(screen.getByText("Voice workspace")).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "FX & processamento" }));
+  expect(screen.queryByText("Voice workspace")).toBeNull();
+  expect(screen.getByText("FX workspace").closest("[hidden]")).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Voice Studio" }));
+  expect(screen.getByText("Voice workspace")).toBeTruthy();
+  expect(screen.getByText("FX workspace").closest("[hidden]")).not.toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "FX & processamento" }));
+  expect(screen.queryByText("Voice workspace")).toBeNull();
+  expect(screen.getByText("FX workspace").closest("[hidden]")).toBeNull();
+});
 
 it.each([false, true])("keeps shared refresh busy through completion (failure=%s)", async (fails) => {
   const snapshot = {

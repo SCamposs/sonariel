@@ -9,6 +9,7 @@ import {
 } from "@testing-library/react";
 import { FxStudio, VoiceStudio, MusicEngines } from "./studio";
 import { rpc, type Asset, type Snapshot } from "./api";
+import { RetainedWorkspace } from "./ui/retained-workspace";
 
 vi.mock("./api", async () => ({
   ...(await vi.importActual("./api")),
@@ -79,6 +80,30 @@ const props = () => ({
   act: vi.fn(async () => ({})),
   listen: vi.fn(),
   edit: vi.fn(),
+});
+
+it("retains the FX source and unsaved chain across module navigation, but resets on project change", async () => {
+  vi.mocked(rpc).mockResolvedValue([]);
+  const p = props();
+  const workspace = (active: boolean, project = "p") => <RetainedWorkspace key={project} active={active}>
+    <FxStudio {...p} data={{ ...snapshot, selected_project: project }} initialAssetId={asset.id} />
+  </RetainedWorkspace>;
+  const view = render(workspace(false));
+  expect(rpc).not.toHaveBeenCalled();
+  view.rerender(workspace(true));
+  fireEvent.click(screen.getByRole("button", { name: "Adicionar efeito" }));
+  fireEvent.change(screen.getByRole("spinbutton", { name: "Ganho (dB)" }), { target: { value: "-9" } });
+  view.rerender(workspace(false));
+  expect(screen.queryByRole("button", { name: "Renderizar versão completa" })).toBeNull();
+  view.rerender(workspace(true));
+  expect((screen.getByRole("spinbutton", { name: "Ganho (dB)" }) as HTMLInputElement).value).toBe("-9");
+  fireEvent.click(screen.getByRole("button", { name: "Renderizar versão completa" }));
+  expect(p.act).toHaveBeenCalledWith("fx_render", expect.objectContaining({ asset_id: asset.id,
+    recipe: expect.objectContaining({ chain: [{ wet: 1, effect: { type: "gain", db: -9 } }] }) }), expect.any(String));
+  view.rerender(workspace(true, "other-project"));
+  expect(screen.queryByRole("spinbutton", { name: "Ganho (dB)" })).toBeNull();
+  expect((screen.getByRole("button", { name: "Renderizar versão completa" }) as HTMLButtonElement).disabled).toBe(true);
+  await waitFor(() => expect(rpc).toHaveBeenCalledWith("fx_presets_list", { project_id: "other-project" }));
 });
 
 it("distinguishes text-only LiteRT setup from prepared audio-input capability", () => {

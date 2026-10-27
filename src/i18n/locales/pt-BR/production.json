@@ -2,7 +2,7 @@
   "batchExport": "Exportação em lote",
   "selectProjectWavs": "Selecionar WAVs do projeto",
   "clearExportSelection": "Limpar seleção de exportação",
-  "batchHelp": "Marque Exportar nos cards da biblioteca ou selecione todos os WAVs do projeto. Originais e referências são preservados.",
+  "batchHelp": "Selecione candidatos nos cards da biblioteca e revise aqui a seleção de WAVs. Originais e referências são preservados.",
   "selectedForExport": "WAVs selecionados: {{count}}",
   "reviewExportSelection": "Revisar arquivos selecionados",
   "exportFolder": "Pasta de exportação",
