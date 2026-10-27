@@ -625,16 +625,13 @@ export function FxStudio({
   const selected = data.assets.find(
     (a) => a.id === assetId && a.project_id === projectId,
   );
-  const results = data.assets.filter((a) => a.parent_id === selected?.id);
+  const results = selected ? data.assets.filter((a) => a.parent_id === selected.id && a.project_id === projectId) : [];
   const [exportId, setExportId] = useState("");
   const exportCandidates = [
     ...(selected ? [selected] : []),
     ...results.filter((a) => a.kind !== "preview"),
   ];
-  const exportAsset =
-    exportCandidates.find((a) => a.id === exportId) ??
-    exportCandidates.find((a) => a.selected) ??
-    exportCandidates[0];
+  const exportAsset = exportCandidates.find((a) => a.id === exportId);
   const reload = async () => {
     try {
       setPresets(
@@ -668,7 +665,7 @@ export function FxStudio({
     };
   }, [projectId]);
   useEffect(() => {
-    if (initialAssetId) setAssetId(initialAssetId);
+    if (initialAssetId) { setAssetId(initialAssetId); setExportId(""); }
   }, [initialAssetId]);
   const render = (preview: boolean) => {
     if (selected)
@@ -768,29 +765,7 @@ export function FxStudio({
               </div>
             ))}
           </div>
-          <SelectControl
-            label={tr("studio", "versionToExport")}
-            value={exportAsset?.id ?? ""}
-            onChange={setExportId}
-            options={exportCandidates.map((a) => ({
-              value: a.id,
-              label: a.name,
-            }))}
-          />
-          <PathField label={tr("studio", "newWavDestination")} kind="wav-save" disabled={busy}
-            placeholder={tr("studio", "absolutePathForANewFile")} value={exportPath} onChange={setExportPath} />
-          <button
-            className="outline"
-            disabled={busy || !exportAsset || !exportPath}
-            onClick={() =>
-              void act(
-                "result_export",
-                { asset_id: exportAsset!.id, destination: exportPath },
-                tr("studio", "wavCopyExportedAndVerified"),
-              )
-            }
-          >
-            {tr("studio", "exportWav")}</button>
+
         </div>
       </section>
       <section className="panel">
@@ -1046,6 +1021,44 @@ export function FxStudio({
                 {tr("studio", "exportSavedPreset")}</button>
             </div>
           </details>
+        </div>
+      </section>
+      <section className="panel">
+        <header className="panel-title"><h2>{tr("studio", "exportWavCopy")}</h2></header>
+        <div className="studio-body">
+          <SelectControl
+            label={tr("studio", "versionToExport")}
+            value={exportAsset?.id ?? ""}
+            onChange={setExportId}
+            placeholder={tr("studio", "chooseExportVersion")}
+            options={exportCandidates.map((a) => ({
+              value: a.id,
+              label: `${a.name} · ${tr("studio", a.id === selected?.id ? "exportSource" : "exportProcessed")} · ${formatTime(a.metadata.duration)} · ${a.id.slice(0, 8)}`,
+            }))}
+          />
+          <p className="muted">{tr("studio", "explicitExportHelp")}</p>
+          {exportId && !exportAsset && <p role="status">{tr("studio", "exportSelectionMissing")}</p>}
+          {exportAsset && <div className="message" aria-live="polite">
+            <div><strong>{exportAsset.name}</strong>
+              <p>{tr("studio", exportAsset.id === selected?.id ? "exportSource" : "exportProcessed")} · {formatTime(exportAsset.metadata.duration)}</p>
+              <code>{exportAsset.id}</code><p><code>{exportAsset.path}</code></p>
+              <p>{tr("studio", "newWavDestination")}: <code>{exportPath || "—"}</code></p>
+            </div>
+          </div>}
+          <PathField label={tr("studio", "newWavDestination")} kind="wav-save" disabled={busy}
+            placeholder={tr("studio", "absolutePathForANewFile")} value={exportPath} onChange={setExportPath} />
+          <button
+            className="outline"
+            disabled={busy || !exportAsset || !exportPath}
+            onClick={() =>
+              void act(
+                "result_export",
+                { asset_id: exportAsset!.id, destination: exportPath },
+                tr("studio", "wavCopyExportedAndVerified"),
+              )
+            }
+          >
+            {tr("studio", "exportWav")}</button>
         </div>
       </section>
       {data.capabilities?.loop_creation === true && <LoopStudio source={selected} busy={busy} act={act} />}

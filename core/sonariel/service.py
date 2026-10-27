@@ -114,15 +114,19 @@ class Service(Library, MusicPresets, Production, Studio, Storage):
     def rpc_environment_status(self):
         return {"environment": self.store.setting("environment"), "hardware": {**telemetry(), "graphics": graphics()}, "detected": discover(), "recipe": recipe(), "supported_modes": ["text2music", "cover"], "other_modes": "Not enabled by this adapter; never substituted", "active_inference_cancel_supported": False, "gpu_acceleration_supported": False}
 
-    def rpc_environment_link(self, root: str, audacity_path: str):
+    def rpc_environment_link(self, root: str, audacity_path: str = ""):
         if self.active:
             raise ValueError("Aguarde a tarefa ativa para trocar ambiente")
-        result = inspect_environment(root, audacity_path)
+        previous = self.store.setting("environment", {}) or {}
+        editor = self.store.setting("audacity_executable") or previous.get("audacity", "")
+        # Legacy callers may still supply the optional editor. Its absence or
+        # unavailability must never invalidate a compatible music engine.
+        executable = Path(audacity_path).expanduser() if audacity_path else None
+        if executable and executable.is_file() and executable.name.lower() == "audacity.exe":
+            editor = str(executable.resolve())
+        result = inspect_environment(root, editor)
         if not result["compatible"]:
             return result
-        executable = Path(audacity_path).resolve(strict=True)
-        if executable.name.lower() != "audacity.exe":
-            raise ValueError("Selecione Audacity.exe")
         if self.engine.owned_process():
             self.engine.stop()
         self.store.set("environment", result)
@@ -546,7 +550,7 @@ def tool(description, props=None, required=None):
 METHODS = {
     "snapshot": tool("Estado compartilhado de projetos, fila, resultados, ambiente e telemetria."),
     "environment_status": tool("Capacidades reais e diagnóstico, sem carregar o motor."),
-    "environment_link": tool("Inspecionar e vincular ambiente existente sem modificá-lo.", {"root": S, "audacity_path": S}, ["root", "audacity_path"]),
+    "environment_link": tool("Inspecionar e vincular ACE-Step sem modificar arquivos. Audacity é opcional e pode ser configurado separadamente; audacity_path legado continua aceito.", {"root": S, "audacity_path": S}, ["root"]),
     "projects_list": tool("Listar projetos e seus contextos musicais salvos."),
     "project_create": tool("Criar projeto com contexto musical explicitamente fornecido.", {"name": S, "context": {"type": "string"}}, ["name"]),
     "project_update": tool("Atualizar nome e contexto musical salvo.", {"project_id": ID, "name": S, "context": {"type": "string"}}, ["project_id", "name", "context"]),

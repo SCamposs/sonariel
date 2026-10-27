@@ -21,6 +21,27 @@ vi.mock("./studio", () => ({
 beforeEach(() => { vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => {}); });
 afterEach(() => { cleanup(); vi.resetAllMocks(); vi.restoreAllMocks(); });
 
+it("links a music engine through the environment UI without an Audacity field", async () => {
+  const snapshot = {
+    projects: [], sessions: [], assets: [], jobs: [], events: [], edits: [],
+    selected_project: null, setup: null, environment: null,
+    engine: { state: "stopped", managed: false, rss_gib: 0 },
+    telemetry: { available_gib: 8, total_gib: 24, used_percent: 67 },
+    codex: { configured: false, tested: false },
+    audacity: { running: false, pipe_available: false, tested: false },
+    preferences: { idle_minutes: 10 },
+  };
+  vi.mocked(rpc).mockImplementation(async method => method === "snapshot" ? snapshot : {});
+  render(<App />);
+  await screen.findByText("Do contexto à próxima decisão.");
+  fireEvent.click(screen.getByRole("button", { name: "Ambiente" }));
+  expect(screen.queryByLabelText("Executável do Audacity")).toBeNull();
+  expect(screen.getByText(/Audacity é opcional/)).toBeTruthy();
+  fireEvent.change(screen.getByLabelText("Pasta do ambiente"), { target: { value: "D:/synthetic-engine" } });
+  fireEvent.click(screen.getByRole("button", { name: "Inspecionar e vincular" }));
+  await waitFor(() => expect(rpc).toHaveBeenCalledWith("environment_link", { root: "D:/synthetic-engine" }));
+});
+
 it("switches Voice to retained FX without reusing the sibling workspace identity", async () => {
   const snapshot = {
     projects: [], sessions: [], assets: [], jobs: [], events: [], edits: [],

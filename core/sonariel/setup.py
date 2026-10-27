@@ -97,7 +97,7 @@ class Setup:
             if (parent / ".git").exists():
                 raise ValueError("O motor deve ficar fora do Git")
         host = telemetry()
-        return {"destination": str(root), "recipe": recipe(), "hardware": host, "supported": os.name == "nt" and platform.machine().lower() in {"amd64", "x86_64"} and host["total_gib"] >= recipe()["minimum_total_ram_gib"], "components": ["uv gerenciado", "Python 3.12.10", "PyTorch CPU", "ACE-Step no commit validado", "DiT Turbo + VAE + text encoder", "Audacity 3.7.9 portátil"], "estimated_download_gib": 7, "disk_required_gib": 16, "requires_authorization": True}
+        return {"destination": str(root), "recipe": recipe(), "hardware": host, "supported": os.name == "nt" and platform.machine().lower() in {"amd64", "x86_64"} and host["total_gib"] >= recipe()["minimum_total_ram_gib"], "components": ["uv gerenciado", "Python 3.12.10", "PyTorch CPU", "ACE-Step no commit validado", "DiT Turbo + VAE + text encoder"], "estimated_download_gib": 7, "disk_required_gib": 16, "requires_authorization": True}
 
     def install(self, destination: str, authorized: bool, model_cache: str = "", audacity: str = "") -> dict:
         if not authorized:
@@ -181,12 +181,10 @@ class Setup:
                         cached = download(url, cache / "models" / item["path"], item["sha256"], self.store.event)
                         shutil.copyfile(cached, destination_file)
             step("Verificar e preparar somente modelos DiT", models)
+            # Audio editors are optional. Preparing a music engine must not
+            # download an editor or modify its preferences as a side effect.
             if not audacity:
-                spec = recipe()["audacity"]
-                archive = step("Preparar Audacity portátil", lambda: download(spec["url"], cache / "audacity.zip", spec["sha256"], self.store.event))
-                extract(archive, root / "audacity")
-                audacity = str(next((root / "audacity").rglob("Audacity.exe")))
-                state["audacity_setup"] = prepare_audacity(Path(audacity))
+                audacity = (state.get("environment") or {}).get("audacity", "")
             (repo / "sonariel-recipe.json").write_text(json.dumps({"commit": recipe()["ace_commit"]}), encoding="utf-8")
             result = step("Diagnóstico final", lambda: inspect_environment(str(root), audacity))
             if not result["compatible"]:

@@ -11,6 +11,7 @@ import { FxStudio, VoiceStudio, MusicEngines } from "./studio";
 import { rpc, type Asset, type Snapshot } from "./api";
 import { RetainedWorkspace } from "./ui/retained-workspace";
 import { tr } from "./i18n";
+import userEvent from "@testing-library/user-event";
 
 vi.mock("./api", async () => ({
   ...(await vi.importActual("./api")),
@@ -217,12 +218,41 @@ it("exports an explicit original rather than silently exporting a preview", asyn
   fireEvent.change(screen.getByLabelText("Destino do novo WAV"), {
     target: { value: "D:/exports/new.wav" },
   });
+  expect((screen.getByRole("button", { name: "Exportar WAV" }) as HTMLButtonElement).disabled).toBe(true);
+  const user = userEvent.setup();
+  await user.click(screen.getByRole("combobox", { name: "Versão para exportar" }));
+  await user.click(await screen.findByRole("option", { name: /Independent WAV.*Fonte/ }));
   fireEvent.click(screen.getByRole("button", { name: "Exportar WAV" }));
   expect(p.act).toHaveBeenCalledWith(
     "result_export",
     { asset_id: asset.id, destination: "D:/exports/new.wav" },
     expect.any(String),
   );
+});
+
+it("exports the chosen processed identity and never substitutes a missing selection", async () => {
+  vi.mocked(rpc).mockResolvedValue([]);
+  const p = props();
+  const processed = { ...asset, id: "b".repeat(32), parent_id: asset.id, kind: "processed", name: "Processed full version", path: "C:/audio/processed.wav", selected: 1 };
+  const preview = { ...processed, id: "c".repeat(32), kind: "preview", name: "Short preview" };
+  const data = { ...p.data, assets: [asset, preview, processed] };
+  const view = render(<FxStudio {...p} data={data} initialAssetId={asset.id} />);
+  fireEvent.change(screen.getByLabelText("Destino do novo WAV"), { target: { value: "D:/copy.wav" } });
+  const button = screen.getByRole("button", { name: "Exportar WAV" }) as HTMLButtonElement;
+  expect(button.disabled).toBe(true); // A project preference is not export consent.
+  const user = userEvent.setup();
+  await user.click(screen.getByRole("combobox", { name: "Versão para exportar" }));
+  expect(screen.queryByRole("option", { name: /Short preview/ })).toBeNull();
+  await user.click(await screen.findByRole("option", { name: /Processed full version.*Versão processada/ }));
+  fireEvent.click(button);
+  expect(p.act).toHaveBeenCalledWith("result_export", { asset_id: processed.id, destination: "D:/copy.wav" }, expect.any(String));
+  expect(screen.getByText(processed.path)).toBeTruthy();
+  view.rerender(<FxStudio {...p} data={{ ...data, assets: [asset] }} initialAssetId={asset.id} />);
+  expect(button.disabled).toBe(true);
+  expect(screen.getByRole("status").textContent).toContain("não está mais disponível");
+  p.act.mockClear(); fireEvent.click(button); expect(p.act).not.toHaveBeenCalled();
+  view.rerender(<FxStudio {...p} data={{ ...data, selected_project: "other-project" }} initialAssetId={asset.id} />);
+  expect(button.disabled).toBe(true);
 });
 
 it("reviews LiteRT setup but requires both license consent and install authorization", async () => {

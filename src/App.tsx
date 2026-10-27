@@ -1252,7 +1252,7 @@ export function App() {
                           e.preventDefault();
                           void act(
                             "environment_link",
-                            { root, audacity_path: audacityPath },
+                            { root },
                             tr("workspace", "diagnosticsCompleted"),
                           );
                         }}
@@ -1285,9 +1285,7 @@ export function App() {
                         <PathField label={tr("workspace", "environmentFolder")} kind="directory" required
                           value={root} onChange={setRoot} disabled={busy}
                           placeholder={data.environment?.root ?? tr("workspace", "folderContainingVenvAndAceStep15")} />
-                        <PathField label={tr("workspace", "audacityExecutable")} kind="executable" required
-                          value={audacityPath} onChange={setAudacityPath} disabled={busy}
-                          placeholder={data.environment?.audacity ?? tr("workspace", "fullPathToAudacityExe")} />
+                        <p className="muted">{tr("workspace", "audacityOptionalLink")}</p>
                         <button className="primary" disabled={busy}>
                           {tr("workspace", "inspectAndLink")}</button>
                       </form>

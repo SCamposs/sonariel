@@ -238,5 +238,6 @@
   "loading2": "Carga:",
   "inference2": "Inferência:",
   "peak": "Pico:",
-  "operationLog": "Registro de operações"
+  "operationLog": "Registro de operações",
+  "audacityOptionalLink": "Audacity é opcional. Vincule o motor aqui; configure o editor separadamente em Audacity & Codex. FX nativo e exportação WAV não exigem o editor."
 }

@@ -166,5 +166,11 @@
   "compactDownload": "INT8 DiT and SAME-S. Default compact profile.",
   "fidelityAvailable": "FP32 / SAME-L available for text generation.",
   "fidelityOptional": "FP32 / SAME-L is an optional Medium download.",
-  "fidelityIntro": "Medium FP32 with SAME-L FP32 decoding for text-based composition. Musical quality requires listening; this profile does not yet accept source audio."
+  "fidelityIntro": "Medium FP32 with SAME-L FP32 decoding for text-based composition. Musical quality requires listening; this profile does not yet accept source audio.",
+  "chooseExportVersion": "Choose a version explicitly",
+  "exportSource": "Source / original for this process",
+  "exportProcessed": "Processed version",
+  "explicitExportHelp": "Choose the exact version and destination before exporting a WAV copy. Previews are listening tests, not final exports. Saving a DSP preset does not render audio.",
+  "exportSelectionMissing": "The selected version is no longer available here. Choose another version explicitly; nothing was substituted.",
+  "exportWavCopy": "Export a WAV copy"
 }

@@ -238,5 +238,6 @@
   "loading2": "Loading:",
   "inference2": "Inference:",
   "peak": "Peak:",
-  "operationLog": "Operation log"
+  "operationLog": "Operation log",
+  "audacityOptionalLink": "Audacity is optional. Link the engine here; configure the editor separately in Audacity & Codex. Native FX and WAV export do not require it."
 }
