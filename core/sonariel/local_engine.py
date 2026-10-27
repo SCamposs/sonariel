@@ -12,6 +12,7 @@ from pathlib import Path
 import psutil
 
 from .environment import HIDDEN
+from .capabilities import require_loop_creation
 
 LANGUAGES = dict(ar="Arabic", da="Danish", de="German", el="Greek", en="English",
     es="Spanish", fi="Finnish", fr="French", he="Hebrew", hi="Hindi", it="Italian",
@@ -23,6 +24,8 @@ STABLE_IDS = {"stable-audio-3-small-music":"sm-music", "stable-audio-3-medium":"
 
 
 def prepare_fx(store, folder, params, output):
+    if params.get('recipe', {}).get('operation') == 'loop':
+        require_loop_creation(store.home)
     preset = folder / "preset.json"
     preset.write_text(json.dumps(params["recipe"], allow_nan=False), encoding="utf-8")
     source_path = params["source_path"]

@@ -193,7 +193,9 @@ def mcp():
             elif method == "ping":
                 result = {}
             elif method == "tools/list":
-                result = {"tools": [{"name": "sonariel_" + name, **spec} for name, spec in METHODS.items() if name != "mcp_heartbeat"]}
+                capabilities = rpc('snapshot').get('capabilities', {})
+                result = {"tools": [{"name": "sonariel_" + name, **spec} for name, spec in METHODS.items()
+                                    if name != "mcp_heartbeat" and (name != 'fx_loop_render' or capabilities.get('loop_creation') is True)]}
             elif method == "tools/call":
                 name = params["name"]
                 if not name.startswith("sonariel_") or name[9:] not in METHODS or name[9:] == "mcp_heartbeat":

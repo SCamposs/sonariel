@@ -33,7 +33,7 @@ Voice and LiteRT have independent setup_plan/install and environment_link tools.
 
 Inspect tools/list: the installed stable server may not expose these source-build contracts yet. Never route an unsupported tool to an unrelated operation.
 
-`sonariel_fx_loop_render` creates a new native-DSP loop from a registered WAV, with explicit start_seconds, end_seconds and crossfade_ms. Preview repeats 2–4 complete cycles (maximum ten minutes), unlike the ordinary ten-second FX preview. Final output is one edited cycle; overlap shortens its duration. Listen to the seam before approving it. No automatic BPM alignment or perfect-loop guarantee. Preserve source and request-key recovery rules.
+Loop creation is not available in packaged distributions. Discover capabilities in `snapshot` and tools/list; do not attempt `sonariel_fx_loop_render` when absent. Existing loop audio/metadata remain readable/exportable. Only explicitly authorized source development on a separate profile can enable this experiment; packaged runtimes reject it even if the development environment variable is present. Never silently substitute ordinary FX or reference excerpts for loop creation.
 
 `sonariel_result_export_batch` copies selected WAV IDs to an existing user-selected folder, with configurable naming, rename/skip collision handling, per-file errors and optional portable manifest. Prompts and references require separate explicit authorization; omit them by default. Never include database/runtime/credential context, infer absent model metadata or overwrite originals. Export batching does not authorize generation batching.
 

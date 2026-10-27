@@ -1038,7 +1038,7 @@ export function FxStudio({
           </details>
         </div>
       </section>
-      <LoopStudio source={selected} busy={busy} act={act} />
+      {data.capabilities?.loop_creation === true && <LoopStudio source={selected} busy={busy} act={act} />}
     </div>
   );
 }

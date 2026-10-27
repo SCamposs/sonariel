@@ -12,6 +12,8 @@ O build descriptografa a chave somente no processo de compilação. Também acei
 
 ## Próxima versão
 
+A main prepara `0.4.0-rc.1`, candidato de teste para a proposta v0.4.0; a distribuição pública continua v0.3.2. Python usa a forma PEP 440 equivalente `0.4.0rc1`. `prepare-release.py` exige versão estável e deve recusar este RC; não execute `release.ps1` para prepará-lo ou publicá-lo como estável. O proprietário autorizou uma pré-release pública para download/teste na VM, mantendo `latest.json` e a release estável v0.3.2 inalterados. Artefatos locais do RC devem ficar numa cópia privada de validação, fora da pasta de releases públicas. Use o mesmo `build.ps1 -SignUpdates` e a chave existente, sem inicialização nova; preserve runtime em uso. Não instale o candidato sobre o Sonariel de produção.
+
 Antes de escolher/publicar a próxima versão, consulte a avaliação da Fase 2.6 em [português](PHASE2_6.pt-BR.md) ou [inglês](PHASE2_6.md). Loops ainda não têm aceite auditivo. Migração isolada validada e assinatura de pacote anterior não substituem o teste completo do futuro candidato assinado, incluindo reinício e preservação do WebView/MCP. Não execute a preparação/publicação usando novamente a versão já distribuída.
 
 O builder recusa runtime de desenvolvimento em uso antes de invocar Cargo/PyInstaller; não force o encerramento de processos alheios para liberar arquivos. Na validação isolada, a coleta de licenças pode receber `scripts/collect-notices.py --output <pasta-de-licencas-do-runtime-isolado>`. Isso não publica ou assina artefatos.

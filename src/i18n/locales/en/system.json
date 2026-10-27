@@ -287,5 +287,6 @@
   "libraryDiagnostic15": "This engine supports source audio only, not style references",
   "libraryDiagnostic16": "Use at most 32 tags per audio",
   "libraryDiagnostic17": "request_key already used with different region parameters",
-  "libraryDiagnostic5c5f19660219": "Beat grid does not match selected region; apply the grid again after changing the crossfade"
+  "libraryDiagnostic5c5f19660219": "Beat grid does not match selected region; apply the grid again after changing the crossfade",
+  "loopCreationUnavailable": "Loop creation is unavailable in this distribution; existing audio and metadata are preserved."
 }

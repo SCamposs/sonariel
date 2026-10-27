@@ -11,6 +11,11 @@ from sonariel.service import Service
 from sonariel.store import Store
 
 
+@pytest.fixture(autouse=True)
+def authorized_development_loops(monkeypatch):
+    monkeypatch.setenv('SONARIEL_DEVELOPMENT_LOOPS', '1')
+
+
 def source(service, tmp_path):
     project = service.invoke("project_create", {"name": "Loop contract"})["project_id"]
     path = tmp_path / "tone.wav"

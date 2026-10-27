@@ -77,6 +77,7 @@ export type Job = {
   };
 };
 export type Snapshot = {
+  capabilities?: { loop_creation?: boolean };
   references?: Asset[];
   library_filters?: { project_id: string | null; filters: Partial<import("./library-workspace").LibraryFilters> };
   ui_preferences?: { locale: "en" | "pt-BR" | null; existing_installation: boolean };

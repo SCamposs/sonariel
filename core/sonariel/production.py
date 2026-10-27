@@ -13,6 +13,7 @@ from .environment import sha256
 from .store import identifier
 
 from .local_engine import FX_ID
+from .capabilities import require_loop_creation
 
 MUSIC_ENGINES = {"acestep-v15-turbo", "stable-audio-3-small-music", "stable-audio-3-medium"}
 PORTABLE_FIELDS = {
@@ -168,6 +169,7 @@ class Production:
     def rpc_fx_loop_render(self, asset_id: str, request_key: str, start_seconds: float,
                            end_seconds: float, crossfade_ms: float, name: str = "Loop",
                            preview: bool = False, repetitions: int = 3, beat_grid: dict | None = None):
+        require_loop_creation(self.store.home)
         asset = self.verified_source(asset_id)
         meta = asset["metadata"]
         if Path(asset["path"]).suffix.lower() != ".wav" or meta["channels"] not in (1, 2):

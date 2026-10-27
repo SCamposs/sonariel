@@ -2,7 +2,7 @@
 
 # Sonariel
 
-**Desenvolvimento na main:** interface em inglês/pt-BR, exportação WAV em lote, presets musicais versionados, recortes não destrutivos, tags e filtros combinados por projeto estão disponíveis ao compilar o código. Os loops continuam em avaliação auditiva humana. Essas mudanças ainda não fazem parte do download v0.3.2. Use um perfil de prévia isolado: [validação e instruções da Fase 2.5](docs/PHASE2_5.md).
+**Desenvolvimento na main:** interface em inglês/pt-BR, exportação WAV em lote, presets musicais versionados, recortes não destrutivos, tags e filtros combinados por projeto estão disponíveis ao compilar o código. A criação de loops fica desativada no candidato empacotado; experimentos exigem autorização explícita no código-fonte. Áudios anteriores são preservados. A futura v0.4.0 está disponível como [pré-release de teste v0.4.0-rc.1](https://github.com/SCamposs/sonariel/releases/tag/v0.4.0-rc.1), com aceite do instalador Windows ainda pendente. Essas mudanças ainda não fazem parte do download v0.3.2. Use um perfil de prévia isolado: [validação e instruções da Fase 2.5](docs/PHASE2_5.md).
 
 **Produção de áudio local, com direção pelo seu agente de IA conectado.**
 

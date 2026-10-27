@@ -23,6 +23,7 @@ from .storage import Storage, storage_methods
 from .production import Production, production_methods
 from .music_presets import MusicPresets, music_preset_methods
 from .library import Library, library_methods
+from .capabilities import loop_creation_enabled, LOOPS_UNAVAILABLE
 
 
 def local_audio(value: str) -> Path:
@@ -101,6 +102,7 @@ class Service(Library, MusicPresets, Production, Studio, Storage):
     def rpc_snapshot(self):
         value = self._snapshot()
         value.update(references=self.rpc_references_list(), library_filters=self.library_filters(value["selected_project"]))
+        value['capabilities'] = {'loop_creation': loop_creation_enabled(self.store.home)}
         return value
 
     def _snapshot(self):
@@ -454,6 +456,10 @@ class Service(Library, MusicPresets, Production, Studio, Storage):
             self.store.execute("UPDATE jobs SET metrics=? WHERE id=?",(json.dumps(metrics),job["id"]))
         with self.mutation_lock:
             if self.stopping.is_set() or self.store.job(job["id"])["state"] != "queued":
+                return
+            if params.get('recipe', {}).get('operation') == 'loop' and not loop_creation_enabled(self.store.home):
+                self.store.execute("UPDATE jobs SET state='interrupted',stage=?,error=?,finished=? WHERE id=?",
+                                   (LOOPS_UNAVAILABLE, LOOPS_UNAVAILABLE, time.time(), job['id']))
                 return
             if self.engine.owned_process():
                 self.engine.stop()

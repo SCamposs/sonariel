@@ -30,3 +30,11 @@ it("keeps unknown diagnostics verbatim with a localized recovery hint", async ()
   expect(systemMessage(detail)).toContain("Review the operation and diagnostics before retrying.");
   expect(systemMessage(null)).toBe("");
 });
+
+it("localizes the disabled loop capability without changing the stored diagnostic", async () => {
+  const diagnostic = "Loop creation is unavailable in this distribution; existing audio and metadata are preserved.";
+  await i18n.changeLanguage("pt-BR");
+  expect(systemMessage(diagnostic)).toBe("A criação de loops não está disponível nesta distribuição; áudios e metadados existentes são preservados.");
+  await i18n.changeLanguage("en");
+  expect(systemMessage(diagnostic)).toBe(diagnostic);
+});

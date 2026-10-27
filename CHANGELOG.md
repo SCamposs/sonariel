@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.0-rc.1 — test prerelease
+
+- Prepare the proposed v0.4.0 without replacing the public v0.3.2 download/update.
+- Bundle English/pt-BR UI, batch WAV export, versioned music presets, non-destructive reference/source regions, project tags and persistent combined filters.
+- Preserve independent module scrolling and the unsaved FX workspace during navigation.
+- Make schema-5 migration atomic, retaining consistent backups and refusing older-core downgrade.
+- Disable loop creation in packaged UI/core/MCP while preserving existing loop WAVs, jobs and lineage. Explicit source development remains available on isolated profiles; musical issue #3 stays open.
+- Refuse development builds that would overwrite a running core runtime.
+- See the [candidate notes](docs/releases/v0.4.0-rc.1.md) / [notas em português](docs/releases/v0.4.0-rc.1.pt-BR.md). Windows installer/upgrade acceptance remains pending; the stable updater remains v0.3.2.
+
 ## 0.3.2
 
 - Central registered-audio inventory and confirmed recoverable discard/restore. Managed output WAVs move to an internal trash journal; imported/external files are never moved or deleted. Protected references, favorites, chosen versions, shared files and dependencies cannot be discarded. No permanent erase or automatic cleanup; trash retains disk space.

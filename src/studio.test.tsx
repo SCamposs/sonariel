@@ -10,6 +10,7 @@ import {
 import { FxStudio, VoiceStudio, MusicEngines } from "./studio";
 import { rpc, type Asset, type Snapshot } from "./api";
 import { RetainedWorkspace } from "./ui/retained-workspace";
+import { tr } from "./i18n";
 
 vi.mock("./api", async () => ({
   ...(await vi.importActual("./api")),
@@ -80,6 +81,18 @@ const props = () => ({
   act: vi.fn(async () => ({})),
   listen: vi.fn(),
   edit: vi.fn(),
+});
+
+it("offers loop creation only when explicitly granted by the core", () => {
+  vi.mocked(rpc).mockResolvedValue([]);
+  const p = props();
+  const view = render(<FxStudio {...p} />);
+  expect(screen.queryByText(tr("production", "loops"))).toBeNull();
+  expect(screen.queryByRole("button", { name: tr("production", "createLoop") })).toBeNull();
+  view.rerender(<FxStudio {...p} data={{ ...snapshot, capabilities: { loop_creation: false } }} />);
+  expect(screen.queryByText(tr("production", "loops"))).toBeNull();
+  view.rerender(<FxStudio {...p} data={{ ...snapshot, capabilities: { loop_creation: true } }} />);
+  expect(screen.queryByText(tr("production", "loops"))).not.toBeNull();
 });
 
 it("retains the FX source and unsaved chain across module navigation, but resets on project change", async () => {
