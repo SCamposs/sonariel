@@ -1,0 +1,78 @@
+{
+  "surface": "actual Windows Tauri/WebView2",
+  "source_origin": "http://tauri.localhost/",
+  "native_ipc": true,
+  "width": 1000,
+  "height": 700,
+  "locale": "pt-BR",
+  "ui_workflows": [
+    {
+      "workflow": "A/B",
+      "pass": true,
+      "actions": "UI project creation and music/voice guidance; no engine setup or generation"
+    },
+    {
+      "workflow": "C",
+      "pass": true,
+      "preview_job": "c3258dfd108f48cda73450c16919714b",
+      "full_job": "f9f4faedf86e4e41b9963e0cea341137",
+      "export_asset": "ba4cb68d8e21413aa8deeb7c9bfb7a6a",
+      "preview_key": "4abb0caa-b157-4bba-8172-84d0b2f68bea",
+      "full_key": "e07d4850-5cd5-4fe2-a2f4-ce91ee17a181",
+      "exported_sha256": "4a010dd2f66008b69a36ee269c184464915cbddb1fa3cf54fc855704e1364fab",
+      "original_preserved": true,
+      "player_progressed_muted": true,
+      "fx_draft_retained": true
+    },
+    {
+      "workflow": "D",
+      "pass": true,
+      "result_id": "b09e88c8c5954e5c878ea5d8fbd8721d",
+      "project_id": "3103fffb3a9b4cdaa7c83de1d63051c9",
+      "fixture_seeded_by_rpc": true
+    },
+    {
+      "workflow": "E",
+      "pass": true,
+      "session_id": "b7cb879997e84cdcb6fbd95612a25bdc",
+      "filters_retained": true,
+      "pagination_expanded": true
+    },
+    {
+      "workflow": "F",
+      "pass": true,
+      "choice": "325ccdd9d30b4b36870fac5779d17eed",
+      "comparison_count": 2,
+      "batch_count": 1,
+      "focus_restored": true,
+      "other_project_choice_preserved": true
+    },
+    {
+      "workflow": "H",
+      "pass": true,
+      "editor_optional": true,
+      "no_probe_or_configuration_performed": true
+    },
+    {
+      "workflow": "I",
+      "pass": true,
+      "optional_fp32_reviewed": true,
+      "install_disabled_without_authorization": true,
+      "models_downloaded": false
+    },
+    {
+      "workflow": "J",
+      "pass": true,
+      "cancel_preserved": true,
+      "moved_restored_purged": "5115b5b7c85d4ccf92df9ab06d00c02f",
+      "protected_controls": true,
+      "original_and_reference_preserved": true
+    }
+  ],
+  "G": "covered by synthetic React/queue-state tests; no generative job submitted",
+  "language_switched_to": "en",
+  "fixture_seed_rpc_job": "89041c36a0974752b2e41578dc85de23",
+  "no_music_or_voice_inference": true,
+  "models_installed": false,
+  "original_sha256": "2e3272fca370f401d381b46828b1014b4a55f28737512bd86a27fafcfaee271d"
+}

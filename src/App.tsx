@@ -1148,6 +1148,7 @@ export function App() {
                           <button
                             className={`icon-button ${asset.favorite ? "favorite" : ""}`}
                             aria-label={tr("production", "favoriteAsset", { name: asset.name })}
+                            disabled={busy}
                             onClick={() =>
                               void act("result_feedback", {
                                 asset_id: asset.id,
@@ -1222,6 +1223,7 @@ export function App() {
                           )}
                           <button
                             className="text-button"
+                            disabled={busy}
                             onClick={() => openDetail(asset)}
                           >
                             {tr("workspace", "details")}{" "}<ChevronRight size={14} />

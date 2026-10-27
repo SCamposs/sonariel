@@ -1,0 +1,27 @@
+{
+  "tool_count": 60,
+  "environment_link": {
+    "type": "object",
+    "properties": {
+      "root": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 16000
+      },
+      "audacity_path": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 16000
+      }
+    },
+    "required": [
+      "root"
+    ],
+    "additionalProperties": false
+  },
+  "handshake": {
+    "name": "sonariel",
+    "version": "0.5.0"
+  },
+  "generation_requested": false
+}

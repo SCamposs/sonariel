@@ -17,15 +17,15 @@ funcional/heurística, não pesquisa com usuários ou medição quantitativa de 
 
 | Achado | Evidência inicial | Estado nesta fase |
 | --- | --- | --- |
-| UX-01 | `environment_link` exigia `audacity_path` no schema e validava o executável antes de persistir motor compatível; setup baixava editor portátil automaticamente | Bloco A: regressões automatizadas passaram; conferência desktop pendente |
-| UX-02 | Projetos oferecia contexto/sessões e abertura genérica da biblioteca, sem entradas pelas três intenções | Bloco B pendente |
-| UX-03 | Ferramentas da biblioteca antecediam os resultados | Bloco B pendente |
-| UX-04 | Voice → FX já existia; demais passagens precisam preservar IDs, projeto, filtros e rascunho | Bloco B pendente |
-| UX-05 | `exportAsset` usava fallback para escolha preferida ou primeiro candidato, inclusive fonte | Bloco A: regressões automatizadas passaram; conferência desktop pendente |
-| UX-06 | Rótulos curtos não explicitavam sempre o alcance de escolha, preset e exportação | Bloco C pendente |
-| UX-07/08 | Cabeçalho/resumos exibiam aprovação histórica e estados com pouca recuperação contextual | Bloco C pendente |
-| UX-09 | Setup reunia capacidades e detalhes de infraestrutura; FP32 já tinha explicação opcional e texto-only na v0.5.0 | Bloco C: preservar o que já existe e refinar hierarquia |
-| UX-10 a UX-13 | Rótulos não detalhados no material fornecido/localizado | Mapeamento original não verificado; temas de armazenamento, densidade e orientação serão avaliados pelo escopo reproduzido |
+| UX-01 | `environment_link` exigia `audacity_path` no schema e validava o executável antes de persistir motor compatível; setup baixava editor portátil automaticamente | Resolvido; backend, UI, schema MCP empacotado e FX sem editor validados |
+| UX-02 | Projetos oferecia contexto/sessões e abertura genérica da biblioteca, sem entradas pelas três intenções | Resolvido; navegação sem efeitos colaterais validada |
+| UX-03 | Ferramentas da biblioteca antecediam os resultados | Resolvido; resultados/A/B antes de ferramentas avançadas, recursos preservados |
+| UX-04 | Voice → FX já existia; demais passagens exigiam reconstruir contexto | Resolvido no escopo; transições por IDs/projeto, filtros, paginação e rascunho testados |
+| UX-05 | `exportAsset` usava fallback para escolha preferida ou primeiro candidato, inclusive fonte | Resolvido; escolha explícita, prévia excluída e exportação física/hash testados |
+| UX-06 | Rótulos curtos não explicitavam sempre o alcance de escolha, preset e exportação | Revisado em EN/PT-BR; A/B, favorita, escolha do projeto e lote exercitados separadamente |
+| UX-07/08 | Cabeçalho/resumos exibiam aprovação histórica e estados com pouca recuperação contextual | Corrigidas mensagens e inferência de compatibilidade; fila com espera/incerteza validada por fixtures React, sem inferência real |
+| UX-09 | Setup reunia capacidades e detalhes de infraestrutura; FP32 já tinha explicação opcional e texto-only na v0.5.0 | Refinada hierarquia/estados; limitações existentes preservadas e revisão FP32 exercitada sem download |
+| UX-10 a UX-13 | Rótulos não detalhados no material fornecido/localizado | Não verificados individualmente. Temas adicionais reproduzidos, incluindo armazenamento, foram tratados sem inventar o mapeamento original |
 
 ## Bloco A — mudanças
 
@@ -43,19 +43,18 @@ funcional/heurística, não pesquisa com usuários ou medição quantitativa de 
   fonte/processado, duração, ID, arquivo e destino. Presets e render continuam
   operações separadas. Nenhuma regra de escrita/hash foi alterada.
 
-## Validação em andamento
+## Validação incremental do Bloco A (registro histórico)
 
 - Recorte backend Bloco A: 46 testes passaram, incluindo novo contrato sem
   editor, compatibilidade legada e recusa de motor incompleto/CUDA.
 - Rodada final UI Bloco A: 13 testes passaram em studio/App, incluindo a
   regressão do formulário sem Audacity. Suíte backend completa: 151 passaram.
 - TypeScript passou na primeira implementação.
-- Validação desktop, screenshots EN/PT-BR e percursos completos A–J ainda
-  pendentes. Testes isolados/mocks não serão apresentados como aceite desktop.
+- A conferência desktop e os percursos posteriores estão registrados abaixo;
+  testes isolados/mocks não são apresentados como aceite desktop.
 
-A validação automatizada do Bloco A permite continuar a implementação
-independente. A conferência desktop da fase continua obrigatória e pendente;
-não há declaração de conclusão desta fase neste registro inicial.
+A validação automatizada permitiu continuar a implementação independente,
+mantendo a conferência desktop como requisito separado.
 
 ## Bloco B — implementação e validação automatizada
 
@@ -77,7 +76,7 @@ não há declaração de conclusão desta fase neste registro inicial.
   quatro novos workflows automatizados cobrem intenções sem efeitos colaterais,
   ordem da biblioteca/identidade FX independente do player, sessão/filtros e
   navegação de job de outro projeto. São testes React com RPC simulado, não
-  observações desktop. A conferência desktop continua pendente.
+  observações desktop. A rodada nativa final está descrita abaixo.
 
 ## Bloco C — clareza operacional
 
@@ -120,4 +119,125 @@ os pedidos de prévia/render e exportação foram feitos pelos controles reais
 do desktop. Houve ajustes de seletores no harness de teste (URL inicial e
 rótulos), sem repetir a prévia já concluída nem inventar um aceite auditivo.
 A janela automatizada e seu núcleo foram encerrados de forma graciosa.
-Screenshots e o percurso final completo ainda serão acrescentados.
+Screenshots e o percurso final completo estão abaixo.
+
+## Validação final — 27/10/2026
+
+**PASSOU no escopo implementado**, com as ressalvas explícitas desta seção.
+Não houve pesquisa com usuários nem medição de ganho quantitativo de UX.
+
+- 152 testes Python passaram; 84 testes frontend em 21 arquivos passaram.
+  TypeScript e build de produção passaram. O aviso Vite de chunk acima de
+  500 kB permanece; não foi introduzida dependência nova para esta fase.
+- Dois executáveis QA Tauri reais, nativamente 1280×720 (EN) e 1000×700
+  (PT-BR), executaram o núcleo empacotado em perfis descartáveis separados.
+  Houve troca de idioma nos dois sentidos pelo controle real.
+- `scripts/check-phase4-desktop.mjs` reproduz os percursos. Preparação das
+  fixtures e conferências de estado/hash usam RPC; pedidos de processamento,
+  exportação, navegação e decisões usam controles reais da UI via WebView2.
+  Não são chamadas de script apresentadas como ações autônomas de agente.
+- O handshake e a descoberta MCP foram feitos pelo processo empacotado em
+  stdio: 60 ferramentas, `environment_link` requer apenas `root`, conserva
+  `audacity_path` opcional e não anuncia criação de loops desabilitada.
+  Nenhuma configuração global do Codex foi modificada.
+
+| Percurso | Resultado e evidência |
+| --- | --- |
+| A | PASSOU desktop: projeto criado na UI, seleção de outro projeto, caminho musical abre inspeção sem campo obrigatório de editor e sem instalar/gerar |
+| B | PASSOU desktop: orientação do motor vocal e criação de perfil somente de idioma `sw`, sem referência, instalação ou síntese; perfil e motor continuam distintos |
+| C | PASSOU desktop: importação, fonte correta no FX, gain -3 dB, prévia, reprodução com avanço real em mudo, versão completa e cópia explicitamente selecionada; original preservado |
+| D | PASSOU desktop: tarefa concluída de outro projeto abre seu resultado por ID, troca projeto e reproduz no player persistente |
+| E | PASSOU desktop: sessão aplica seu ID/filtro, preserva-o ao navegar e amplia resultados de 50 para a página seguinte |
+| F | PASSOU desktop: dois itens em A/B, uma seleção de lote, favorita e escolha do projeto persistidas; escolha de outro projeto preservada |
+| G | PASSOU com fixture React: mensagem de espera de RAM e de identidade remota incerta, sem reenvio ou botão genérico de retry. Espera real sob pressão de memória NÃO TESTADA nesta fase |
+| H | PASSOU desktop: ausência de Audacity explicada como bloqueio opcional; FX/exportação continuam funcionais. Handoff real ao editor NÃO RETESTADO |
+| I | PASSOU desktop: revisão Medium FP32/SAME-L; aceite/autorização não marcados, instalação bloqueada, destino não criado, nenhum peso baixado |
+| J | PASSOU desktop: cancelar preserva bytes; descarte físico de importado exige opção explícita; restauração preserva hash; segunda revisão/exclusão remove somente fixture; favorita/referência protegidas |
+
+O teclado foi exercitado via CDP para Escape, fechamento de modais, retorno
+de foco ao acionador e foco inicial seguro em "Manter arquivos". Não representa
+uma auditoria completa de leitor de tela, IME ou de todos os atalhos do Windows.
+Os seletores, foco e rolagem são do aplicativo real; nenhum viewport emulado
+substituiu a dimensão nativa. As capturas foram inspecionadas visualmente,
+sem overflow horizontal. Escolha de caminhos em diálogo nativo do Windows não
+foi retestada; os campos editáveis reais foram usados.
+
+Para repetir: compilar o núcleo com `scripts/build.ps1 -CoreOnly`; preparar
+uma configuração Tauri QA ignorada em `build/`, com identificador separado,
+janela `visible: false` e tamanho nativo desejado; compilar com
+`npm.cmd run tauri build -- --no-bundle --config build/phase4-desktop.json`.
+Copiar o executável QA e seu `runtime/` para uma pasta externa à instalação.
+Executar `node scripts/check-phase4-desktop.mjs APP NOVO_PERFIL EVIDENCIAS
+PLAYWRIGHT_NODE_MODULES en 1280 720` (ou `pt-BR 1000 700`). O runner recusa
+perfil preexistente ou dentro da produção/Git. Playwright é fornecido pelo
+ambiente de testes; não entrou nas dependências do aplicativo. O script fecha
+somente sua janela e núcleo de teste de forma graciosa.
+
+### Problema encontrado na rodada real
+
+Favoritar e abrir detalhes imediatamente podia capturar a revisão anterior do
+asset; definir a escolha do projeto então reenviava `favorite=false`. Os dois
+controles agora aguardam a gravação/atualização de estado. A regressão React
+com gravação pendente e os dois percursos desktop confirmam a preservação.
+
+Também foram corrigidas sincronizações do harness: aguardar o resultado no
+snapshot da UI após completar o job e aguardar a conclusão/hash da cópia,
+em vez de considerar a mera criação do arquivo como exportação concluída.
+Os registros das tentativas anteriores foram preservados nas evidências
+privadas; nenhuma falha foi convertida em aprovação silenciosa.
+
+### Identidade e integridade
+
+Recibos sanitizados ficam em `docs/evidence/phase4/`. Guardam IDs, request keys
+de teste, hashes e origem da interface, sem tokens ou dados de produção.
+Em ambas as rodadas finais:
+
+- Fonte sintética: `2e3272fca370f401d381b46828b1014b4a55f28737512bd86a27fafcfaee271d`.
+- Cópia processada -3 dB: `4a010dd2f66008b69a36ee269c184464915cbddb1fa3cf54fc855704e1364fab`.
+- Hash da cópia igual ao processado escolhido, diferente da fonte preservada.
+- Prévia excluída da lista de exportação final; ausência de escolha mantém o
+  botão bloqueado. Desaparecimento da seleção e mudanças de projeto também
+  têm regressões de UI sem fallback para outro arquivo.
+
+### Capturas reais
+
+| Tela | EN · 1280×720 | PT-BR · 1000×700 |
+| --- | --- | --- |
+| Intenções/projetos | [EN](images/phase4/projects-en.png) | [PT-BR](images/phase4/projects-pt-BR.png) |
+| Voice Studio | [EN](images/phase4/voice-en.png) | [PT-BR](images/phase4/voice-pt-BR.png) |
+| FX/exportação explícita | [EN](images/phase4/fx-export-en.png) | [PT-BR](images/phase4/fx-export-pt-BR.png) |
+| Resultado contextual | [EN](images/phase4/queue-result-en.png) | [PT-BR](images/phase4/queue-result-pt-BR.png) |
+| Biblioteca/A-B | [EN](images/phase4/library-en.png) | [PT-BR](images/phase4/library-pt-BR.png) |
+| Revisão FP32 | [EN](images/phase4/setup-en.png) | [PT-BR](images/phase4/setup-pt-BR.png) |
+| Confirmação de armazenamento | [EN](images/phase4/storage-confirm-en.png) | [PT-BR](images/phase4/storage-confirm-pt-BR.png) |
+
+## Publicação e limites
+
+Blocos locais: `b2cca7d` (A), `dcf11ba` (B), `eb07c0f` (C). O commit final
+acrescenta a correção da disputa de favorita/detalhes, testes, runner e estas
+evidências. Publicação autorizada diretamente na main, após revisão dos paths,
+diff, higiene e sincronização com o remoto; sem PR ou reescrita de histórico.
+
+A versão permanece **0.5.0**. Estas mudanças são código da main para uma futura
+release; o aplicativo instalado e o atualizador NÃO recebem esta fase agora.
+O instalador estável conserva SHA-256
+`98704bf88d5d74852b31f21efc7cce9b100f0db3beb027fd4120422d1bd6e03e`.
+Não houve alteração de modelos, receitas de geração, gates de RAM, capacidades
+nativas, release/feed, Takasa, áudio privado ou pacote Agensi.
+
+A auditoria de publicação por padrões examinou 672 blobs alcançáveis e 291
+arquivos de trabalho, sem achados. Isso não é garantia de ausência de toda
+vulnerabilidade. O e-mail histórico já autorizado continua no histórico.
+As janelas/núcleos QA foram encerrados sem encerramento forçado. Perfis,
+WAVs sintéticos, cópias dos executáveis QA e caches exclusivos desta fase
+foram removidos após compactar as evidências privadas: `desktop-evidence.zip`,
+2.701.422 bytes, SHA-256
+`e9687a6923d5b2080be97d37162be7c84159f789c3e1f565bf35dae19b63351e`.
+Builds de desenvolvimento ignorados permanecem na árvore de build habitual;
+modelos, instalação e projetos de produção foram preservados.
+
+Recomendações: acompanhar o uso real dos três caminhos antes de mudar a
+sidebar; obter o mapeamento original UX-10–13 se for necessária rastreabilidade
+individual; auditar acessibilidade completa e retestar instalação/handoff na
+próxima release. Não há inferência pesada, aceite auditivo, reinstalação limpa
+ou ciclo de atualização validados por esta fase de UX.

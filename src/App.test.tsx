@@ -118,6 +118,23 @@ const workflowSnapshot = () => ({
   preferences: { idle_minutes: 10 },
 });
 
+it("explains queued RAM and uncertain remote identity without resubmitting jobs", async () => {
+  const data = workflowSnapshot();
+  data.jobs.push(
+    { id: "ram-job", project_id: "p", state: "queued", remote_id: null, stage: "Aguardando 12 GiB de RAM livre", params: {}, metrics: {}, created: 1, request_key: "keep-ram-key" },
+    { id: "remote-job", project_id: "p", state: "interrupted", remote_id: "remote-identity", stage: "Interrompida", params: {}, metrics: {}, created: 1, request_key: "keep-remote-key" },
+  );
+  vi.mocked(rpc).mockImplementation(async method => method === "snapshot" ? data : method.endsWith("_list") ? [] : {});
+  render(<App />);
+  await screen.findByText("O que você quer fazer?");
+  fireEvent.click(screen.getByRole("button", { name: /^Fila de geração/ }));
+  expect(screen.getAllByText(/Não precisa reenviar/).length).toBeGreaterThan(0);
+  fireEvent.click(screen.getByText("remote-job").closest("summary")!);
+  expect(screen.getByText(/Uma nova chave pode duplicar o trabalho/)).toBeTruthy();
+  expect(screen.queryByRole("button", { name: /Tentar novamente/i })).toBeNull();
+  expect(vi.mocked(rpc).mock.calls.some(([method]) => /generate|retry|submit/.test(method))).toBe(false);
+});
+
 it("routes task intentions without generating, downloading or installing", async () => {
   const data = workflowSnapshot();
   vi.mocked(rpc).mockImplementation(async method => method === "snapshot" ? data : method.endsWith("_list") ? [] : {});
@@ -131,6 +148,30 @@ it("routes task intentions without generating, downloading or installing", async
   fireEvent.click(screen.getByRole("button", { name: "Processar um WAV existente" }));
   expect(screen.getByRole("heading", { name: "Catalogar arquivo local" })).toBeTruthy();
   expect(vi.mocked(rpc).mock.calls.some(([method]) => /generate|setup_install|engine_start/.test(method))).toBe(false);
+});
+
+it("waits for favorite persistence before allowing details to capture its state", async () => {
+  const data = workflowSnapshot();
+  let finish!: (value: unknown) => void;
+  vi.mocked(rpc).mockImplementation(async method => {
+    if (method === "snapshot") return { ...data };
+    if (method === "result_feedback") return new Promise(resolve => { finish = resolve; });
+    return method.endsWith("_list") ? [] : {};
+  });
+  render(<App />);
+  await screen.findByText("O que você quer fazer?");
+  fireEvent.click(screen.getByRole("button", { name: "Biblioteca & versões" }));
+  const asset = data.assets[0];
+  const card = document.querySelector(`[data-asset-id="${asset.id}"]`)! as HTMLElement;
+  const star = within(card).getByRole("button", { name: "Alternar favorita para First signal" });
+  const details = within(card).getByRole("button", { name: "Detalhes" }) as HTMLButtonElement;
+  fireEvent.click(star);
+  expect(details.disabled).toBe(true);
+  data.assets[0] = { ...asset, favorite: 1 };
+  await act(async () => finish(data.assets[0]));
+  await waitFor(() => expect(details.disabled).toBe(false));
+  fireEvent.click(details);
+  expect(screen.getByRole("dialog")).toBeTruthy();
 });
 
 it("puts audio before advanced tools and hands the chosen asset to FX independently of playback", async () => {
