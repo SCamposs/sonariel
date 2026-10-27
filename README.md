@@ -8,9 +8,9 @@ Sonariel is a source-available Windows desktop application that brings music gen
 
 [Download for Windows](https://github.com/SCamposs/sonariel/releases/latest) · [Quick start](docs/QUICK_START.md) · [Documentation](docs/README.md) · [Changelog](CHANGELOG.md)
 
-![Sonariel v0.3.2 project workspace with an isolated demonstration project, sessions, and a preserved audio selection](docs/images/projects.webp)
+![Sonariel v0.3.2 project workspace with the technical-verification project selected](docs/images/projects.png)
 
-*Real v0.3.2 desktop captures. The captured interface is in Brazilian Portuguese; v0.4.0 also supports English. The isolated showcase uses an imported synthetic sound study and real native DSP renders, not AI-generated music or production material. [Capture details](docs/SHOWCASE.md).*
+*Real v0.3.2 desktop captures supplied by the author and also used in the portfolio, without the remote-control cursor overlay. The interface shown is in Brazilian Portuguese; v0.4.0 also supports English. These screenshots are interface views, not evidence of an AI generation run or a performance benchmark. [Capture details](docs/SHOWCASE.md).*
 
 **Current release: [v0.4.0](https://github.com/SCamposs/sonariel/releases/tag/v0.4.0).** Includes English/pt-BR UI, batch WAV export, versioned music presets, non-destructive audio regions, tags and combined library filters. Loop creation is disabled in packaged distributions; existing audio is preserved. Windows installation/basic use was validated. The complete v0.3.2 → v0.4.0 installer/updater lifecycle was not tested; this documented caveat was accepted by the maintainer. See the [Phase 2.7 acceptance report](docs/PHASE2_7.md).
 
@@ -25,16 +25,16 @@ Sonariel is a source-available Windows desktop application that brings music gen
 
 ### Inside the workspace
 
-![Side-by-side comparison of the synthetic source and a processed version, with measured waveforms and playback controls](docs/images/comparison.webp)
+![Sonariel library with two audio versions, waveforms, comparison selection and batch export controls](docs/images/library.png)
 
 <details>
 <summary>Native FX workspace</summary>
 
-![Native FX workspace showing the original source, processed versions and an editable effect chain](docs/images/fx.webp)
+![Native FX editor before selecting a source WAV, with effect-chain and preview controls](docs/images/fx.png)
 
 </details>
 
-These views show a real imported-audio → DSP → version comparison workflow. They do not imply that an AI model was loaded for the screenshots. See the [queue capture and recording proposal](docs/SHOWCASE.md) for more context.
+These views show the real project, library and effects workspaces. The FX capture includes historical loop controls; loop creation is disabled in the packaged v0.4.0 release. See the [queue capture and screenshot provenance](docs/SHOWCASE.md) for context.
 
 ## Agent integration, not a second chat window
 

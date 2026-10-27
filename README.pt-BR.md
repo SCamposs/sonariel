@@ -10,9 +10,9 @@ O Sonariel é um aplicativo desktop source-available para Windows que reúne ger
 
 [Baixar para Windows](https://github.com/SCamposs/sonariel/releases/latest) · [Primeiros passos](docs/QUICK_START.md) · [Documentação](docs/README.md) · [Changelog](CHANGELOG.md)
 
-![Área de projetos do Sonariel v0.3.2 com projeto demonstrativo isolado, sessões e uma escolha de áudio preservada](docs/images/projects.webp)
+![Área de projetos do Sonariel v0.3.2 com o projeto de verificação técnica selecionado](docs/images/projects.png)
 
-*Capturas reais do desktop v0.3.2. A interface capturada está em português brasileiro; a v0.4.0 também oferece inglês. O perfil isolado usa um estudo sonoro sintético importado e renders reais do DSP nativo, não músicas geradas por IA ou material de produção. [Como as capturas foram feitas](docs/SHOWCASE.md).*
+*Capturas reais do desktop v0.3.2 fornecidas pelo autor e também utilizadas no portfólio, sem a sobreposição do cursor de controle remoto. A interface está em português brasileiro; a v0.4.0 também oferece inglês. Essas telas apresentam a interface e não comprovam uma geração de IA ou um benchmark de desempenho. [Origem das capturas](docs/SHOWCASE.md).*
 
 ## Do pedido à versão utilizável
 
@@ -25,16 +25,16 @@ O Sonariel é um aplicativo desktop source-available para Windows que reúne ger
 
 ### Dentro do aplicativo
 
-![Comparação lado a lado do estudo sintético e de uma versão processada, com formas de onda medidas e controles de reprodução](docs/images/comparison.webp)
+![Biblioteca do Sonariel com duas versões de áudio, formas de onda, seleção para comparação e controles de exportação em lote](docs/images/library.png)
 
 <details>
 <summary>Área de processamento nativo</summary>
 
-![Área de FX nativo com a fonte original, versões processadas e cadeia de efeitos editável](docs/images/fx.webp)
+![Editor de FX nativo antes de selecionar um WAV de origem, com controles de cadeia de efeitos e prévia](docs/images/fx.png)
 
 </details>
 
-Essas telas mostram um fluxo real de importação → DSP → comparação de versões. Não indicam que modelos de IA foram carregados para as capturas. Veja a [fila e a proposta de gravação](docs/SHOWCASE.md) para mais contexto.
+Essas telas mostram as áreas reais de projetos, biblioteca e efeitos. A captura de FX inclui controles históricos de loop; a criação de loops está desativada na distribuição v0.4.0. Veja a [fila e a origem das capturas](docs/SHOWCASE.md) para mais contexto.
 
 ## Integração com agentes, sem outro chat dentro do app
 
