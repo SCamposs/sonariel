@@ -1,0 +1,10 @@
+# Documentation only. Prefer Sonariel's built-in Codex connection action.
+# Replace the placeholder with your actual installation directory before use.
+[mcp_servers.sonariel]
+command = '<SONARIEL_INSTALL_DIR>\runtime\sonariel-core.exe'
+args = ['mcp']
+startup_timeout_sec = 30
+
+# Optional isolated profile. Omit for normal use of the desktop's default profile.
+# [mcp_servers.sonariel.env]
+# SONARIEL_HOME = '<ABSOLUTE_PATH_TO_CHOSEN_PROFILE>'

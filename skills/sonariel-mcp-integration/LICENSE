@@ -1,0 +1,78 @@
+Sonariel Source Available License 1.0
+
+Copyright (c) 2026 SCamposs and the respective Sonariel contributors.
+
+1. Scope and definitions
+
+"Software" means the original Sonariel source code, executable application and
+documentation made available by their copyright holders under this license.
+"Modified Software" means adaptations or derivative works containing a
+substantial portion of that Software. Separately licensed third-party components
+are not covered by this license; their own licenses continue to apply.
+
+2. Permission to use and develop
+
+Subject to the conditions below, you may use, inspect, copy, build and modify the
+Software, including for personal use, education, research and internal business
+use. You may use it as a tool in a commercial music or creative-production
+workflow. You may distribute unmodified or Modified Software free of charge,
+in source or executable form, under this same license.
+
+3. Music and other user content
+
+This license does not apply to music, audio, prompts, projects or other content
+that you supply to or produce with the Software. It imposes no royalty, revenue
+share or noncommercial restriction on that content. You may sell or license
+music made using the Software and use it in commercial projects, subject to any
+rights or restrictions that independently apply to models, source material,
+references and other third-party content. The Software's copyright holders do
+not claim ownership of your content through this license, and do not warrant
+that generated content is copyrightable or free of third-party claims.
+
+Paid creative work that delivers music or other creative content is permitted.
+This permission does not allow selling access to the Software itself as
+described in section 4.
+
+4. No sale of the Software or paid software service
+
+Without separate written permission from the relevant copyright holders, you
+must not sell, resell, rent, commercially license or otherwise charge for the
+Software or Modified Software, whether as source code, an executable, a paid
+download, a paid feature or a paid component of a bundle.
+
+You must not offer the Software or Modified Software to other people as a paid
+hosted, managed or software-as-a-service offering. This includes charging for
+access to its interface or API, subscriptions, seats, execution time, credits
+or other fees that provide the ability to operate or invoke the Software. A
+modified interface, wrapper or service does not remove these restrictions when
+it incorporates or operates the Software for that purpose.
+
+Using the Software internally to create and deliver music to paying clients is
+not, by itself, a prohibited paid software service. Giving those clients paid
+access to operate or invoke the Software is prohibited.
+
+5. Redistribution and notices
+
+Redistributed copies must include this license and the applicable copyright and
+third-party notices. Modified versions must clearly identify that they have
+been modified and must not imply endorsement by the original Sonariel authors.
+You must not remove these conditions or grant recipients broader rights over
+the Software than this license permits. These conditions do not restrict rights
+independently granted by the licenses of third-party components.
+
+6. Rights retained and termination
+
+All rights not expressly granted are reserved. No trademark or endorsement
+rights are granted. If you breach these conditions, the permissions granted to
+you under this license terminate. A separate written license may authorize uses
+not permitted here. This is a source-available license with commercial
+redistribution and service restrictions, not an OSI-approved open-source license.
+
+7. No warranty; limitation of liability
+
+The Software is provided as-is and as available, without warranties, including
+of merchantability, fitness for a particular purpose or noninfringement. To the
+extent permitted by applicable law, its copyright holders and contributors are
+not liable for claims, damages or other liability arising from the Software or
+its use, whether in contract, tort or otherwise. Mandatory rights under
+applicable law are not excluded by this clause.
