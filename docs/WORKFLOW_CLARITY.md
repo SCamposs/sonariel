@@ -81,7 +81,9 @@ de memória. Nenhuma dependência nova, alteração de backend, versão ou relea
 `hidden` mantém os formulários e rascunhos montados, mas fora da navegação e da
 árvore acessível até serem escolhidos. Nenhum rascunho novo é persistido em disco.
 
-O aceite pessoal de conforto continua aberto. Achados anteriores de descoberta
+O aceite pessoal estava aberto ao entregar a prévia. Após experimentá-la, o
+mantenedor aprovou as melhorias e autorizou publicação na v0.6.0; mudanças
+pontuais futuras continuam possíveis. Achados anteriores de descoberta
 de referências em “Todos os tipos” e reutilização de presets musicais não foram
 declarados resolvidos. Uma revisão completa de leitor de tela, instalação limpa
 e ciclo do atualizador também não faz parte deste teste de fluxo.

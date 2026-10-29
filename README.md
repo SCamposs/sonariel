@@ -12,7 +12,7 @@ Sonariel is a source-available Windows desktop application that brings music gen
 
 *Real v0.3.2 desktop captures supplied by the author and also used in the portfolio, without the remote-control cursor overlay. The interface shown is in Brazilian Portuguese; v0.4.0 also supports English. These screenshots are interface views, not evidence of an AI generation run or a performance benchmark. [Capture details](docs/SHOWCASE.md).*
 
-**Current release: [v0.5.0](https://github.com/SCamposs/sonariel/releases/tag/v0.5.0).** Adds 30-day trash, confirmed permanent deletion, optional Medium FP32 models and a branded Windows installer. Includes English/pt-BR UI and existing production tools. [Release review](docs/releases/v0.5.0-validation.md). Loop creation is disabled in packaged distributions; existing audio is preserved. Windows installation/basic use was validated. The complete v0.3.2 → v0.4.0 installer/updater lifecycle was not tested; this documented caveat was accepted by the maintainer. See the [Phase 2.7 acceptance report](docs/PHASE2_7.md).
+**Current release: [v0.6.0](https://github.com/SCamposs/sonariel/releases/tag/v0.6.0).** Adds task-first workflows, contextual help and a recommended Medium FP32 / SAME-L music recipe, retaining 30-day trash and the branded installer. Includes English/pt-BR UI and existing production tools. [Release review](docs/releases/v0.6.0-validation.md). Loop creation is disabled in packaged distributions; existing audio is preserved. Windows installation/basic use was validated. The complete v0.3.2 → v0.4.0 installer/updater lifecycle was not tested; this documented caveat was accepted by the maintainer. See the [Phase 2.7 acceptance report](docs/PHASE2_7.md).
 
 ## From a request to a usable version
 
@@ -60,7 +60,7 @@ These are **queue admission thresholds, not guarantees of sufficient memory**. A
 
 ## Download and install
 
-1. Open the [official releases](https://github.com/SCamposs/sonariel/releases/latest) and download `Sonariel_<version>_x64-setup.exe`. The current stable release is [v0.5.0](https://github.com/SCamposs/sonariel/releases/tag/v0.5.0).
+1. Open the [official releases](https://github.com/SCamposs/sonariel/releases/latest) and download `Sonariel_<version>_x64-setup.exe`. The current stable release is [v0.6.0](https://github.com/SCamposs/sonariel/releases/tag/v0.6.0).
 2. Install the desktop app. End users do **not** need Node.js, Rust, or a development Python installation. WebView2 is required; the installer offers its bootstrap component when needed.
 3. Prepare a compatible engine separately through the app. Model weights are not bundled. Downloads require internet, disk space, and your authorization; external model terms still apply.
 
@@ -69,7 +69,7 @@ The installer does **not** have a Windows Authenticode publisher signature, so W
 ## Quick start
 
 1. Open Sonariel and use the optional first-use guide. Reopen it through **Instruções do workflow** in the sidebar.
-2. In **Ambiente**, review an engine's setup plan or link a compatible existing installation. Each engine has its own isolated environment.
+2. If your task needs an engine, follow its preparation step in **Ambiente**. Choose a compatible existing installation or review an isolated setup. The recommended Medium FP32 / SAME-L recipe is optional; [review its costs and supported mode](docs/MUSIC_RECOMMENDATIONS.md).
 3. In **Audacity & Codex**, choose **Configurar conexão Codex**, then reload the Codex MCP connection. A compatible MCP client is required for agent-directed generation; a working protocol handshake is distinct from client configuration.
 4. Create/select a project in **Projetos & sessões** and save its production context.
 5. Ask the agent for one short generation with explicit model, seed, and duration. For ACE-Step, also provide BPM, key, and time signature. For example:

@@ -2,7 +2,7 @@
 
 # Sonariel
 
-**Versão atual: [v0.5.0](https://github.com/SCamposs/sonariel/releases/tag/v0.5.0).** Adiciona lixeira de 30 dias, exclusão definitiva confirmada, modelos Medium FP32 opcionais e instalador personalizado. Mantém a interface EN/pt-BR e as ferramentas de produção existentes. [Relatório da revisão](docs/releases/v0.5.0-validation.md). A criação de loops fica desativada na distribuição; áudios anteriores são preservados. Instalação/uso básico no Windows validados. O ciclo completo v0.3.2 → v0.4.0 por instalador/atualizador não foi testado; essa ressalva documentada foi aceita pelo mantenedor. Consulte o [relatório da Fase 2.7](docs/PHASE2_7.pt-BR.md).
+**Versão atual: [v0.6.0](https://github.com/SCamposs/sonariel/releases/tag/v0.6.0).** Adiciona fluxos por tarefa, ajuda contextual e receita Medium FP32 / SAME-L recomendada, preservando a lixeira de 30 dias e o instalador personalizado. Mantém a interface EN/pt-BR e as ferramentas de produção existentes. [Relatório da revisão](docs/releases/v0.6.0-validation.md). A criação de loops fica desativada na distribuição; áudios anteriores são preservados. Instalação/uso básico no Windows validados. O ciclo completo v0.3.2 → v0.4.0 por instalador/atualizador não foi testado; essa ressalva documentada foi aceita pelo mantenedor. Consulte o [relatório da Fase 2.7](docs/PHASE2_7.pt-BR.md).
 
 **Produção de áudio local, com direção pelo seu agente de IA conectado.**
 
@@ -60,7 +60,7 @@ São **limites para admitir a tarefa na fila, não garantias de memória suficie
 
 ## Download e instalação
 
-1. Abra as [releases oficiais](https://github.com/SCamposs/sonariel/releases/latest) e baixe `Sonariel_<versão>_x64-setup.exe`. A release estável atual é a [v0.5.0](https://github.com/SCamposs/sonariel/releases/tag/v0.5.0).
+1. Abra as [releases oficiais](https://github.com/SCamposs/sonariel/releases/latest) e baixe `Sonariel_<versão>_x64-setup.exe`. A release estável atual é a [v0.6.0](https://github.com/SCamposs/sonariel/releases/tag/v0.6.0).
 2. Instale o app. Usuários finais **não** precisam de Node.js, Rust ou uma instalação de Python de desenvolvimento. O WebView2 é necessário; o instalador oferece seu componente de bootstrap quando preciso.
 3. Prepare um motor compatível separadamente pelo app. Os pesos não acompanham o instalador. Downloads exigem internet, espaço em disco e autorização; as licenças externas continuam valendo.
 

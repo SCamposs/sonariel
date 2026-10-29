@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.0
+
+- Reorganize task entry, agent handoff and optional manual setup without changing the visual identity or production engines. Add contextual help, clearer action/state styling, input spacing and in-memory Voice draft retention.
+- Recommend the complete Medium FP32 / SAME-L FP32 text-to-audio starting recipe, distinct from the lighter compact default and baseline Turbo. Expose optional setup, exact costs/modes and project-specific agent handoff.
+- Add read-only public music recommendation discovery and explicit preset creation via MCP, retaining recipe/checkpoint origin through immutable revisions and job/export lineage. Saving never queues inference or accepts licenses. Fidelity source audio remains rejected.
+- See [release validation](docs/releases/v0.6.0-validation.md). No new music inference or installer/updater lifecycle test is claimed.
+
+
 ## 0.5.0
 
 - Add 30-day recoverable trash with idle-hourly expiry, an upgrade grace period and separately previewed/confirmed permanent deletion. Imported files require explicit opt-in for physical moves/deletion; protected assets and dependencies remain blocked. Keep purged metadata for lineage and recover interrupted cross-volume moves.
