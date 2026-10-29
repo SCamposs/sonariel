@@ -4,10 +4,11 @@ import type { Snapshot } from "./api";
 import { HelpTip } from "./ui/help-tip";
 import { useState } from "react";
 import { AgentHandoff } from "./workflow-guidance";
+import { RecommendedMusic } from "./recommended-music";
 
 /** Navigation only: none of these entries executes production or setup. */
-export function WorkflowPaths({ data, music, voice, audio, createProject }: {
-  data: Snapshot; music: () => void; voice: () => void; audio: () => void; createProject: () => void;
+export function WorkflowPaths({ data, music, voice, audio, createProject, prepareMusic }: {
+  data: Snapshot; music: () => void; voice: () => void; audio: () => void; createProject: () => void; prepareMusic?: () => void;
 }) {
   useTranslation();
   const [intent, setIntent] = useState<"music" | "voice" | "audio">();
@@ -31,5 +32,6 @@ export function WorkflowPaths({ data, music, voice, audio, createProject }: {
         {tr("experience", !project ? "createProjectStep" : intent === "audio" ? "importWavStep" : intent === "voice" ? "openVoiceStep" : musicReady ? "openAgentStep" : "prepareMusicStep")}
       </button>
     </div>}
+    {intent === "music" && project && <RecommendedMusic data={data} prepare={prepareMusic ?? music} />}
   </section>;
 }

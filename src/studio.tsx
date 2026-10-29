@@ -1,4 +1,5 @@
 import { systemMessage } from "./i18n/system-message";
+import { RecommendedMusic } from "./recommended-music";
 import { tr, languageName } from "./i18n";
 import { useTranslation } from "react-i18next";
 import { useEffect, useRef, useState } from "react";
@@ -85,6 +86,7 @@ export function MusicEngines({
   useTranslation();
   const [family, setFamily] = useState("sm-music");
   const [quality, setQuality] = useState("compact");
+  const stableSetupDetails = useRef<HTMLDetailsElement>(null);
   const [destination, setDestination] = useState("");
   const [python, setPython] = useState("");
   const [source, setSource] = useState("");
@@ -112,6 +114,13 @@ export function MusicEngines({
       </header>
       <div className="studio-body">
         <Requirements required={tr("experience", "musicRequired")} optional={tr("experience", "editorOptional")} />
+        <RecommendedMusic data={data} prepare={() => {
+          setFamily("medium"); setQuality("fidelity"); setPlan(undefined); setAuthorized(false);
+          if (stableSetupDetails.current) {
+            stableSetupDetails.current.open = true;
+            stableSetupDetails.current.scrollIntoView?.({ block: "start" });
+          }
+        }} />
         <details className="technical-details"><summary>{tr("experience", "inspectEngines")}</summary><div className="studio-results">
           {data.engines
             ?.filter((e) => e.category === "music")
@@ -144,7 +153,7 @@ export function MusicEngines({
         <details className="technical-details"><summary>{tr("experience", "advancedDetails")}</summary>
           <p className="muted">{tr("studio", "engineStateScope")}</p>
         </details>
-        <details className="fx-layer" open={prepareSetup || undefined}>
+        <details ref={stableSetupDetails} className="fx-layer" open={prepareSetup || undefined}>
           <summary>{tr("studio", "setUpStableAudio3ExperimentalLitertCpu")}</summary>
             <div className="disclosure-body">
           <p>

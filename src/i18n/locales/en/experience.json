@@ -89,5 +89,18 @@
   "inspectEngines": "Inspect engines and available support",
   "voiceSetupLink": "Voice: open Voice Studio",
   "beginImport": "Import a file",
-  "cancelImport": "Close import"
+  "cancelImport": "Close import",
+  "recommendedMusic": "Recommended for musical quality",
+  "recommendedTextMode": "composition from text",
+  "recommendedScope": "Recommended from the maintainer’s local listening evaluation. It is a starting configuration, not a guarantee for every musical style. ACE-Step remains the baseline; compact stays the lighter default.",
+  "recommendedCosts": "Requires {{ram}} GiB of available RAM to start. Optional {{gb}} GB model components, downloaded separately from the app; verified local files are reused.",
+  "useRecommendedCodex": "Use this preset with Codex",
+  "prepareRecommended": "Review recommended setup",
+  "reviewRecommendedSetup": "Review installation options",
+  "recommendedNotLinked": "Optional profile not linked. Review setup and model terms before choosing a download. No model will be downloaded automatically.",
+  "recommendedRecipe": "Recipe and request details",
+  "recommendedTechnical": "Medium DiT FP32 + SAME-L decoder FP32 + T5Gemma FP16. Eight steps, CFG/APG 1, six CPU threads, batch 1. Stereo float32 WAV, 44.1 kHz. Text-to-audio only, 5–60 seconds; SAME-L source-audio encoding is not integrated. The approximately 5.75 GiB process peak observed for 30 seconds does not predict other runs.",
+  "recommendedRequest": "Use Sonariel in project “{{name}}” (ID {{project}}). Discover the available MCP tools and consult music_recommendations_list for recipe {{recipe}}. Inspect project context and environment availability. Help me choose an original prompt, explicit seed and duration (5–60 s), then save a named preset with music_recommendation_save. Do not include private reference audio or switch to audio2audio: this profile supports text2audio only. Preserve the eight-step FP32/SAME-L recipe. Saving is not generation: review the preset and ask for explicit confirmation before submitting any job or downloading/installing models. Keep originals and report preset/job IDs.",
+  "loadingRecommendation": "Loading recommended recipe…",
+  "retryRecommendation": "Retry recipe lookup"
 }

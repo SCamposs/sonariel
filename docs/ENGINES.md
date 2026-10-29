@@ -1,3 +1,5 @@
+Version 0.6.0 highlights the complete Medium FP32 / SAME-L text-to-audio recipe as a local-listening quality recommendation, distinct from the compact default and Turbo baseline. [Recipe, modes, costs and MCP use](MUSIC_RECOMMENDATIONS.md).
+
 # Engine capabilities and requirements
 
 Version 0.5.0 adds an optional Medium `fidelity` profile (DiT FP32 + SAME-L FP32), separately downloaded and verified. It supports text-to-audio, records the selected profile in results/presets and requires 12 GiB available RAM to start. The compact profile remains default. See [implementation and validation boundaries](STORAGE_AND_QUALITY.md). The compact workflows below remain available.

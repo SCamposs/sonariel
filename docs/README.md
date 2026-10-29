@@ -46,3 +46,5 @@ Phase 2.5 adds reference/source regions and project-local tags/filters. Its acce
 No validated GPU profile, macOS/Linux installer, active-inference cancellation, operational SFT adapter, universally proven voice identity, or tested compatibility with every MCP client. Codex was exercised; MCP protocol interoperability is not equivalent to a tested client integration.
 
 The app license is [Sonariel Source Available License 1.0](../LICENSE), not OSI-approved open source. Read the [third-party notices](../THIRD_PARTY_NOTICES.md) separately. No production audio, references, weights or private presets are included here.
+
+- [Recommended music recipe and MCP workflow](MUSIC_RECOMMENDATIONS.md) - optional Medium FP32 / SAME-L text-to-audio, costs and limits.

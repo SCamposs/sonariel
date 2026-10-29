@@ -74,3 +74,7 @@ Existing contracts extend without changing their defaults: `results_list` accept
 Loop creation is disabled in packaged distributions and omitted from MCP tools/list; the core also rejects direct calls. `snapshot.capabilities.loop_creation` is authoritative. Existing derived files/recipes remain readable/exportable. Source-only experimentation requires explicit `SONARIEL_DEVELOPMENT_LOOPS=1` and an isolated profile outside the stable tree; packaged runtimes cannot opt in. Reference excerpts and ordinary native FX are independent of this restriction.
 
 In that authorized development context only, `fx_loop_render` optionally accepts `beat_grid={anchor_seconds,bpm,beats_per_bar,bars}`. Use verified timing, not a model's requested BPM or an onset estimate. For anchor A, cycle P and overlap L, select A−L through A+P. This preserves the period without certifying harmonic/phrase continuity. [Musical loop acceptance](LOOP_ACCEPTANCE.md).
+
+## Public music recommendations (v0.6.0)
+
+Discover `sonariel_music_recommendations_list`, then explicitly save a project preset with `sonariel_music_recommendation_save` using a chosen prompt, seed and duration. This does not install or generate. Review/confirmation and request-key rules remain unchanged. Fidelity supports text2audio only. See [recipe guide](MUSIC_RECOMMENDATIONS.md). Reload the client MCP connection to discover newly shipped tools.

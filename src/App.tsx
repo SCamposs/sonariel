@@ -632,6 +632,7 @@ export function App() {
                 <>
                   <WorkflowPaths data={data}
                     createProject={() => setProjectForm(true)}
+                    prepareMusic={() => { setPreparation("other"); setPage("environment"); }}
                     music={() => setPage(data.engines?.some(e => e.category === "music" && e.installed && e.compatible && !e.blocked_reason) ? "bridges" : "environment")}
                     voice={() => setPage("voice")}
                     audio={() => { if (!project) { setProjectForm(true); setNotice(tr("workspace", "chooseProjectForAudio")); } else { setPage("library"); setShowRegister(true); } }} />

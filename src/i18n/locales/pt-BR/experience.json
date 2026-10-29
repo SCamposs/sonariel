@@ -89,5 +89,18 @@
   "inspectEngines": "Consultar motores e suporte disponível",
   "voiceSetupLink": "Voz: abrir Voice Studio",
   "beginImport": "Importar arquivo",
-  "cancelImport": "Fechar importação"
+  "cancelImport": "Fechar importação",
+  "recommendedMusic": "Recomendado para qualidade musical",
+  "recommendedTextMode": "composição a partir de texto",
+  "recommendedScope": "Recomendação baseada na avaliação auditiva local do mantenedor. É uma configuração inicial, sem garantia para todo estilo musical. ACE-Step continua como base; compacto permanece o padrão mais leve.",
+  "recommendedCosts": "Exige {{ram}} GiB de RAM disponível para iniciar. Componentes opcionais de modelos: {{gb}} GB, baixados separadamente do app; arquivos locais verificados são reutilizados.",
+  "useRecommendedCodex": "Usar este preset com Codex",
+  "prepareRecommended": "Revisar preparação recomendada",
+  "reviewRecommendedSetup": "Revisar opções de instalação",
+  "recommendedNotLinked": "Perfil opcional não vinculado. Revise a preparação e os termos dos modelos antes de escolher o download. Nenhum modelo será baixado automaticamente.",
+  "recommendedRecipe": "Receita e detalhes do pedido",
+  "recommendedTechnical": "Medium DiT FP32 + decoder SAME-L FP32 + T5Gemma FP16. Oito passos, CFG/APG 1, seis threads de CPU, batch 1. WAV estéreo float32, 44,1 kHz. Apenas geração por texto, 5–60 segundos; encoder SAME-L de áudio de entrada ainda não integrado. O pico de processo observado de aproximadamente 5,75 GiB para 30 segundos não prevê o consumo de outras execuções.",
+  "recommendedRequest": "Use o Sonariel no projeto “{{name}}” (ID {{project}}). Descubra as ferramentas MCP disponíveis e consulte music_recommendations_list para a receita {{recipe}}. Consulte o contexto do projeto e a disponibilidade do ambiente. Ajude-me a escolher um prompt original, seed explícita e duração (5–60 s), depois salve um preset nomeado com music_recommendation_save. Não inclua áudio privado de referência nem troque para audio2audio: este perfil suporta apenas text2audio. Preserve a receita FP32/SAME-L de oito passos. Salvar não é gerar: revise o preset e peça confirmação explícita antes de enviar qualquer job ou baixar/instalar modelos. Preserve os originais e informe os IDs do preset/job.",
+  "loadingRecommendation": "Consultando receita recomendada…",
+  "retryRecommendation": "Tentar consultar receita novamente"
 }

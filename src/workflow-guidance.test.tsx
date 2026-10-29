@@ -4,6 +4,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import type { Snapshot } from "./api";
 import { AgentHandoff, agentRequest } from "./workflow-guidance";
 import { WorkflowPaths } from "./workflow-paths";
+vi.mock("./recommended-music", () => ({ RecommendedMusic: ({ prepare }: { prepare: () => void }) => <button onClick={prepare}>Review recommendation</button> }));
 
 afterEach(() => { cleanup(); vi.restoreAllMocks(); Reflect.deleteProperty(navigator, "clipboard"); });
 const data = (selected: string | null = "p", ready = false) => ({
@@ -28,6 +29,14 @@ it("offers a ready music handoff rather than sending the user back to setup", ()
   fireEvent.click(screen.getByRole("button", { name: "Criar música" }));
   expect(screen.getByRole("button", { name: "Copiar pedido-base para Codex" })).toBeTruthy();
   expect(screen.queryByRole("button", { name: "Preparar motor musical" })).toBeNull();
+});
+
+it("routes optional recommended preparation separately from a ready-engine connection", () => {
+  const music = vi.fn(), prepareMusic = vi.fn();
+  render(<WorkflowPaths data={data("p", true)} music={music} prepareMusic={prepareMusic} voice={vi.fn()} audio={vi.fn()} createProject={vi.fn()} />);
+  fireEvent.click(screen.getByRole("button", { name: "Criar música" }));
+  fireEvent.click(screen.getByRole("button", { name: "Review recommendation" }));
+  expect(prepareMusic).toHaveBeenCalledTimes(1); expect(music).not.toHaveBeenCalled();
 });
 
 it("copies only an explicit current-project starter request without generating or sharing context", async () => {

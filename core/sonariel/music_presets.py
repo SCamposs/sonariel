@@ -22,13 +22,32 @@ class MusicPresets:
     def music_preset_metadata(self, job_id):
         rows = self.store.rows("SELECT p.id AS preset_id,p.family_id,p.revision,p.engine_id,p.source_asset_id,u.intent "
             "FROM music_preset_uses u JOIN music_presets p ON p.id=u.preset_id WHERE u.job_id=?", (job_id,))
-        return rows[0] if rows else None
+        if not rows:
+            return None
+        return {**rows[0], "origin_recommendation": self.store.setting("music_recommendation:" + rows[0]["preset_id"])}
 
     def _music_preset(self, preset_id):
         rows = self.store.rows("SELECT * FROM music_presets WHERE id=?", (preset_id,))
         if not rows:
             raise ValueError("Music preset not found")
-        return rows[0]
+        return {**rows[0], "origin_recommendation": self.store.setting("music_recommendation:" + preset_id)}
+
+    def rpc_music_recommendations_list(self):
+        from .music_recommendations import recommendations
+        return recommendations(self.store)
+
+    def rpc_music_recommendation_save(self, recommendation_id: str, project_id: str, name: str,
+                                      prompt: str, seed: int, duration: float):
+        from .music_recommendations import recommendation
+        recipe = recommendation()
+        if recommendation_id != recipe["id"]:
+            raise ValueError("Unknown music recommendation")
+        # Pure preset creation: works before installing models, never accepts licenses or queues work.
+        result = self.rpc_music_preset_save(project_id, name,
+            description="Starting recipe: " + recipe["name"] + "; " + recipe["id"],
+            engine_id=recipe["engine_id"], parameters={**recipe["parameters"], "prompt": prompt, "seed": seed, "duration": duration})
+        self.store.set("music_recommendation:" + result["id"], recipe)
+        return self._music_preset(result["id"])
 
     def _music_config(self, engine_id, params, project_id):
         # Reuse the existing public schema; do not broaden engine capabilities.
@@ -108,8 +127,9 @@ class MusicPresets:
     def rpc_music_presets_list(self, project_id: str | None = None):
         if project_id:
             self.require_project(project_id)
-        return self.store.rows("SELECT * FROM music_presets" + (" WHERE project_id=?" if project_id else "")
+        rows = self.store.rows("SELECT id FROM music_presets" + (" WHERE project_id=?" if project_id else "")
                                + " ORDER BY created DESC", (project_id,) if project_id else ())
+        return [self._music_preset(row["id"]) for row in rows]
 
     def rpc_music_preset_save(self, project_id: str, name: str, description: str = "", asset_id: str | None = None,
                               engine_id: str | None = None, parameters: dict | None = None,
@@ -137,6 +157,8 @@ class MusicPresets:
         self.store.execute("INSERT INTO music_presets VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
             (key, project_id, name, description, engine_id, json.dumps(params, allow_nan=False), family,
              revision, base_id, 0, time.time(), asset_id or (base["source_asset_id"] if base else None)))
+        if base and base.get("origin_recommendation"):
+            self.store.set("music_recommendation:" + key, base["origin_recommendation"])
         return self._music_preset(key)
 
     def rpc_music_preset_favorite(self, preset_id: str, favorite: bool):
@@ -154,6 +176,8 @@ class MusicPresets:
             raise ValueError("Repeat preserves the saved configuration; choose variation for changed settings")
         review = dict(preset_id=preset_id, project_id=project_id, engine_id=preset["engine_id"],
                       revision=preset["revision"], parameters=config, intent=intent)
+        if preset.get("origin_recommendation"):
+            review["origin_recommendation"] = preset["origin_recommendation"]
         return {**review, "review_token": digest(review),
                 "warning": "Reusing a seed does not guarantee identical audio across checkpoints or environments. Reuse only reviews settings; repeat/variation require a separate confirmed generation request."}
 
@@ -189,6 +213,12 @@ def music_preset_methods(tool, S, ID, B):
     parameters = dict(type="object", maxProperties=24)
     name = dict(type="string", minLength=1, maxLength=120)
     return {
+        "music_recommendations_list": tool("List public recommended starting recipes, exact runtime/checkpoint configuration and installed availability. No models loaded; never changes the default engine. Fidelity supports text2audio only.", {}),
+        "music_recommendation_save": tool("Save the public recommended recipe as a project music preset with explicit user direction, seed and duration. Never installs, accepts licenses or generates. Then use the existing preset review/confirmed-generation workflow. Origin is retained separately from later edits.",
+            dict(recommendation_id=dict(type="string", enum=["medium-fp32-same-l-v1"]), project_id=ID, name=name,
+                 prompt=dict(type="string", minLength=1, maxLength=4000), seed=dict(type="integer", minimum=0, maximum=4294967295),
+                 duration=dict(type="number", minimum=5, maximum=60)),
+            ["recommendation_id", "project_id", "name", "prompt", "seed", "duration"]),
         "music_presets_list": tool("List versioned music presets, separate from DSP presets. Does not load models.", dict(project_id=ID)),
         "music_preset_save": tool("Capture a music result or save an explicit engine-compatible configuration. Creates an immutable revision or explicit duplicate. Never generates audio.",
             dict(project_id=ID, name=name, description=dict(type="string", maxLength=2000), asset_id=ID,

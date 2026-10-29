@@ -308,3 +308,24 @@ it("reviews LiteRT setup but requires both license consent and install authoriza
     quality_profile: "compact",
   });
 });
+
+it("opens and reopens the recommended recipe without reviewing, authorizing or downloading", async () => {
+  vi.mocked(rpc).mockResolvedValue([{ id: "medium-fp32-same-l-v1", name: "Medium FP32 + SAME-L FP32",
+    available: false, revision: 1, minimum_available_gib: 12, optional_download_bytes: 7596935760,
+    parameters: {}, runtime: {}, checkpoints: [] }]);
+  const p = props();
+  render(<MusicEngines data={p.data} busy={false} act={p.act} />);
+  const choose = await screen.findByRole("button", { name: tr("experience", "prepareRecommended") });
+  fireEvent.click(choose);
+  const setup = screen.getByText(tr("studio", "setUpStableAudio3ExperimentalLitertCpu")).closest("details")!;
+  expect(setup.open).toBe(true);
+  setup.open = false;
+  fireEvent.click(choose);
+  expect(setup.open).toBe(true);
+  expect(p.act).not.toHaveBeenCalled();
+  fireEvent.change(screen.getByLabelText(tr("studio", "newDedicatedFolderOutsideGit")), { target: { value: "D:/Engines/Optional" } });
+  fireEvent.click(screen.getByRole("button", { name: tr("studio", "reviewLitertRecipe") }));
+  await waitFor(() => expect(p.act).toHaveBeenCalledWith("stable_setup_plan", {
+    destination: "D:/Engines/Optional", family: "medium", quality_profile: "fidelity",
+  }));
+});

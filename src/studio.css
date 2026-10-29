@@ -221,3 +221,12 @@
     align-items: flex-start;
   }
 }
+.recommended-music {
+  border-top: 1px solid var(--line);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.recommended-music h3, .recommended-music p { margin: 0; }
+.recommended-music p { max-width: 74ch; }

@@ -10,13 +10,14 @@ from pathlib import Path
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--generate", action="store_true")
+parser.add_argument("--music-recommendations", action="store_true", help="Save/review the public recipe in an isolated profile, without inference")
 parser.add_argument("--storage", action="store_true", help="Synthetic native DSP, recoverable trash and permanent deletion, isolated profile only; no AI")
 parser.add_argument("--fx-wav", type=Path, help="Explicit native FX/export test on a local WAV; no synthesis")
 parser.add_argument("--executable", type=Path, help="Test the distributed sonariel-core.exe instead of development Python")
 parser.add_argument("--stable-input-root", type=Path, help="Existing licensed LiteRT environment for one explicitly authorized synthetic 5s audio-input test")
 parser.add_argument("--authorize-stable-input-generation", action="store_true")
 args = parser.parse_args()
-if args.storage:
+if args.storage or args.music_recommendations:
     if not os.environ.get('SONARIEL_HOME') or Path(os.environ['SONARIEL_HOME']).resolve() == (Path.home()/'.sonariel').resolve():
         parser.error('Storage validation requires an explicit isolated SONARIEL_HOME')
 if args.stable_input_root:
@@ -54,6 +55,21 @@ try:
     assert {e["category"] for e in engines} == {"music", "voice", "fx"}
     assert all("sonariel_"+name in {t["name"] for t in tools} for name in ["voice_generate","music_generate","fx_render","fx_preset_save","result_export"])
     print(json.dumps({"handshake": handshake["serverInfo"], "tool_count": len(tools), "linked_compatible": bool((status["environment"] or {}).get("compatible")), "engine_categories": sorted({e["category"] for e in engines})}), flush=True)
+    if args.music_recommendations:
+        before = tool("snapshot")
+        assert not before["jobs"] and not before["environment"] and not before.get("stable_environment")
+        recommendation, = tool("music_recommendations_list")
+        assert recommendation["id"] == "medium-fp32-same-l-v1" and not recommendation["available"]
+        assert recommendation["supported_modes"] == ["text2audio"]
+        project = tool("project_create", dict(name="Public recipe protocol verification"))["project_id"]
+        preset = tool("music_recommendation_save", dict(project_id=project, recommendation_id=recommendation["id"],
+            name="Synthetic contract settings", prompt="An original abstract synth texture.", seed=17, duration=30))
+        review = tool("music_preset_prepare", dict(project_id=project, preset_id=preset["id"]))
+        assert review["parameters"]["quality_profile"] == "fidelity" and review["parameters"]["steps"] == 8
+        assert review["origin_recommendation"]["checkpoints"] == recommendation["checkpoints"]
+        assert tool("music_presets_list", dict(project_id=project))[0]["origin_recommendation"]["id"] == recommendation["id"]
+        assert not tool("queue_list")
+        print(json.dumps(dict(public_recipe_save_review="passed", jobs=0, inference=False, installed_models=False)), flush=True)
     if args.storage:
         import wave
         import math
