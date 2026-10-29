@@ -35,6 +35,7 @@ it("links a music engine through the environment UI without an Audacity field", 
   render(<App />);
   await screen.findByText("O que você quer fazer?");
   fireEvent.click(screen.getByRole("button", { name: "Ambiente" }));
+  fireEvent.click(screen.getByRole("button", { name: "Vincular ACE-Step existente" }));
   expect(screen.queryByLabelText("Executável do Audacity")).toBeNull();
   expect(screen.getAllByText(/Audacity é opcional/)[0]).toBeTruthy();
   fireEvent.change(screen.getByLabelText("Pasta do ambiente"), { target: { value: "D:/synthetic-engine" } });
@@ -58,13 +59,13 @@ it("switches Voice to retained FX without reusing the sibling workspace identity
   fireEvent.click(screen.getByRole("button", { name: "Voice Studio" }));
   expect(screen.getByText("Voice workspace")).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "FX & processamento" }));
-  expect(screen.queryByText("Voice workspace")).toBeNull();
+  expect(screen.getByText("Voice workspace").closest("[hidden]")).not.toBeNull();
   expect(screen.getByText("FX workspace").closest("[hidden]")).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "Voice Studio" }));
   expect(screen.getByText("Voice workspace")).toBeTruthy();
   expect(screen.getByText("FX workspace").closest("[hidden]")).not.toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "FX & processamento" }));
-  expect(screen.queryByText("Voice workspace")).toBeNull();
+  expect(screen.getByText("Voice workspace").closest("[hidden]")).not.toBeNull();
   expect(screen.getByText("FX workspace").closest("[hidden]")).toBeNull();
 });
 
@@ -118,6 +119,29 @@ const workflowSnapshot = () => ({
   preferences: { idle_minutes: 10 },
 });
 
+it.each([false, true])("shows local connection progress and a truthful result (failure=%s)", async fails => {
+  const data = workflowSnapshot();
+  let finish!: (value: unknown) => void;
+  let fail!: (reason: Error) => void;
+  vi.mocked(rpc).mockImplementation(async method => {
+    if (method === "snapshot") return data;
+    if (method === "codex_register") return new Promise((resolve, reject) => { finish = resolve; fail = reject; });
+    return method.endsWith("_list") ? [] : {};
+  });
+  render(<App />);
+  await screen.findByText("O que você quer fazer?");
+  fireEvent.click(screen.getByRole("button", { name: "Audacity & Codex" }));
+  fireEvent.click(screen.getByRole("button", { name: "Preparar conexão com Codex" }));
+  const progress = screen.getByRole("button", { name: "Preparando conexão…" }) as HTMLButtonElement;
+  expect(progress.disabled).toBe(true);
+  expect(progress.getAttribute("aria-busy")).toBe("true");
+  expect(screen.getByText("Registrando o Sonariel no cliente")).toBeTruthy();
+  await act(async () => { if (fails) fail(new Error("Synthetic configuration failure")); else finish({ configured: true, tested: false }); });
+  expect(await screen.findByText(fails ? "Não foi possível preparar a conexão" : "Conexão preparada — recarregue o Codex")).toBeTruthy();
+  expect(vi.mocked(rpc).mock.calls.filter(([method]) => method === "codex_register")).toHaveLength(1);
+  expect(vi.mocked(rpc).mock.calls.some(([method]) => /generate|setup_install/.test(method))).toBe(false);
+});
+
 it("explains queued RAM and uncertain remote identity without resubmitting jobs", async () => {
   const data = workflowSnapshot();
   data.jobs.push(
@@ -140,12 +164,16 @@ it("routes task intentions without generating, downloading or installing", async
   vi.mocked(rpc).mockImplementation(async method => method === "snapshot" ? data : method.endsWith("_list") ? [] : {});
   render(<App />);
   fireEvent.click(await screen.findByRole("button", { name: "Criar música" }));
-  expect(screen.getByRole("button", { name: "Inspecionar e vincular" })).toBeTruthy();
+  expect(screen.getByRole("region", { name: "Próximo passo" })).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "Preparar motor musical" }));
+  expect(screen.getByRole("button", { name: "Vincular ACE-Step existente" })).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "Projetos & sessões" }));
   fireEvent.click(screen.getByRole("button", { name: "Produzir voz" }));
+  fireEvent.click(screen.getByRole("button", { name: "Abrir produção de voz" }));
   expect(screen.getByText("Voice workspace")).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "Projetos & sessões" }));
   fireEvent.click(screen.getByRole("button", { name: "Processar um WAV existente" }));
+  fireEvent.click(screen.getByRole("button", { name: "Importar um WAV" }));
   expect(screen.getByRole("heading", { name: "Catalogar arquivo local" })).toBeTruthy();
   expect(vi.mocked(rpc).mock.calls.some(([method]) => /generate|setup_install|engine_start/.test(method))).toBe(false);
 });

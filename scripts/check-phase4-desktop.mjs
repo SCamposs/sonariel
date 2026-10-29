@@ -26,7 +26,7 @@ fs.mkdirSync(home, { recursive: true });
 fs.writeFileSync(path.join(home, "phase4-test.marker"), "Synthetic test profile; no production assets.\n");
 const require = createRequire(path.resolve(dependencyArg, "phase4-loader.cjs"));
 const { chromium } = require("playwright");
-const catalogs = Object.fromEntries(["workspace", "studio", "storage", "library", "production", "common", "settings"].map(ns => [ns,
+const catalogs = Object.fromEntries(["workspace", "studio", "storage", "library", "production", "common", "settings", "experience"].map(ns => [ns,
   JSON.parse(fs.readFileSync(path.join("src/i18n/locales", locale, `${ns}.json`), "utf8"))]));
 const t = (ns, key, vars = {}) => {
   assert.equal(typeof catalogs[ns][key], "string", `Missing ${locale}/${ns}/${key}`);
@@ -135,11 +135,14 @@ try {
   await page.getByRole("button", { name: t("workspace", "createProject"), exact: true }).click();
   await until(async () => (await rpc("snapshot")).projects.some(p => p.name === "UI study"), "project created through UI");
   await page.getByRole("button", { name: t("workspace", "createMusic"), exact: true }).click();
+  await page.getByRole("button", { name: t("experience", "prepareMusicStep"), exact: true }).click();
+  await page.getByRole("button", { name: t("experience", "prepareLink"), exact: true }).click();
   await page.getByRole("button", { name: t("workspace", "inspectAndLink"), exact: true }).waitFor();
   assert.equal(await page.getByRole("textbox", { name: t("workspace", "audacityExecutable"), exact: true }).count(), 0);
   await nav("projectsSessions");
   await page.getByRole("button", { name: t("workspace", "produceVoice"), exact: true }).click();
-  await page.getByText(t("studio", "voiceSetupNext"), { exact: true }).waitFor();
+  await page.getByRole("button", { name: t("experience", "openVoiceStep"), exact: true }).click();
+  await page.getByRole("button", { name: t("experience", "manualProfile"), exact: true }).click();
   await page.getByRole("textbox", { name: t("studio", "profileName"), exact: true }).fill("Language-only study");
   await page.getByRole("combobox", { name: t("studio", "voiceProfileLanguage"), exact: true }).click();
   await page.getByRole("option", { name: /\(sw\)$/ }).click();
@@ -149,6 +152,7 @@ try {
   await nav("projectsSessions"); await option(t("workspace", "activeProject2"), "Signal studies"); await shot("projects");
   steps.push({ workflow: "A/B", pass: true, actions: "UI project creation and music/voice guidance; no engine setup or generation" });
   await page.getByRole("button", { name: t("workspace", "processExistingAudio"), exact: true }).click();
+  await page.getByRole("button", { name: t("experience", "importWavStep"), exact: true }).click();
   const form = page.locator("form").filter({ has: page.getByRole("textbox", { name: t("workspace", "absoluteLocalPath"), exact: true }) });
   await form.getByRole("textbox", { name: t("workspace", "name"), exact: true }).fill("Imported source");
   await form.getByRole("textbox", { name: t("workspace", "absoluteLocalPath"), exact: true }).fill(source);
@@ -219,7 +223,7 @@ try {
   await page.getByText(t("workspace", "audacityUnavailableHelp"), { exact: true }).waitFor();
   steps.push({ workflow: "H", pass: true, editor_optional: true, no_probe_or_configuration_performed: true });
   await nav("environment");
-  await page.getByText(t("studio", "setUpStableAudio3ExperimentalLitertCpu"), { exact: true }).click();
+  await page.getByRole("button", { name: t("experience", "prepareOther"), exact: true }).click();
   await option(t("studio", "stableAudioFamily"), "Medium");
   await option(t("studio", "qualityProfile"), t("studio", "fidelityProfile"));
   await page.getByText(t("studio", "fidelityIntro"), { exact: true }).waitFor();

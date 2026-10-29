@@ -9,6 +9,7 @@ import { WorkflowGuide } from "./ui/workflow-guide";
 import { LanguageSettings, useLocaleProfile } from "./ui/language-settings";
 import { UpdateControl } from "./ui/update-control";
 import { PathField } from "./ui/path-field";
+import { HelpTip, StatusBadge, Requirements } from "./ui/help-tip";
 import { StorageWorkspace } from "./storage";
 import { BatchExport } from "./batch-export";
 import { MusicPresets } from "./music-presets";
@@ -127,16 +128,15 @@ const date = formatDate;
 function Badge({
   children,
   tone = "",
+  help,
 }: {
   children: ReactNode;
   tone?: string;
+  help?: string;
 }) {
   useTranslation();
   return (
-    <span className={`badge ${tone}`}>
-      <i />
-      {children}
-    </span>
+    <StatusBadge tone={tone} help={help}>{children}</StatusBadge>
   );
 }
 function Panel({
@@ -211,6 +211,7 @@ export function App() {
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [preparation, setPreparation] = useState<"link" | "install" | "other">();
   const refreshInFlight = useRef(0);
   const library = useLibraryFilters(data);
   const query = library.filters.query;
@@ -238,6 +239,7 @@ export function App() {
   const [volume, setVolume] = useState(0.8);
   const [detail, setDetail] = useState<Asset>();
   const [detailOpen, setDetailOpen] = useState(false);
+  const [codexPhase, setCodexPhase] = useState<"idle" | "working" | "done" | "error">("idle");
   const detailReturnFocus = useRef<HTMLElement | null>(null);
   const [notes, setNotes] = useState("");
   const [projectForm, setProjectForm] = useState(false);
@@ -312,6 +314,12 @@ export function App() {
     }
   };
   const project = data?.projects.find((p) => p.id === data.selected_project);
+  const configureCodex = async () => {
+    if (busy || codexPhase === "working") return;
+    setCodexPhase("working");
+    const result = await act("codex_register");
+    setCodexPhase(result ? "done" : "error");
+  };
   const allAudio = [...(data?.assets ?? []), ...(data?.references ?? [])];
   const projectAudio = allAudio.filter(a => a.project_id === project?.id && a.kind !== "preview");
   const assets = filterLibrary(projectAudio.filter(a => library.filters.kind === "reference" || a.kind !== "reference"), library.filters);
@@ -512,7 +520,7 @@ export function App() {
               RAM {formatNumber(data?.telemetry.available_gib, 1) ?? "—"}{" "}
               <small>{tr("workspace", "gibAvailable")}</small>
             </span>
-            <Badge tone={data?.codex.tested ? "ok" : ""}>
+            <Badge tone={data?.codex.tested ? "ok" : ""} help={tr("experience", "page_bridges")}>
               MCP{" "}
               {data?.codex.tested
                 ? tr("workspace", "handshakeRecorded")
@@ -526,7 +534,9 @@ export function App() {
           <div className="page-heading">
             <div>
               <p className="section-caption">{currentPage.caption}</p>
-              <h1>{currentPage.name}</h1>
+              <div className="page-title-row"><h1>{currentPage.name}</h1>
+                <HelpTip label={tr("experience", "pageHelpLabel", { name: currentPage.name })}>{tr("experience", `page_${page}`)}</HelpTip>
+              </div>
             </div>
             <div className="heading-actions">
               <button
@@ -544,18 +554,17 @@ export function App() {
                   className="primary"
                   onClick={() => {
                     setProjectForm(!projectForm);
-                    setProjectName("");
-                    setContext("");
                   }}
                 >
                   <Plus size={16} /> {tr("workspace", "newProject")}</button>
               )}
               {page === "library" && (
                 <button
-                  className="primary"
+                  className={showRegister ? "outline" : "primary"}
+                  aria-expanded={showRegister}
                   onClick={() => setShowRegister(!showRegister)}
                 >
-                  <Plus size={16} /> {tr("workspace", "registerFile")}</button>
+                  <Plus size={16} /> {tr("experience", showRegister ? "cancelImport" : "beginImport")}</button>
               )}
             </div>
           </div>
@@ -589,7 +598,7 @@ export function App() {
           ) : (
             <>
               {page === "storage" && <StorageWorkspace data={data} act={act} busy={busy} />}
-              {page === "voice" && (
+              <RetainedWorkspace key={`voice:${data.selected_project}`} active={page === "voice"}>
                 <VoiceStudio
                   key={data.selected_project}
                   data={data}
@@ -601,14 +610,17 @@ export function App() {
                   }}
                   edit={(asset) => void sendToAudacity(asset)}
                   openFx={sendToFx}
+                  openProjects={() => { setPage("projects"); }}
+                  openConnection={() => setPage("bridges")}
                 />
-              )}
+              </RetainedWorkspace>
               <RetainedWorkspace key={`fx:${data.selected_project}`} active={page === "fx"}>
                 <FxStudio
                   data={data}
                   busy={busy}
                   act={act}
                   initialAssetId={fxAssetId}
+                  importAudio={() => { if (project) { setPage("library"); setShowRegister(true); } else setPage("projects"); }}
                   listen={(asset) => {
                     selectAudio(asset);
                     setPlaying(true);
@@ -619,6 +631,7 @@ export function App() {
               {page === "projects" && (
                 <>
                   <WorkflowPaths data={data}
+                    createProject={() => setProjectForm(true)}
                     music={() => setPage(data.engines?.some(e => e.category === "music" && e.installed && e.compatible && !e.blocked_reason) ? "bridges" : "environment")}
                     voice={() => setPage("voice")}
                     audio={() => { if (!project) { setProjectForm(true); setNotice(tr("workspace", "chooseProjectForAudio")); } else { setPage("library"); setShowRegister(true); } }} />
@@ -633,13 +646,14 @@ export function App() {
                             { name: projectName, context },
                             tr("workspace", "projectCreated"),
                           ).then((value) => {
-                            if (value) setProjectForm(false);
+                            if (value) { setProjectForm(false); setProjectName(""); setContext(""); }
                           });
                         }}
                       >
                         <label>
                           {tr("workspace", "projectName")}<input
                             required
+                            autoFocus
                             value={projectName}
                             onChange={(e) => setProjectName(e.target.value)}
                             placeholder={tr("workspace", "productionName")}
@@ -721,7 +735,7 @@ export function App() {
                                 </div>
                               ))}
                           </div>
-                          <form
+                          <details className="technical-details session-create"><summary>{tr("workspace", "createSession")}</summary><form
                             className="inline-form"
                             onSubmit={(e) => {
                               e.preventDefault();
@@ -742,7 +756,7 @@ export function App() {
                             />
                             <button className="outline" disabled={busy}>
                               <Plus size={16} /> {tr("workspace", "createSession")}</button>
-                          </form>
+                          </form></details>
                         </>
                       ) : (
                         <div className="empty">
@@ -1257,21 +1271,18 @@ export function App() {
 
               {page === "environment" && (
                 <>
-                  <MusicEngines data={data} busy={busy} act={act} />
-                  <div className="profile-banner">
-                    <ShieldCheck size={31} />
-                    <div>
-                      <h2>WINDOWS x64 / CPU</h2>
-                      <p>
-                        {tr("workspace", "versionedRecipeDitOnlyTurboOneGenerationAt")}</p>
+                  <section className="panel environment-choice">
+                    <h2>{tr("experience", "environmentChoice")}</h2><p className="muted">{tr("experience", "environmentIntro")}</p>
+                    <div className="environment-options">
+                      {(["link", "install", "other"] as const).map(choice => <button key={choice} className={`outline ${preparation === choice ? "selected" : ""}`} aria-pressed={preparation === choice}
+                        onClick={() => setPreparation(choice)}>{tr("experience", choice === "link" ? "prepareLink" : choice === "install" ? "prepareInstall" : "prepareOther")}</button>)}
+                      <button className="outline" onClick={() => setPage("voice")}>{tr("experience", "voiceSetupLink")}</button>
                     </div>
-                    <Badge tone={data.environment?.compatible ? "ok" : ""}>
-                      {data.environment?.compatible
-                        ? tr("workspace", "environmentValidated")
-                        : tr("workspace", "setupRequired")}
-                    </Badge>
-                  </div>
-                  <div className="two-columns">
+                    {preparation && <p className="muted">{tr("experience", "manualSetupNote")}</p>}
+                  </section>
+                  <div hidden={preparation !== "other"}><MusicEngines data={data} busy={busy} act={act} prepareSetup={preparation === "other"} /></div>
+                  <div className="environment-forms">
+                    <div hidden={preparation !== "link"}>
                     <Panel
                       title={tr("workspace", "linkAnExistingEnvironment")}
                       aside={<Badge>{tr("workspace", "noReinstallation")}</Badge>}
@@ -1320,6 +1331,7 @@ export function App() {
                           {tr("workspace", "inspectAndLink")}</button>
                       </form>
                     </Panel>
+                    </div><div hidden={preparation !== "install"}>
                     <Panel
                       title={tr("workspace", "installANewEnvironment")}
                       aside={<Badge>{tr("workspace", "cpuRecipeV1")}</Badge>}
@@ -1388,6 +1400,20 @@ export function App() {
                         )}
                       </div>
                     </Panel>
+                    </div>
+                  </div>
+                  <div className="profile-banner">
+                    <ShieldCheck size={31} />
+                    <div>
+                      <h2>WINDOWS x64 / CPU</h2>
+                      <p>
+                        {tr("workspace", "versionedRecipeDitOnlyTurboOneGenerationAt")}</p>
+                    </div>
+                    <Badge tone={data.environment?.compatible ? "ok" : ""} help={tr("experience", "musicStatusHelp")}>
+                      {data.environment?.compatible
+                        ? tr("workspace", "environmentValidated")
+                        : tr("workspace", "setupRequired")}
+                    </Badge>
                   </div>
                   <Panel
                     title={tr("workspace", "inventoryAndChecks")}
@@ -1458,6 +1484,7 @@ export function App() {
                     )}
                   </Panel>
                   <Panel title={tr("workspace", "enginePreferences")}>
+                    <details className="technical-details"><summary>{tr("experience", "manualPreferences")}</summary>
                     <div className="form-stack">
                       <label>
                         {tr("workspace", "unloadIdleModelAfterMinutes")}<input
@@ -1477,13 +1504,14 @@ export function App() {
                       <p className="muted">
                         {tr("workspace", "activeInferenceIsNotInterruptedAutomaticallyThisPreference")}</p>
                     </div>
+                    </details>
                   </Panel>
                 </>
               )}
 
               {page === "bridges" && (
                 <>
-                  <p className="message">{tr("workspace", "agentAndEditorScope")}</p>
+                  <Requirements required={tr("experience", "agentRequired")} optional={tr("experience", "editorOptional")} />
                   <div className="bridge-flow">
                     <span>
                       <Terminal size={24} />
@@ -1523,8 +1551,21 @@ export function App() {
                       }
                     >
                       <div className="form-stack">
-                        <p>
-                          {tr("workspace", "aRequestInCodexEntersThisQueueDirectly")}</p>
+                        <p>{tr("experience", "codexActionSummary")}</p>
+
+                        <HelpTip label={tr("experience", "codexActionHelpLabel")} trigger={<button
+                          className="primary"
+                          disabled={busy}
+                          aria-busy={codexPhase === "working"}
+                          onClick={() => void configureCodex()}
+                        >
+                          {codexPhase === "working" ? <Loader2 size={16} className="spin" /> : <Link2 size={16} />}
+                          {tr("experience", codexPhase === "working" ? "codexWorking" : "codexAction")}</button>}>{tr("experience", "codexActionHelp")}</HelpTip>
+                        {codexPhase !== "idle" && <div className="connection-feedback" data-state={codexPhase} role={codexPhase === "error" ? "alert" : "status"}>
+                          <strong>{tr("experience", `codex_${codexPhase}`)}</strong>
+                          <p>{tr("experience", codexPhase === "done" ? "codexNext" : codexPhase === "error" ? "codexErrorHelp" : "codexWait")}</p>
+                        </div>}
+                        <details className="technical-details"><summary>{tr("experience", "connectionDetails")}</summary>
                         <dl className="property-list">
                           <dt>{tr("workspace", "transport")}</dt>
                           <dd>stdio local</dd>
@@ -1537,20 +1578,7 @@ export function App() {
                               : tr("workspace", "noHandshakeRecorded")}
                           </dd>
                         </dl>
-                        <button
-                          className="primary"
-                          disabled={busy}
-                          onClick={() =>
-                            void act(
-                              "codex_register",
-                              {},
-                              tr("workspace", "mcpRegisteredWithABackupReloadTheCodex"),
-                            )
-                          }
-                        >
-                          <Link2 size={16} /> {tr("workspace", "configureCodexConnection")}</button>
-                        <p className="muted">
-                          {tr("workspace", "configurationPreservesOtherServersRestartOrReloadThe")}</p>
+                        <p className="muted">{tr("workspace", "configurationPreservesOtherServersRestartOrReloadThe")}</p>
                         <code className="code-block">
                           sonariel_environment_status
                           <br />
@@ -1558,7 +1586,7 @@ export function App() {
                           <br />
                           sonariel_generate → job_id
                           <br />
-                          {tr("workspace", "sonarielJobGetResult")}</code>
+                          {tr("workspace", "sonarielJobGetResult")}</code></details>
                       </div>
                     </Panel>
                     <Panel

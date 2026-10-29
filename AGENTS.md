@@ -2,6 +2,8 @@
 
 Read README.md, PRODUCT.md, DESIGN.md and docs/ARCHITECTURE.md before substantive work.
 
+- Branch names belong to the maintainer. Do not use the `codex/` prefix. Prefer working on the existing authorized branch; use descriptive names without agent branding when branch creation is authorized.
+
 - Sonariel is standalone. Never modify a music production's Unity repository or an existing ACE-Step installation to develop this app.
 - Keep SQLite, engine environments, audio, references, Audacity projects, backups, logs, installers and model caches outside Git. Never add personal absolute paths to source or public examples.
 - Preserve engine single-instance ownership, SQLite queue state, request-key idempotency and batch_size=1 in the Windows CPU profile.

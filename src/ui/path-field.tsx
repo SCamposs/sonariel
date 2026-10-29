@@ -5,6 +5,7 @@ import { useId, useRef, useState } from "react";
 import { open, save } from "@tauri-apps/plugin-dialog";
 import { FolderOpen, Save } from "lucide-react";
 import "./path-field.css";
+import { HelpTip } from "./help-tip";
 
 type PathKind = "directory" | "executable" | "audio" | "wav-save" | "preset";
 const getFilters = () => ({
@@ -16,13 +17,15 @@ const getFilters = () => ({
 
 /** Native selection changes only the field; core validation still owns I/O. */
 export function PathField({ label, value, onChange, kind, placeholder, required,
-  disabled = false, className = "" }: {
+  disabled = false, className = "", help, requirement }: {
   label: string; value: string; onChange: (value: string) => void;
   kind: PathKind; placeholder?: string; required?: boolean;
   disabled?: boolean; className?: string;
+  help?: string; requirement?: "required" | "optional";
 }) {
   useTranslation();
   const id = useId();
+  const fieldRequirement = requirement ?? (required ? "required" : undefined);
   const [picking, setPicking] = useState(false);
   const [error, setError] = useState("");
   const input = useRef<HTMLInputElement>(null);
@@ -49,18 +52,19 @@ export function PathField({ label, value, onChange, kind, placeholder, required,
     }
   };
   return <div className={`path-field ${className}`}>
-    <label htmlFor={id}>{label}</label>
+    <div className="field-heading"><label htmlFor={id}>{label}</label>
+      {fieldRequirement && <span className="field-requirement" id={`${id}-requirement`}>{tr("experience", fieldRequirement === "required" ? "requiredFields" : "optionalField")}</span>}
+    </div>
     <div className="path-field-control">
       <input id={id} ref={input} value={value} onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder} required={required} disabled={disabled} readOnly={picking}
-        aria-describedby={error ? `${id}-error` : undefined} />
-      <button type="button" className="outline path-picker"
+        aria-describedby={[error && `${id}-error`, fieldRequirement && `${id}-requirement`].filter(Boolean).join(" ") || undefined} />
+      <HelpTip label={label} trigger={<button type="button" className="outline path-picker"
         disabled={disabled || picking || !native} aria-busy={picking}
         aria-label={`${kind === "wav-save" ? tr("files", "saveAs") : tr("files", "select")}: ${label}`}
-        title={native ? label : tr("files", "theNativePickerIsAvailableInTheDesktop")}
         onClick={() => void pick(kind === "wav-save")}>
         <FolderOpen size={17} aria-hidden="true" />
-      </button>
+      </button>}>{help ?? (native ? label : tr("files", "theNativePickerIsAvailableInTheDesktop"))}</HelpTip>
       {kind === "preset" && <button type="button" className="outline path-picker"
         disabled={disabled || picking || !native} aria-busy={picking}
         aria-label={`${tr("files", "saveAs")}: ${label}`} title={tr("files", "chooseADestinationForANewJsonPreset")}

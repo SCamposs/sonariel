@@ -161,9 +161,41 @@
   font-weight: 600;
 }
 .fx-layer[open] {
+  display: block;
+}
+.disclosure-body {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 18px;
+  padding: 8px 0 20px;
+  min-width: 0;
+}
+.disclosure-body > button {
+  align-self: flex-start;
+  margin-top: 4px;
+}
+.fx-layer > summary {
+  min-height: 40px;
+  padding: 10px 8px;
+  margin: 0 -8px;
+  border-radius: 2px;
+}
+.fx-layer > summary:hover {
+  background: var(--hover);
+}
+.action-requirement {
+  color: var(--muted);
+  font-size: 13px;
+}
+.technical-details > summary {
+  cursor: pointer;
+  padding: 9px 8px;
+}
+.technical-details > summary:hover {
+  background: var(--hover);
+}
+.technical-details > p, .technical-details > code {
+  margin-top: 12px;
 }
 .studio-request {
   border-top: 1px solid var(--line);

@@ -63,6 +63,7 @@ const asset: Asset = {
   },
 };
 const snapshot = {
+  projects: [{ id: "p", name: "Study", context: "" }],
   assets: [asset],
   jobs: [],
   selected_project: "p",
@@ -116,7 +117,7 @@ it("retains the FX source and unsaved chain across module navigation, but resets
     recipe: expect.objectContaining({ chain: [{ wet: 1, effect: { type: "gain", db: -9 } }] }) }), expect.any(String));
   view.rerender(workspace(true, "other-project"));
   expect(screen.queryByRole("spinbutton", { name: "Ganho (dB)" })).toBeNull();
-  expect((screen.getByRole("button", { name: "Renderizar versão completa" }) as HTMLButtonElement).disabled).toBe(true);
+  expect(screen.queryByRole("button", { name: "Renderizar versão completa" })).toBeNull();
   await waitFor(() => expect(rpc).toHaveBeenCalledWith("fx_presets_list", { project_id: "other-project" }));
 });
 
@@ -191,6 +192,7 @@ it("requires explicit language and reference consent, without automatic continua
   vi.mocked(rpc).mockResolvedValue([]);
   const p = props();
   render(<VoiceStudio {...p} openFx={vi.fn()} />);
+  fireEvent.click(screen.getByRole("button", { name: "Criar perfil manualmente" }));
   expect(
     (
       screen.getByRole("button", {
@@ -209,6 +211,25 @@ it("requires explicit language and reference consent, without automatic continua
       project_id: "p",
     }),
   );
+});
+
+it("keeps voice fields out of the first-use path and retains a chosen manual draft only in its project", async () => {
+  vi.mocked(rpc).mockResolvedValue([]);
+  const p = props();
+  const workspace = (active: boolean, project = "p") => <RetainedWorkspace key={project} active={active}>
+    <VoiceStudio {...p} data={{ ...snapshot, selected_project: project }} openFx={vi.fn()} />
+  </RetainedWorkspace>;
+  const view = render(workspace(true));
+  expect(screen.queryAllByRole("textbox")).toHaveLength(0);
+  fireEvent.click(screen.getByRole("button", { name: "Criar perfil manualmente" }));
+  fireEvent.change(screen.getByRole("textbox", { name: "Nome do perfil" }), { target: { value: "Unsaved voice" } });
+  view.rerender(workspace(false));
+  expect(screen.queryByRole("textbox", { name: "Nome do perfil" })).toBeNull();
+  view.rerender(workspace(true));
+  expect((screen.getByRole("textbox", { name: "Nome do perfil" }) as HTMLInputElement).value).toBe("Unsaved voice");
+  view.rerender(workspace(true, "other"));
+  expect(screen.queryByRole("textbox", { name: "Nome do perfil" })).toBeNull();
+  expect(p.act).not.toHaveBeenCalled();
 });
 
 it("exports an explicit original rather than silently exporting a preview", async () => {

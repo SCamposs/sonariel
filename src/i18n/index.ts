@@ -1,3 +1,5 @@
+import enExperience from "./locales/en/experience.json";
+import ptExperience from "./locales/pt-BR/experience.json";
 import enFiles from "./locales/en/files.json";
 import ptFiles from "./locales/pt-BR/files.json";
 import enWindow from "./locales/en/window.json";
@@ -39,9 +41,9 @@ export function detectLocale(languages: readonly string[]): AppLocale {
 // Bundled resources only. Changing UI language never requests translations online.
 void i18n.use(initReactI18next).init({
   resources: {
-    en: { workspace: enWorkspace, studio: enStudio, storage: enStorage, common: enCommon,
+    en: { experience: enExperience, workspace: enWorkspace, studio: enStudio, storage: enStorage, common: enCommon,
       updates: enUpdates, guide: enGuide, window: enWindow, files: enFiles, settings: enSettings, system: enSystem, production: enProduction, library: enLibrary },
-    "pt-BR": { workspace: ptWorkspace, studio: ptStudio, storage: ptStorage, common: ptCommon,
+    "pt-BR": { experience: ptExperience, workspace: ptWorkspace, studio: ptStudio, storage: ptStorage, common: ptCommon,
       updates: ptUpdates, guide: ptGuide, window: ptWindow, files: ptFiles, settings: ptSettings, system: ptSystem, production: ptProduction, library: ptLibrary },
   },
   lng: "pt-BR", // Preserve the legacy UI until the profile is inspected.

@@ -12,3 +12,6 @@
 .path-field-control input { flex: 1; min-width: 0; width: 0; }
 .path-field-control .path-picker { flex: 0 0 38px; align-self: stretch; padding: 8px; }
 .path-field-error { color: var(--red); font-size: 13px; }
+.field-heading { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; min-height: 26px; }
+.field-requirement { color: var(--muted); font-size: 12px; }
+.field-heading .help-tip-trigger { width: 26px; height: 26px; padding: 4px; }

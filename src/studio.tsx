@@ -14,8 +14,10 @@ import { rpc, type Asset, type Snapshot, formatTime, stateLabel } from "./api";
 import { AudioSlider } from "./ui/audio-slider";
 import { PathField } from "./ui/path-field";
 import { SelectControl } from "./ui/select-control";
+import { StatusBadge, Requirements } from "./ui/help-tip";
 import "./studio.css";
 import { LoopStudio } from "./loop-studio";
+import { AgentHandoff } from "./workflow-guidance";
 
 type Action = (
   method: string,
@@ -78,7 +80,8 @@ export function MusicEngines({
   data,
   busy,
   act,
-}: Pick<StudioProps, "data" | "busy" | "act">) {
+  prepareSetup = false,
+}: Pick<StudioProps, "data" | "busy" | "act"> & { prepareSetup?: boolean }) {
   useTranslation();
   const [family, setFamily] = useState("sm-music");
   const [quality, setQuality] = useState("compact");
@@ -108,9 +111,8 @@ export function MusicEngines({
         <span className="badge">{tr("studio", "defaultTurbo")}</span>
       </header>
       <div className="studio-body">
-        <p className="muted">
-          {tr("studio", "independentEnvironmentsOneTaskAtATimeIn")}</p>
-        <div className="studio-results">
+        <Requirements required={tr("experience", "musicRequired")} optional={tr("experience", "editorOptional")} />
+        <details className="technical-details"><summary>{tr("experience", "inspectEngines")}</summary><div className="studio-results">
           {data.engines
             ?.filter((e) => e.category === "music")
             .map((engine) => (
@@ -130,22 +132,25 @@ export function MusicEngines({
                   {engine.id === "stable-audio-3-medium" && <p className="muted">{tr("studio", engine.quality_profiles?.includes("fidelity") ? "fidelityAvailable" : "fidelityOptional")}</p>}
                 </div>
                 <div>
-                  <span className={`badge ${engine.installed && engine.compatible ? "mint" : ""}`}>
+                  <StatusBadge tone={engine.installed && engine.compatible ? "ok" : ""} help={tr("experience", engine.blocked_reason ? "musicBlockedHelp" : "musicStatusHelp")} label={tr("experience", "statusHelpLabel")}>
                     {engine.blocked_reason ? tr("studio", "validationPending") : engine.installed
                       ? tr("studio", engine.compatible ? "linked" : "needsVerification") : tr("studio", "setUp")}
-                  </span>
+                  </StatusBadge>
                   {engine.tested && <p className="mono muted">{tr("studio", "executionRecorded")}</p>}
                 </div>
               </div>
             ))}
-        </div>
-        <p className="muted">{tr("studio", "engineStateScope")}</p>
-        <details className="fx-layer">
+        </div></details>
+        <details className="technical-details"><summary>{tr("experience", "advancedDetails")}</summary>
+          <p className="muted">{tr("studio", "engineStateScope")}</p>
+        </details>
+        <details className="fx-layer" open={prepareSetup || undefined}>
           <summary>{tr("studio", "setUpStableAudio3ExperimentalLitertCpu")}</summary>
+            <div className="disclosure-body">
           <p>
             {tr("studio", quality === "fidelity" ? "fidelityIntro" : "poweredByStabilityAiTextOrAudioVariation")}</p>
-          {quality === "compact" && <p className="muted">
-            {tr("studio", "setupIncludesTheSameSEncoder61Mib")}</p>
+          {quality === "compact" && <details className="technical-details"><summary>{tr("experience", "advancedDetails")}</summary><p className="muted">
+            {tr("studio", "setupIncludesTheSameSEncoder61Mib")}</p></details>
           }
           <SelectControl
             label={tr("studio", "stableAudioFamily")}
@@ -184,6 +189,7 @@ export function MusicEngines({
             />{" "}
             {tr("studio", "iHaveReadAndAcceptStabilityCommunityAnd")}</label>
           <PathField label={tr("studio", "newDedicatedFolderOutsideGit")} kind="directory" disabled={busy}
+              requirement="required" help={tr("experience", "folderHelp")}
               value={destination}
               onChange={(value) => {
                 setDestination(value);
@@ -237,11 +243,15 @@ export function MusicEngines({
           )}
           <details className="fx-layer">
             <summary>{tr("studio", "orLinkAnExistingInstallationWithoutReinstalling")}</summary>
+            <div className="disclosure-body">
             <PathField label={tr("studio", "isolatedPython")} kind="executable" disabled={busy}
+              requirement="required"
               value={python} onChange={setPython} placeholder={tr("studio", "absolutePathToScriptsPythonExe")} />
             <PathField label={tr("studio", "pinnedOfficialSource")} kind="directory" disabled={busy}
+              requirement="required"
               value={source} onChange={setSource} />
             <PathField label={tr("studio", "modelFolder")} kind="directory" disabled={busy}
+              requirement="required"
               value={models} onChange={setModels} />
             <button
               className="outline"
@@ -261,8 +271,10 @@ export function MusicEngines({
               }
             >
               {tr("studio", "verifyAndLinkLitert")}</button>
+          </div>
           </details>
-        </details>
+        </div>
+          </details>
       </div>
     </section>
   );
@@ -604,7 +616,8 @@ export function FxStudio({
   listen,
   edit,
   initialAssetId,
-}: StudioProps & { initialAssetId?: string }) {
+  importAudio,
+}: StudioProps & { initialAssetId?: string; importAudio?: () => void }) {
   useTranslation();
   const [assetId, setAssetId] = useState(initialAssetId ?? "");
   const [recipe, setRecipe] = useState<Recipe>(newChain);
@@ -688,7 +701,11 @@ export function FxStudio({
   };
   return (
     <div className="studio-workspace fx-workspace">
-      <p className="muted">{tr("studio", "fxWorkflowHelp")}</p>
+      <Requirements required={tr("experience", "fxRequired")} optional={tr("experience", "fxOptional")} />
+      {!selected && <div className="panel studio-body"><h2>{tr("experience", "fxStart")}</h2>
+        <p>{tr("experience", "fxNoSource")}</p>
+        {importAudio && <button className="primary" onClick={importAudio}>{tr("experience", data.selected_project ? "openImport" : "chooseProject")}</button>}
+      </div>}
       {loadError && (
         <p className="message error" role="alert">
           {systemMessage(loadError)}
@@ -768,7 +785,7 @@ export function FxStudio({
 
         </div>
       </section>
-      <section className="panel">
+      <section className="panel" hidden={!selected}>
         <header className="panel-title">
           <h2>{tr("studio", "processingChain")}</h2>
           <span className="mono muted">{tr("studio", "immutableOriginal")}</span>
@@ -841,6 +858,7 @@ export function FxStudio({
                   <summary>
                     {layer.id} {tr("studio", "layer")}{" "}{index + 1}
                   </summary>
+            <div className="disclosure-body">
                   <label className="check">
                     <input
                       type="checkbox"
@@ -897,7 +915,8 @@ export function FxStudio({
                     }
                   >
                     {tr("studio", "removeLayer")}</button>
-                </details>
+                </div>
+          </details>
               ))}
               <button
                 className="outline"
@@ -916,11 +935,13 @@ export function FxStudio({
                 {tr("studio", "addLayer")}</button>
               <details className="fx-layer" open>
                 <summary>{tr("studio", "masterAfterLayerMixing")}</summary>
+            <div className="disclosure-body">
                 <ChainEditor
                   value={recipe.master}
                   onChange={(master) => setRecipe({ ...recipe, master })}
                 />
-              </details>
+              </div>
+          </details>
             </>
           ) : (
             <ChainEditor value={recipe} onChange={setRecipe} />
@@ -987,6 +1008,7 @@ export function FxStudio({
           </div>
           <details className="fx-layer">
             <summary>{tr("studio", "importShareJsonPreset")}</summary>
+            <div className="disclosure-body">
             <PathField label={tr("studio", "localJsonPath")} kind="preset" disabled={busy}
               value={filePath} onChange={setFilePath} />
             <div className="studio-toolbar">
@@ -1020,10 +1042,11 @@ export function FxStudio({
               >
                 {tr("studio", "exportSavedPreset")}</button>
             </div>
+          </div>
           </details>
         </div>
       </section>
-      <section className="panel">
+      <section className="panel" hidden={!selected}>
         <header className="panel-title"><h2>{tr("studio", "exportWavCopy")}</h2></header>
         <div className="studio-body">
           <SelectControl
@@ -1073,9 +1096,13 @@ export function VoiceStudio({
   listen,
   edit,
   openFx,
-}: StudioProps & { openFx: (asset: Asset) => void }) {
+  openProjects,
+  openConnection,
+}: StudioProps & { openFx: (asset: Asset) => void; openProjects?: () => void; openConnection?: () => void }) {
   useTranslation();
   const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [voiceSetupOpen, setVoiceSetupOpen] = useState(false);
+  const [profileFormOpen, setProfileFormOpen] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [name, setName] = useState("");
   const [language, setLanguage] = useState("");
@@ -1141,6 +1168,7 @@ export function VoiceStudio({
   };
   return (
     <div className="studio-workspace">
+      <AgentHandoff data={data} kind="voice" projects={openProjects} connection={openConnection} />
       {loadError && (
         <p className="message error" role="alert">
           {systemMessage(loadError)}
@@ -1149,9 +1177,9 @@ export function VoiceStudio({
       <section className="panel">
         <header className="panel-title">
           <h2>{tr("studio", "voiceEngine")}</h2>
-          <span className={`badge ${engine?.installed && engine.compatible ? "mint" : ""}`}>
+          <StatusBadge tone={engine?.installed && engine.compatible ? "ok" : ""} help={tr("experience", "voiceStatusHelp")} label={tr("experience", "statusHelpLabel")}>
             {engine?.installed ? tr("studio", engine.compatible ? "linked" : "needsVerification") : tr("studio", "setUp")}
-          </span>
+          </StatusBadge>
         </header>
         <div className="studio-body">
           <div>
@@ -1159,14 +1187,19 @@ export function VoiceStudio({
             <p className="muted">
               {tr("studio", "cpuOneGenerationAtATimeOfficialWatermark")}</p>
           </div>
-          <p>
-            {tr("studio", "askCodexToGenerateWithLanguageExactText")}</p>
-          <p className="message">{tr("studio", engine?.installed && engine.compatible ? "voiceConfiguredNext" : "voiceSetupNext")}</p>
-          <details className="fx-layer" open={!engine?.installed}>
+          <Requirements required={tr("experience", "voiceRequired")} optional={tr("experience", "voiceOptional")} />
+          <p className="muted">{tr("experience", "voiceSetupChoice")}</p>
+          <button className="outline" aria-expanded={voiceSetupOpen} aria-controls={`voice-setup-${projectId}`}
+            onClick={() => setVoiceSetupOpen(value => !value)}>{tr("experience", "manualPreparation")}</button>
+          <div id={`voice-setup-${projectId}`} hidden={!voiceSetupOpen}>
+          <details className="fx-layer">
             <summary>{tr("studio", "linkAnExistingIsolatedEnvironment")}</summary>
+            <div className="disclosure-body">
             <PathField label={tr("studio", "environmentPython")} kind="executable" disabled={busy}
+              requirement="required" help={tr("experience", "pythonHelp")}
               value={python} onChange={setPython} placeholder={tr("studio", "absolutePathToScriptsPythonExe")} />
             <PathField label={tr("studio", "checkpointFolder")} kind="directory" disabled={busy}
+              requirement="required" help={tr("experience", "checkpointsHelp")}
               value={models} onChange={setModels} />
             <button
               className="outline"
@@ -1180,10 +1213,14 @@ export function VoiceStudio({
               }
             >
               {tr("studio", "verifyAndLinkV3")}</button>
+            {(!python || !models) && <p className="action-requirement">{tr("experience", "voiceLinkMissing")}</p>}
+          </div>
           </details>
           <details className="fx-layer">
             <summary>{tr("studio", "installV3CpuInADedicatedFolder")}</summary>
+            <div className="disclosure-body">
             <PathField label={tr("studio", "newFolderOutsideRepositories")} kind="directory" disabled={busy}
+                requirement="required" help={tr("experience", "folderHelp")}
                 value={destination}
                 onChange={(value) => {
                   setDestination(value);
@@ -1192,6 +1229,7 @@ export function VoiceStudio({
                 }}
               />
             <PathField label={tr("studio", "localCheckpointCacheOptional")} kind="directory" disabled={busy}
+              requirement="optional"
               value={models} onChange={setModels} />
             <button
               className="outline"
@@ -1203,6 +1241,7 @@ export function VoiceStudio({
               }
             >
               {tr("studio", "reviewVoiceRecipe")}</button>
+            {!destination && <p className="action-requirement">{tr("experience", "voiceInstallMissing")}</p>}
             {plan && (
               <>
                 <p>
@@ -1240,24 +1279,21 @@ export function VoiceStudio({
                 {systemMessage(data.setup.stage)}
               </p>
             )}
+          </div>
           </details>
+          </div>
           {jobs[0] && (
-            <div className="studio-request">
+            <details className="technical-details"><summary>{tr("studio", "latestRequest")}</summary><div className="studio-request">
               <div className="studio-toolbar">
                 <strong>{tr("studio", "latestRequest")}</strong>
                 <span className="mono muted">
                   {stateLabel(jobs[0].state)} · {systemMessage(jobs[0].stage)}
                 </span>
               </div>
-              <label>
-                {tr("studio", "originalDisplayedText")}<textarea
-                  readOnly
-                  value={String(jobs[0].params.original_text ?? "")}
-                />
-              </label>
-              <label>
-                {tr("studio", "textSubmittedToTts")}<textarea readOnly value={String(jobs[0].params.text ?? "")} />
-              </label>
+              <dl className="request-readout">
+                <dt>{tr("studio", "originalDisplayedText")}</dt><dd>{String(jobs[0].params.original_text ?? "")}</dd>
+                <dt>{tr("studio", "textSubmittedToTts")}</dt><dd>{String(jobs[0].params.text ?? "")}</dd>
+              </dl>
               <pre>
                 {JSON.stringify(
                   {
@@ -1269,7 +1305,7 @@ export function VoiceStudio({
                   2,
                 )}
               </pre>
-            </div>
+            </div></details>
           )}
         </div>
       </section>
@@ -1297,6 +1333,10 @@ export function VoiceStudio({
                   </div>
                 ))}
               </div>
+              <p className="muted">{tr("experience", "profilesChoice")}</p>
+              <button className="outline" aria-expanded={profileFormOpen} aria-controls={`voice-profile-${projectId}`}
+                onClick={() => setProfileFormOpen(value => !value)}>{tr("experience", "manualProfile")}</button>
+              <div className="disclosure-body" id={`voice-profile-${projectId}`} hidden={!profileFormOpen}>
               <div className="studio-two">
                 <label>
                   {tr("studio", "profileName")}<input
@@ -1319,6 +1359,7 @@ export function VoiceStudio({
                 </label>
               </div>
               <PathField label={tr("studio", "yourOwnAuthorizedVoiceReferenceOptional")} kind="audio" disabled={busy}
+                requirement="optional"
                 value={reference} onChange={setReference} placeholder={tr("studio", "localAudioPath")} />
               <label className="check">
                 <input
@@ -1337,6 +1378,7 @@ export function VoiceStudio({
                 {tr("studio", "saveVoiceProfile")}</button>
               <p className="muted">
                 {tr("studio", "aProfileRecordsLanguageAndReferenceIdentityAnd")}</p>
+              </div>
             </>
           )}
         </div>
