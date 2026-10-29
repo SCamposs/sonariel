@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.6.1 — pending CPU acceptance
+## 0.6.1
 
 - Complete the optional Medium FP32 source-audio path with a pinned SAME-L FP32 encoder, independent readiness, verified reuse and an explicit extra 1.72 GB download choice. Preserve text fidelity and compact profiles.
 - Add the distinct recommended source recipe with transformation 0.65, full registered-source duration (5–120 s), immutable preset origin and unchanged request-key/review/memory safeguards.
