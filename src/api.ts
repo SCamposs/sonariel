@@ -155,6 +155,8 @@ export type EngineInfo = {
   modes?: string[];
   audio_input_ready?: boolean;
   quality_profiles?: ("compact" | "fidelity")[];
+  fidelity_audio_input_ready?: boolean;
+  quality_modes?: Record<string, string[]>;
   audio_input_note?: string | null;
   languages?: Record<string, string>;
   blocked_reason?: string;

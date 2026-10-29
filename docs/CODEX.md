@@ -78,3 +78,13 @@ In that authorized development context only, `fx_loop_render` optionally accepts
 ## Public music recommendations (v0.6.0)
 
 Discover `sonariel_music_recommendations_list`, then explicitly save a project preset with `sonariel_music_recommendation_save` using a chosen prompt, seed and duration. This does not install or generate. Review/confirmation and request-key rules remain unchanged. Fidelity supports text2audio only. See [recipe guide](MUSIC_RECOMMENDATIONS.md). Reload the client MCP connection to discover newly shipped tools.
+
+## Fidelity source audio (v0.6.1)
+
+Discover both music recommendations. Save `medium-fp32-same-l-audio-v1` with
+explicit source_id, seed, original prompt and full-source duration (5–120 s).
+Transformation defaults to 0.65 and may be overridden explicitly. Check the
+separate fidelity encoder readiness; compact's source capability is insufficient.
+Re-link an existing environment to verify optional hashes/resampler when needed.
+This adds source_id/init_noise_level to recommendation saving, not a new generation
+or bypass tool. Existing review/confirmation/request-key contracts still apply.

@@ -1,6 +1,7 @@
 """Pinned, explicit LiteRT quality profiles; no model imports."""
 PROFILES = ('compact', 'fidelity')
 FIDELITY_PATHS = ('tflite/sa3-m/dit_fp32.tflite', 'tflite/same-l/dec_fp32.tflite')
+FIDELITY_ENCODER = 'tflite/same-l/enc_fp32.tflite'
 
 
 def profile_components(engine_id, quality_profile='compact'):

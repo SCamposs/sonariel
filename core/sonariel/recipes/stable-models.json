@@ -4,6 +4,11 @@
   "code_commit": "77e0398c26f7d22d801ec1bb036307e8b231f741",
   "files": [
     {
+      "path": "tflite/same-l/enc_fp32.tflite",
+      "sha256": "1560c83c097df534786b29bc63570ccfbeedbaeed225e1c45d9183eb60516a2c",
+      "bytes": 1716519524
+    },
+    {
       "path": "tflite/sa3-sm-music/dit_w8a8.tflite",
       "sha256": "1d8ef99bf10f51cc52b68f7b527d3773828e700758b253edd8a8e088a906e241",
       "bytes": 539350360

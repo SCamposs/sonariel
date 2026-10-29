@@ -9,7 +9,7 @@ def service(tmp_path):
 
 
 def test_public_recipe_is_available_without_models_and_never_inherits_compact_modes(service):
-    recipe, = service.invoke("music_recommendations_list", {})
+    recipe = service.invoke("music_recommendations_list", {})[0]
     assert recipe["parameters"] == dict(quality_profile="fidelity", mode="text2audio", steps=8, batch_size=1)
     assert not recipe["available"] and recipe["available_modes"] == []
     assert recipe["supported_modes"] == ["text2audio"]
@@ -20,7 +20,7 @@ def test_public_recipe_is_available_without_models_and_never_inherits_compact_mo
     service.store.set("stable_environment", dict(accepted_licenses=True, families=["medium"], audio_input_ready=True))
     assert not service.invoke("music_recommendations_list", {})[0]["available"]
     service.store.set("stable_environment", dict(accepted_licenses=True, families=["medium"], quality_profiles=["compact", "fidelity"], audio_input_ready=True))
-    recipe, = service.invoke("music_recommendations_list", {})
+    recipe = service.invoke("music_recommendations_list", {})[0]
     assert recipe["available"] and recipe["available_modes"] == ["text2audio"]
     assert service.rpc_queue_list() == []
 
@@ -67,7 +67,7 @@ def test_recommended_preset_uses_existing_confirmation_gate_and_job_lineage(serv
     assert service.invoke("music_preset_generate", dict(generation, confirmed=True))["job_id"] == job["job_id"]
     assert service.music_preset_metadata(job["job_id"])["origin_recommendation"] == preset["origin_recommendation"]
     assert len(service.rpc_queue_list()) == 1  # Worker disabled: a contract test, not inference.
-    with pytest.raises(ValueError, match="text2audio"):
+    with pytest.raises(ValueError, match="Source-guided"):
         service.invoke("music_preset_prepare", dict(preset_id=preset["id"], project_id=args["project_id"], overrides={"mode": "audio2audio"}))
 
 

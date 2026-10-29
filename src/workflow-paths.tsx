@@ -8,7 +8,7 @@ import { RecommendedMusic } from "./recommended-music";
 
 /** Navigation only: none of these entries executes production or setup. */
 export function WorkflowPaths({ data, music, voice, audio, createProject, prepareMusic }: {
-  data: Snapshot; music: () => void; voice: () => void; audio: () => void; createProject: () => void; prepareMusic?: () => void;
+  data: Snapshot; music: () => void; voice: () => void; audio: () => void; createProject: () => void; prepareMusic?: (audioInput?: boolean) => void;
 }) {
   useTranslation();
   const [intent, setIntent] = useState<"music" | "voice" | "audio">();

@@ -49,3 +49,24 @@ it("reports lookup errors and supports retry without performing setup", async ()
   fireEvent.click(screen.getByRole("button", { name: "Retry recipe lookup" }));
   expect(await screen.findByText(recipe.name)).toBeTruthy();
 });
+
+it("requires an explicit source-recipe choice and copies its source/0.65 contract without generating", async () => {
+  await i18n.changeLanguage('en');
+  vi.mocked(rpc).mockResolvedValue([{...recipe,available:true,supported_modes:['text2audio']},
+    {...recipe,id:'medium-fp32-same-l-audio-v1',available:true,supported_modes:['audio2audio'],optional_download_bytes:9313455284}]);
+  const prepare=vi.fn(),writeText=vi.fn().mockResolvedValue(undefined);
+  Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText}});
+  render(<RecommendedMusic data={data} prepare={prepare} />);
+  const source=await screen.findByRole('button',{name:'With source audio'});
+  expect(source.getAttribute('aria-pressed')).toBe('false');
+  fireEvent.click(source);
+  expect(source.getAttribute('aria-pressed')).toBe('true');
+  fireEvent.click(screen.getByRole('button',{name:'Use this preset with Codex'}));
+  await waitFor(()=>expect(writeText).toHaveBeenCalledTimes(1));
+  expect(writeText.mock.calls[0][0]).toContain('medium-fp32-same-l-audio-v1');
+  expect(writeText.mock.calls[0][0]).toContain('init_noise_level=0.65');
+  expect(writeText.mock.calls[0][0]).toContain('source_id');
+  fireEvent.click(screen.getByRole('button',{name:'Review installation options'}));
+  expect(prepare).toHaveBeenCalledWith(true);
+  expect(vi.mocked(rpc).mock.calls.every(([method])=>method==='music_recommendations_list')).toBe(true);
+});

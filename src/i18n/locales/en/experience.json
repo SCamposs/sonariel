@@ -102,5 +102,11 @@
   "recommendedTechnical": "Medium DiT FP32 + SAME-L decoder FP32 + T5Gemma FP16. Eight steps, CFG/APG 1, six CPU threads, batch 1. Stereo float32 WAV, 44.1 kHz. Text-to-audio only, 5–60 seconds; SAME-L source-audio encoding is not integrated. The approximately 5.75 GiB process peak observed for 30 seconds does not predict other runs.",
   "recommendedRequest": "Use Sonariel in project “{{name}}” (ID {{project}}). Discover the available MCP tools and consult music_recommendations_list for recipe {{recipe}}. Inspect project context and environment availability. Help me choose an original prompt, explicit seed and duration (5–60 s), then save a named preset with music_recommendation_save. Do not include private reference audio or switch to audio2audio: this profile supports text2audio only. Preserve the eight-step FP32/SAME-L recipe. Saving is not generation: review the preset and ask for explicit confirmation before submitting any job or downloading/installing models. Keep originals and report preset/job IDs.",
   "loadingRecommendation": "Loading recommended recipe…",
-  "retryRecommendation": "Retry recipe lookup"
+  "retryRecommendation": "Retry recipe lookup",
+  "recommendedMode": "Music input mode",
+  "recommendedFromText": "From text",
+  "recommendedFromAudio": "With source audio",
+  "recommendedSourceMode": "source audio · transformation 0.65",
+  "recommendedSourceTechnical": "Medium DiT FP32, SAME-L encoder and decoder FP32, T5Gemma FP16. Eight steps, CFG/APG 1, six CPU threads, batch 1. Full registered source (5–120 s), preserved original, stereo float32 WAV at 44.1 kHz. Transformation defaults to 0.65; lower values preserve more source content. This is not a similarity percentage.",
+  "recommendedSourceRequest": "Use Sonariel in project “{{name}}” (ID {{project}}). Discover MCP tools and consult music_recommendations_list for {{recipe}}. Use the complete Medium FP32 + SAME-L FP32 encoder/decoder recipe with audio2audio, eight steps and transformation init_noise_level=0.65. Inspect project context, environment availability and existing source audio. Ask me to choose an authorized registered source_id, original direction and explicit seed; duration must match the full source (5–120 s). Save a named preset with music_recommendation_save and review actual values. Do not substitute the compact codec, silently change mode, overwrite the original or start generation/downloads before explicit confirmation. Keep source hash, model hashes and job/preset IDs."
 }

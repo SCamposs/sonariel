@@ -329,3 +329,16 @@ it("opens and reopens the recommended recipe without reviewing, authorizing or d
     destination: "D:/Engines/Optional", family: "medium", quality_profile: "fidelity",
   }));
 });
+
+it("prefills only the explicitly requested SAME-L source setup and reviews the extra download", async () => {
+  vi.mocked(rpc).mockResolvedValue([]);
+  const p = props();
+  render(<MusicEngines data={p.data} busy={false} act={p.act} prepareSetup initialRecommendation={true} />);
+  expect((screen.getByLabelText(tr("studio", "includeFidelityAudio")) as HTMLInputElement).checked).toBe(true);
+  expect(p.act).not.toHaveBeenCalled();
+  fireEvent.change(screen.getByLabelText(tr("studio", "newDedicatedFolderOutsideGit")), { target: { value: "D:/Engines/Optional" } });
+  fireEvent.click(screen.getByRole("button", { name: tr("studio", "reviewLitertRecipe") }));
+  await waitFor(() => expect(p.act).toHaveBeenCalledWith("stable_setup_plan", {
+    destination: "D:/Engines/Optional", family: "medium", quality_profile: "fidelity", include_fidelity_audio:true,
+  }));
+});

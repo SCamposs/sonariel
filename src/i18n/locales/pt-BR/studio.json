@@ -161,12 +161,12 @@
   "qualityProfile": "Perfil de qualidade",
   "compactProfile": "Leve · INT8 / SAME-S",
   "fidelityProfile": "FP32 + SAME-L · qualidade recomendada",
-  "fidelityProfileHelp": "Opcional para Medium por texto. Requer 12 GiB de RAM livre para iniciar. Gerações e presets registram o perfil usado.",
+  "fidelityProfileHelp": "Perfil opcional Medium. Por texto, precisa do DiT/decoder FP32; com fonte de áudio, precisa também do encoder SAME-L FP32. A admissão permanece em 12 GiB de RAM livre.",
   "fidelityDownload": "Inclui o perfil leve e dois arquivos opcionais FP32/SAME-L (7,60 GB adicionais). Arquivos existentes são verificados e reutilizados.",
   "compactDownload": "DiT INT8 e SAME-S. Perfil leve padrão.",
-  "fidelityAvailable": "FP32 / SAME-L disponível para geração por texto.",
+  "fidelityAvailable": "FP32 / SAME-L vinculado; entrada depende do encoder verificado separadamente.",
   "fidelityOptional": "FP32 / SAME-L é um download opcional para Medium.",
-  "fidelityIntro": "Medium FP32 com decoder SAME-L FP32, para composição por texto. A qualidade musical depende de escuta; este perfil ainda não aceita áudio de entrada.",
+  "fidelityIntro": "Medium FP32 com decoder SAME-L FP32. Geração com fonte de áudio exige também o encoder SAME-L FP32 opcional verificado e o resampler.",
   "chooseExportVersion": "Escolha uma versão explicitamente",
   "exportSource": "Fonte / original deste processamento",
   "exportProcessed": "Versão processada",
@@ -178,5 +178,9 @@
   "engineStateScope": "Configuração vinculada e execução anterior são estados diferentes. As verificações refletem o último vínculo; modelos só carregam para uma tarefa e a fila confere a memória disponível. Uma execução anterior não aprova todos os modos e perfis.",
   "fxWorkflowHelp": "Escolha a fonte, ajuste os efeitos e renderize uma prévia curta para ouvir. Quando desejar, renderize a versão completa; depois escolha explicitamente a versão e o destino da cópia WAV.",
   "voiceConfiguredNext": "A configuração do motor está vinculada. Salve um perfil de idioma/referência se precisar e peça o texto exato e a seed pelo agente. Um perfil não instala o motor nem sintetiza voz.",
-  "voiceSetupNext": "Primeiro vincule um motor vocal existente ou revise a instalação isolada abaixo. Perfis organizam idioma e referências autorizadas; a geração é pedida separadamente pelo agente."
+  "voiceSetupNext": "Primeiro vincule um motor vocal existente ou revise a instalação isolada abaixo. Perfis organizam idioma e referências autorizadas; a geração é pedida separadamente pelo agente.",
+  "includeFidelityAudio": "Preparar também entrada SAME-L FP32 (encoder opcional: +1,72 GB)",
+  "fidelitySourceDownload": "Inclui o perfil compacto e 9,31 GB de componentes opcionais FP32: DiT Medium, decoder SAME-L e encoder SAME-L. Arquivos existentes verificados são reutilizados.",
+  "fidelitySourceReady": "Entrada SAME-L FP32 verificada e vinculada; audio2audio até 120 s.",
+  "fidelitySourceMissing": "Entrada SAME-L FP32 não verificada. Vincule o encoder opcional e o resampler para habilitar audio2audio fidelity."
 }

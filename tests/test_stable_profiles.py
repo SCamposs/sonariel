@@ -27,7 +27,7 @@ def test_fidelity_is_explicit_queued_idempotent_and_recorded_in_presets(tmp_path
     result=s.invoke('music_generate',args)
     assert s.invoke('music_generate',args)['job_id']==result['job_id']
     assert s.store.job(result['job_id'])['params']['quality_profile']=='fidelity'
-    with pytest.raises(ValueError,match='text2audio'):s.invoke('music_generate',dict(args,mode='audio2audio'))
+    with pytest.raises(ValueError,match='SAME-L FP32 encoder'):s.invoke('music_generate',dict(args,mode='audio2audio'))
     params={k:v for k,v in args.items() if k not in {'engine_id','project_id','request_key'}}
     preset=s.invoke('music_preset_save',dict(project_id=project,name='FP32',engine_id=args['engine_id'],parameters=params))
     assert preset['params']['quality_profile']=='fidelity'

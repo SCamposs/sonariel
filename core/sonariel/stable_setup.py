@@ -8,7 +8,7 @@ from pathlib import Path
 
 from .environment import recipe, run, sha256
 from .setup import Setup, download, extract, resource
-from .stable_profiles import FIDELITY_PATHS, PROFILES
+from .stable_profiles import FIDELITY_PATHS, FIDELITY_ENCODER, PROFILES
 
 VERSIONS = {"ai-edge-litert":"2.2.0", "numpy":"1.26.4", "sentencepiece":"0.2.1", "soundfile":"0.14.0"}
 FAMILIES = {"sm-music":"sa3-sm-music", "medium":"sa3-m"}
@@ -17,15 +17,19 @@ TERMS = {"LICENSE.md":"d6f6b1a4dce5c852bd6d7d9482d002baf0ccdb71e662250b73be9eec8
          "NOTICE":"66f856d7da72797f528fca46b7c80634ab481f917bfe020960e123d84b19f75f"}
 
 
-def selected_files(manifest, families, include_audio=False, quality_profile='compact'):
+def selected_files(manifest, families, include_audio=False, quality_profile='compact', include_fidelity_audio=False):
     if quality_profile not in PROFILES or quality_profile=='fidelity' and 'medium' not in families:
         raise ValueError('FP32/SAME-L requires Medium')
+    if include_fidelity_audio and quality_profile != 'fidelity':
+        raise ValueError('SAME-L audio input requires the fidelity profile')
     selected = {"tflite/t5gemma/encoder_fp16.tflite", "tflite/same-s/dec_w8a8.tflite"}
     if include_audio:
         selected.add("tflite/same-s/enc_w8a8.tflite")
     selected.update(f"tflite/{FAMILIES[family]}/dit_w8a8.tflite" for family in families)
     if quality_profile=='fidelity':
         selected.update(FIDELITY_PATHS)
+        if include_fidelity_audio:
+            selected.add(FIDELITY_ENCODER)
     return [file for file in manifest["files"] if file["path"] in selected]
 
 
@@ -43,27 +47,30 @@ class StableSetup:
     def __init__(self, store):
         self.store = store
 
-    def plan(self, destination, family, quality_profile='compact'):
+    def plan(self, destination, family, quality_profile='compact', include_fidelity_audio=False):
         if family not in FAMILIES:
             raise ValueError("Família LiteRT inválida")
         if quality_profile not in PROFILES or quality_profile=='fidelity' and family!='medium':
             raise ValueError('FP32/SAME-L requires Medium')
+        if include_fidelity_audio and quality_profile != 'fidelity':
+            raise ValueError('SAME-L audio input requires the fidelity profile')
         base = Setup(self.store).plan(destination)
         return dict(destination=base["destination"], supported=base["supported"], family=family,
             disk_required_gib=24 if quality_profile=='fidelity' else 8, quality_profile=quality_profile,
-            optional_model_bytes=7596935760 if quality_profile=='fidelity' else 0,
+            optional_model_bytes=(7596935760 + (1716519524 if include_fidelity_audio else 0)) if quality_profile=='fidelity' else 0,
+            include_fidelity_audio=include_fidelity_audio,
             requires_authorization=True, requires_license_acceptance=True,
             components=["uv isolado", "Python 3.11.15", "LiteRT 2.2.0 CPU, dependências com hashes", "DiT w8a8, SAME-S w8a8, T5Gemma fp16"] + (["Optional Medium FP32 + SAME-L FP32 (7.60 GB)"] if quality_profile=='fidelity' else []),
             licenses=["https://huggingface.co/stabilityai/stable-audio-3-optimized/blob/08b17423649b5714b22eab20f96bf00751f2358a/LICENSE.md",
                       "https://huggingface.co/stabilityai/stable-audio-3-optimized/blob/08b17423649b5714b22eab20f96bf00751f2358a/LICENSE_GEMMA.md"],
             notice="Powered by Stability AI. Licenças próprias; aceite local não equivale a registro/autorização comercial.",
             versions=VERSIONS, modes=["text2audio", "audio2audio"],
-            audio_input_components=["SAME-S encoder w8a8 (~61 MiB)", "soxr 1.0.0 HQ resampler"])
+            audio_input_components=(["SAME-L encoder FP32 (1.72 GB)"] if include_fidelity_audio else ["SAME-S encoder w8a8 (~61 MiB)"]) + ["soxr 1.0.0 HQ resampler"])
 
-    def install(self, destination, family, authorized, accepted_licenses, model_cache="", quality_profile='compact'):
+    def install(self, destination, family, authorized, accepted_licenses, model_cache="", quality_profile='compact', include_fidelity_audio=False):
         if not authorized or not accepted_licenses:
             raise ValueError("Autorize a instalação e aceite explicitamente Stability Community e Gemma antes de baixar")
-        plan = self.plan(destination, family, quality_profile)
+        plan = self.plan(destination, family, quality_profile, include_fidelity_audio)
         if not plan["supported"]:
             raise ValueError("Receita validada para Windows x64 com pelo menos 24 GB de RAM")
         root = Path(plan["destination"])
@@ -117,7 +124,7 @@ class StableSetup:
         models = root / "models"
         models.mkdir(exist_ok=True)
         families = sorted(set(state["families"]) | {family})
-        for file in selected_files(spec, families, include_audio=True, quality_profile=quality_profile):
+        for file in selected_files(spec, families, include_audio=True, quality_profile=quality_profile, include_fidelity_audio=include_fidelity_audio):
             target = models / file["path"]
             target.parent.mkdir(parents=True, exist_ok=True)
             stage("Verificar modelo: " + file["path"])

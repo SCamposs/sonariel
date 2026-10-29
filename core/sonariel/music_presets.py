@@ -37,15 +37,22 @@ class MusicPresets:
         return recommendations(self.store)
 
     def rpc_music_recommendation_save(self, recommendation_id: str, project_id: str, name: str,
-                                      prompt: str, seed: int, duration: float):
+                                      prompt: str, seed: int, duration: float, source_id: str | None = None,
+                                      init_noise_level: float | None = None):
         from .music_recommendations import recommendation
-        recipe = recommendation()
-        if recommendation_id != recipe["id"]:
-            raise ValueError("Unknown music recommendation")
+        recipe = recommendation(recommendation_id)
+        audio_input = recipe['parameters']['mode'] == 'audio2audio'
+        if audio_input and not source_id:
+            raise ValueError('Source recommendation requires an explicit registered source_id')
+        if not audio_input and (source_id is not None or init_noise_level is not None):
+            raise ValueError('Text recommendation does not accept source audio or transformation')
+        extras = dict(source_id=source_id) if audio_input else {}
+        if init_noise_level is not None:
+            extras['init_noise_level'] = init_noise_level
         # Pure preset creation: works before installing models, never accepts licenses or queues work.
         result = self.rpc_music_preset_save(project_id, name,
             description="Starting recipe: " + recipe["name"] + "; " + recipe["id"],
-            engine_id=recipe["engine_id"], parameters={**recipe["parameters"], "prompt": prompt, "seed": seed, "duration": duration})
+            engine_id=recipe["engine_id"], parameters={**recipe["parameters"], **extras, "prompt": prompt, "seed": seed, "duration": duration})
         self.store.set("music_recommendation:" + result["id"], recipe)
         return self._music_preset(result["id"])
 
@@ -73,8 +80,6 @@ class MusicPresets:
             from .stable_profiles import profile_components
             value.setdefault('quality_profile', 'compact')
             profile_components(engine_id, value['quality_profile'])
-            if value['quality_profile']=='fidelity' and mode!='text2audio':
-                raise ValueError('FP32/SAME-L currently supports text2audio only')
             if mode == "text2audio" and (value["duration"] > 60 or value.get("source_id") or value.get("init_noise_level") is not None):
                 raise ValueError("text2audio requires no source and at most 60 seconds")
         for role in ("reference_id", "source_id"):
@@ -91,7 +96,7 @@ class MusicPresets:
             if abs(source["metadata"]["duration"] - value["duration"]) > tolerance:
                 raise ValueError("Preset duration must match the full selected source")
             if engine_id != TURBO:
-                value.setdefault("init_noise_level", .25)
+                value.setdefault("init_noise_level", .65 if value['quality_profile'] == 'fidelity' else .25)
         return value
 
     def _configuration_from_asset(self, asset_id, project_id):
@@ -213,11 +218,11 @@ def music_preset_methods(tool, S, ID, B):
     parameters = dict(type="object", maxProperties=24)
     name = dict(type="string", minLength=1, maxLength=120)
     return {
-        "music_recommendations_list": tool("List public recommended starting recipes, exact runtime/checkpoint configuration and installed availability. No models loaded; never changes the default engine. Fidelity supports text2audio only.", {}),
+        "music_recommendations_list": tool("List distinct public text and source-audio FP32/SAME-L recipes, exact runtime/checkpoints and installed availability. No model loading or default-engine changes. Source recipe requires a verified SAME-L FP32 encoder, full source_id and defaults to transformation 0.65.", {}),
         "music_recommendation_save": tool("Save the public recommended recipe as a project music preset with explicit user direction, seed and duration. Never installs, accepts licenses or generates. Then use the existing preset review/confirmed-generation workflow. Origin is retained separately from later edits.",
-            dict(recommendation_id=dict(type="string", enum=["medium-fp32-same-l-v1"]), project_id=ID, name=name,
+            dict(recommendation_id=dict(type="string", enum=["medium-fp32-same-l-v1", "medium-fp32-same-l-audio-v1"]), project_id=ID, name=name,
                  prompt=dict(type="string", minLength=1, maxLength=4000), seed=dict(type="integer", minimum=0, maximum=4294967295),
-                 duration=dict(type="number", minimum=5, maximum=60)),
+                 duration=dict(type="number", minimum=5, maximum=120), source_id=ID, init_noise_level=dict(type='number', minimum=.01, exclusiveMaximum=1)),
             ["recommendation_id", "project_id", "name", "prompt", "seed", "duration"]),
         "music_presets_list": tool("List versioned music presets, separate from DSP presets. Does not load models.", dict(project_id=ID)),
         "music_preset_save": tool("Capture a music result or save an explicit engine-compatible configuration. Creates an immutable revision or explicit duplicate. Never generates audio.",

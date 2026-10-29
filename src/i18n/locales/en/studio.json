@@ -161,12 +161,12 @@
   "qualityProfile": "Quality profile",
   "compactProfile": "Compact · INT8 / SAME-S",
   "fidelityProfile": "FP32 + SAME-L · recommended quality",
-  "fidelityProfileHelp": "Optional for Medium text generation. Requires 12 GiB available RAM to start. Results and presets record the selected profile.",
+  "fidelityProfileHelp": "Optional Medium profile. Text generation needs the FP32 DiT/decoder; source audio also needs the SAME-L FP32 encoder. Admission remains 12 GiB available RAM.",
   "fidelityDownload": "Includes compact models and two optional FP32/SAME-L files (7.60 GB extra). Existing files are verified and reused.",
   "compactDownload": "INT8 DiT and SAME-S. Default compact profile.",
-  "fidelityAvailable": "FP32 / SAME-L available for text generation.",
+  "fidelityAvailable": "FP32 / SAME-L linked; source input depends on the separate verified encoder.",
   "fidelityOptional": "FP32 / SAME-L is an optional Medium download.",
-  "fidelityIntro": "Medium FP32 with SAME-L FP32 decoding for text-based composition. Musical quality requires listening; this profile does not yet accept source audio.",
+  "fidelityIntro": "Medium FP32 with SAME-L FP32 decoding. Source-audio generation additionally requires the optional verified SAME-L FP32 encoder and resampler.",
   "chooseExportVersion": "Choose a version explicitly",
   "exportSource": "Source / original for this process",
   "exportProcessed": "Processed version",
@@ -178,5 +178,9 @@
   "engineStateScope": "Linked configuration and previous execution are different states. Checks reflect the last link; models load only for a task, and the queue checks available memory. A prior run does not approve every mode or profile.",
   "fxWorkflowHelp": "Choose a source, adjust effects and render a short preview to listen. Render a full version when ready; then explicitly choose the version and destination to export a WAV copy.",
   "voiceConfiguredNext": "Engine configuration is linked. Save a language/reference profile if needed, then request the exact text and seed through your agent. A profile does not install an engine or synthesize speech.",
-  "voiceSetupNext": "First link an existing voice engine or review an isolated installation below. Profiles organize language and authorized references; generation is requested separately through your agent."
+  "voiceSetupNext": "First link an existing voice engine or review an isolated installation below. Profiles organize language and authorized references; generation is requested separately through your agent.",
+  "includeFidelityAudio": "Also prepare SAME-L FP32 source input (optional encoder: +1.72 GB)",
+  "fidelitySourceDownload": "Includes the compact profile plus 9.31 GB of optional FP32 components: Medium DiT, SAME-L decoder and SAME-L encoder. Existing verified files are reused.",
+  "fidelitySourceReady": "SAME-L FP32 source input verified and linked; audio2audio up to 120 s.",
+  "fidelitySourceMissing": "SAME-L FP32 source input not verified. Link the optional encoder and resampler to enable fidelity audio2audio."
 }

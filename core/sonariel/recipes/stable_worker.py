@@ -79,8 +79,8 @@ def main():
     source, models = Path(config["source"]), Path(config["models"])
     family = FAMILIES[params["_engine"]]
     quality = params.get('quality_profile', 'compact')
-    if quality not in {'compact', 'fidelity'} or quality=='fidelity' and (family!='sa3-m' or params.get('mode','text2audio')!='text2audio'):
-        raise ValueError('FP32/SAME-L requires Medium text2audio')
+    if quality not in {'compact', 'fidelity'} or quality=='fidelity' and family!='sa3-m':
+        raise ValueError('FP32/SAME-L requires Medium')
     dit_path = f'tflite/{family}/dit_fp32.tflite' if quality=='fidelity' else f'tflite/{family}/dit_w8a8.tflite'
     decoder_path = 'tflite/same-l/dec_fp32.tflite' if quality=='fidelity' else 'tflite/same-s/dec_w8a8.tflite'
     audio_input = params.get("mode", "text2audio") == "audio2audio"
@@ -88,7 +88,10 @@ def main():
         raise ValueError("Unsupported Stable Audio mode")
     checkpoint_paths = {dit_path, 'tflite/t5gemma/encoder_fp16.tflite', decoder_path}
     if audio_input:
-        checkpoint_paths.add("tflite/same-s/enc_w8a8.tflite")
+        encoder_path = "tflite/same-l/enc_fp32.tflite" if quality == 'fidelity' else "tflite/same-s/enc_w8a8.tflite"
+        if not config.get('fidelity_audio_input_ready' if quality == 'fidelity' else 'audio_input_ready'):
+            raise ValueError('Link the verified audio encoder and resampler before audio2audio')
+        checkpoint_paths.add(encoder_path)
         if importlib.metadata.version("soxr") != "1.0.0":
             raise ValueError("Pinned source-audio resampler is missing or changed")
     for file in manifest["source_files"]:
@@ -97,6 +100,8 @@ def main():
         if digest != file["sha256"]:
             raise ValueError("Pinned source changed: " + file["path"])
     checkpoints = [file for file in manifest["files"] if file["path"] in checkpoint_paths]
+    if {file['path'] for file in checkpoints} != checkpoint_paths:
+        raise ValueError('Required checkpoint is not pinned')
     for file in checkpoints:
         if sha(models / file["path"]) != file["sha256"]:
             raise ValueError("Checkpoint changed: " + file["path"])
@@ -134,9 +139,11 @@ def main():
     if audio_input:
         import soxr
         from rung_encoder import RungEncoder
-        enc_length = length + 1 if length % 2 else length
+        enc_length = length + 1 if quality == 'compact' and length % 2 else length
         source, source_info = timed("source_read", "LiteRT CPU: ler fonte completa", lambda: source_audio(params, enc_length*4096, soxr))
-        encoder = timed("audio_encoder_load", "LiteRT CPU: carregar encoder de áudio", lambda: RungEncoder(models / "tflite/same-s/enc_w8a8.tflite", threads=6, trim=16, max_rung=128))
+        encoder = timed("audio_encoder_load", "LiteRT CPU: carregar encoder de áudio", lambda: RungEncoder(models / encoder_path, threads=6, trim=12 if quality == 'fidelity' else 16, max_rung=128))
+        source_info.update(encoder=encoder_path, encoder_precision='fp32' if quality == 'fidelity' else 'w8a8',
+            encoder_trim=12 if quality == 'fidelity' else 16, encoder_max_rung=128, latent_length=length, encoded_latent_length=enc_length)
         initial = timed("audio_encode", "LiteRT CPU: codificar fonte em latentes", lambda: encoder.encode(source)[:, :, :length])
         sigma = params["init_noise_level"]
         x0 = mix_source_noise(initial, x0, sigma)

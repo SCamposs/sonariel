@@ -212,6 +212,8 @@ export function App() {
   const [busy, setBusy] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [preparation, setPreparation] = useState<"link" | "install" | "other">();
+  const [recommendedAudio, setRecommendedAudio] = useState<boolean>();
+  useEffect(() => { if (page !== "environment") setRecommendedAudio(undefined); }, [page]);
   const refreshInFlight = useRef(0);
   const library = useLibraryFilters(data);
   const query = library.filters.query;
@@ -632,7 +634,7 @@ export function App() {
                 <>
                   <WorkflowPaths data={data}
                     createProject={() => setProjectForm(true)}
-                    prepareMusic={() => { setPreparation("other"); setPage("environment"); }}
+                    prepareMusic={(audioInput = false) => { setRecommendedAudio(audioInput); setPreparation("other"); setPage("environment"); }}
                     music={() => setPage(data.engines?.some(e => e.category === "music" && e.installed && e.compatible && !e.blocked_reason) ? "bridges" : "environment")}
                     voice={() => setPage("voice")}
                     audio={() => { if (!project) { setProjectForm(true); setNotice(tr("workspace", "chooseProjectForAudio")); } else { setPage("library"); setShowRegister(true); } }} />
@@ -1281,7 +1283,7 @@ export function App() {
                     </div>
                     {preparation && <p className="muted">{tr("experience", "manualSetupNote")}</p>}
                   </section>
-                  <div hidden={preparation !== "other"}><MusicEngines data={data} busy={busy} act={act} prepareSetup={preparation === "other"} /></div>
+                  <div hidden={preparation !== "other"}><MusicEngines data={data} busy={busy} act={act} prepareSetup={preparation === "other"} initialRecommendation={recommendedAudio} /></div>
                   <div className="environment-forms">
                     <div hidden={preparation !== "link"}>
                     <Panel

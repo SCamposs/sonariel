@@ -16,6 +16,7 @@ parser.add_argument("--fx-wav", type=Path, help="Explicit native FX/export test 
 parser.add_argument("--executable", type=Path, help="Test the distributed sonariel-core.exe instead of development Python")
 parser.add_argument("--stable-input-root", type=Path, help="Existing licensed LiteRT environment for one explicitly authorized synthetic 5s audio-input test")
 parser.add_argument("--authorize-stable-input-generation", action="store_true")
+parser.add_argument("--stable-quality-profile", choices=['compact','fidelity'], default='compact')
 args = parser.parse_args()
 if args.storage or args.music_recommendations:
     if not os.environ.get('SONARIEL_HOME') or Path(os.environ['SONARIEL_HOME']).resolve() == (Path.home()/'.sonariel').resolve():
@@ -58,7 +59,7 @@ try:
     if args.music_recommendations:
         before = tool("snapshot")
         assert not before["jobs"] and not before["environment"] and not before.get("stable_environment")
-        recommendation, = tool("music_recommendations_list")
+        recommendation = tool("music_recommendations_list")[0]
         assert recommendation["id"] == "medium-fp32-same-l-v1" and not recommendation["available"]
         assert recommendation["supported_modes"] == ["text2audio"]
         project = tool("project_create", dict(name="Public recipe protocol verification"))["project_id"]
@@ -133,7 +134,7 @@ try:
         root=args.stable_input_root.resolve(strict=True)
         accepted=json.loads((root/'sonariel-stable-install.json').read_text())['accepted_licenses']
         linked=tool('stable_environment_link',dict(python_path=str(root/'.venv/Scripts/python.exe'),source=str(root/'source'),models=str(root/'models'),families=['medium'],accepted_licenses=accepted))
-        assert linked['audio_input_ready']
+        assert linked['fidelity_audio_input_ready' if args.stable_quality_profile=='fidelity' else 'audio_input_ready']
         home=Path(tool('snapshot')['data_home'])
         wav=home/'synthetic-input-5s.wav'
         assert not wav.exists(),'Use a fresh test profile'
@@ -141,11 +142,19 @@ try:
         original_hash=hashlib.sha256(wav.read_bytes()).hexdigest()
         project=tool('project_create',dict(name='Audio input protocol validation'))['project_id']
         source=tool('reference_register',dict(project_id=project,path=str(wav),name='Synthetic source'))
-        params=dict(engine_id='stable-audio-3-medium',project_id=project,request_key='stable-input-5s',prompt='Quiet original sustained synthesizer tone, instrumental, no percussion.',seed=7024,duration=5,steps=8,batch_size=1,mode='audio2audio',source_id=source['id'],init_noise_level=.25)
-        job=tool('music_generate',params)
-        assert tool('music_generate',params)['job_id']==job['job_id']
+        if args.stable_quality_profile=='fidelity':
+            preset=tool('music_recommendation_save',dict(recommendation_id='medium-fp32-same-l-audio-v1', project_id=project,
+                name='Synthetic fidelity source validation',prompt='Quiet original sustained synthesizer tone, instrumental, no percussion.',seed=7024,duration=5,source_id=source['id']))
+            review=tool('music_preset_prepare',dict(preset_id=preset['id'],project_id=project,intent='repeat'))
+            params=dict(preset_id=preset['id'],project_id=project,request_key='stable-fidelity-input-5s',review_token=review['review_token'],intent='repeat',confirmed=True)
+            submit='music_preset_generate'
+        else:
+            params=dict(engine_id='stable-audio-3-medium',project_id=project,request_key='stable-input-5s',prompt='Quiet original sustained synthesizer tone, instrumental, no percussion.',seed=7024,duration=5,steps=8,batch_size=1,mode='audio2audio',source_id=source['id'],init_noise_level=.25)
+            submit='music_generate'
+        job=tool(submit,params)
+        assert tool(submit,params)['job_id']==job['job_id']
         last=None
-        for _ in range(1200):
+        for _ in range(2400):
             result=tool('job_get',dict(job_id=job['job_id']))
             if result['stage']!=last:
                 print(json.dumps(dict(state=result['state'],stage=result['stage'],metrics=result['metrics'])),flush=True);last=result['stage']
@@ -155,6 +164,14 @@ try:
                 audio,rate=sf.read(output['path'],always_2d=True)
                 assert rate==44100 and audio.shape==(5*44100,2) and np.isfinite(audio).all() and np.max(np.abs(audio))>1e-5
                 assert hashlib.sha256(wav.read_bytes()).hexdigest()==original_hash
+                if args.stable_quality_profile=='fidelity':
+                    saved=output['metadata']['parameters']
+                    assert saved['quality_profile']=='fidelity' and saved['init_noise_level']==.65
+                    receipt=json.loads(Path(output['path']).with_suffix('.json').read_text(encoding='utf-8'))
+                    assert receipt['source_info']['encoder']=='tflite/same-l/enc_fp32.tflite'
+                    assert receipt['source_info']['encoder_trim']==12 and receipt['source_info']['encoder_max_rung']==128
+                    assert len(receipt['checkpoints'])==4 and all(len(f['sha256'])==64 for f in receipt['checkpoints'])
+                    assert output['metadata']['music_preset']['origin_recommendation']['id']=='medium-fp32-same-l-audio-v1'
                 (home/'acceptance.json').write_text(json.dumps(result,indent=2),encoding='utf-8')
                 print(json.dumps(dict(stable_audio_input='passed',output=output['path'],metrics=result['metrics'],source_unchanged=True)),flush=True)
                 break

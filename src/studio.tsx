@@ -82,10 +82,12 @@ export function MusicEngines({
   busy,
   act,
   prepareSetup = false,
-}: Pick<StudioProps, "data" | "busy" | "act"> & { prepareSetup?: boolean }) {
+  initialRecommendation,
+}: Pick<StudioProps, "data" | "busy" | "act"> & { prepareSetup?: boolean; initialRecommendation?: boolean }) {
   useTranslation();
-  const [family, setFamily] = useState("sm-music");
-  const [quality, setQuality] = useState("compact");
+  const [family, setFamily] = useState(initialRecommendation === undefined ? "sm-music" : "medium");
+  const [quality, setQuality] = useState(initialRecommendation === undefined ? "compact" : "fidelity");
+  const [includeFidelityAudio, setIncludeFidelityAudio] = useState(initialRecommendation === true);
   const stableSetupDetails = useRef<HTMLDetailsElement>(null);
   const [destination, setDestination] = useState("");
   const [python, setPython] = useState("");
@@ -97,12 +99,13 @@ export function MusicEngines({
   const licenseBase =
     "https://huggingface.co/stabilityai/stable-audio-3-optimized/blob/08b17423649b5714b22eab20f96bf00751f2358a/";
   const review = async () => {
-    const value = await act("stable_setup_plan", { destination, family, quality_profile: quality });
+    const value = await act("stable_setup_plan", { destination, family, quality_profile: quality, ...(includeFidelityAudio ? { include_fidelity_audio: true } : {}) });
     if (value) setPlan(value as Record<string, unknown>);
   };
   const changeFamily = (value: string) => {
     setFamily(value);
     setQuality("compact");
+    setIncludeFidelityAudio(false);
     setPlan(undefined);
     setAuthorized(false);
   };
@@ -114,8 +117,9 @@ export function MusicEngines({
       </header>
       <div className="studio-body">
         <Requirements required={tr("experience", "musicRequired")} optional={tr("experience", "editorOptional")} />
-        <RecommendedMusic data={data} prepare={() => {
+        <RecommendedMusic data={data} prepare={(audioInput = false) => {
           setFamily("medium"); setQuality("fidelity"); setPlan(undefined); setAuthorized(false);
+          setIncludeFidelityAudio(audioInput);
           if (stableSetupDetails.current) {
             stableSetupDetails.current.open = true;
             stableSetupDetails.current.scrollIntoView?.({ block: "start" });
@@ -133,12 +137,13 @@ export function MusicEngines({
                   </p>
                   {engine.id.startsWith("stable-audio") && (
                     <p className="muted">
-                      {engine.audio_input_ready
+                      {engine.audio_input_ready || engine.fidelity_audio_input_ready
                         ? tr("studio", "textUpTo60SSourceAudioUp")
                         : tr("studio", "textUpTo60SSourceAudioRequires")}
                     </p>
                   )}
                   {engine.id === "stable-audio-3-medium" && <p className="muted">{tr("studio", engine.quality_profiles?.includes("fidelity") ? "fidelityAvailable" : "fidelityOptional")}</p>}
+                  {engine.id === "stable-audio-3-medium" && engine.quality_profiles?.includes("fidelity") && <p className="muted">{tr("studio", engine.fidelity_audio_input_ready ? "fidelitySourceReady" : "fidelitySourceMissing")}</p>}
                 </div>
                 <div>
                   <StatusBadge tone={engine.installed && engine.compatible ? "ok" : ""} help={tr("experience", engine.blocked_reason ? "musicBlockedHelp" : "musicStatusHelp")} label={tr("experience", "statusHelpLabel")}>
@@ -171,9 +176,13 @@ export function MusicEngines({
             ]}
           />
           {family === "medium" && <SelectControl label={tr("studio", "qualityProfile")} value={quality}
-            disabled={busy} onChange={value => { setQuality(value); setPlan(undefined); setAuthorized(false); }}
+            disabled={busy} onChange={value => { setQuality(value); setIncludeFidelityAudio(false); setPlan(undefined); setAuthorized(false); }}
             options={[{ value: "compact", label: tr("studio", "compactProfile") }, { value: "fidelity", label: tr("studio", "fidelityProfile") }]} />}
           {family === "medium" && <p className="muted">{tr("studio", "fidelityProfileHelp")}</p>}
+          {family === "medium" && quality === "fidelity" && <label className="check-label">
+            <input type="checkbox" checked={includeFidelityAudio} disabled={busy} onChange={e => { setIncludeFidelityAudio(e.target.checked); setPlan(undefined); setAuthorized(false); }} />
+            {tr("studio", "includeFidelityAudio")}
+          </label>}
           <p>
             <a
               href={licenseBase + "LICENSE.md"}
@@ -214,7 +223,7 @@ export function MusicEngines({
             {tr("studio", "reviewLitertRecipe")}</button>
           {plan && (
             <div className="form-stack">
-              <p>{tr("studio", quality === "fidelity" ? "fidelityDownload" : "compactDownload")}</p>
+              <p>{tr("studio", quality === "fidelity" ? includeFidelityAudio ? "fidelitySourceDownload" : "fidelityDownload" : "compactDownload")}</p>
               <p className="muted">
                 {tr("studio", "python31115Litert220")}</p>
               <label className="check-label">
@@ -240,6 +249,7 @@ export function MusicEngines({
                       destination,
                       family,
                       quality_profile: quality,
+                      ...(includeFidelityAudio ? { include_fidelity_audio: true } : {}),
                       authorized,
                       accepted_licenses: accepted,
                     },
